@@ -1,0 +1,31 @@
+diff --git a/src/afl-fuzz-bitmap.c b/src/afl-fuzz-bitmap.c
+index fd75a822934f..6257403e12a4 100644
+--- a/src/afl-fuzz-bitmap.c
++++ b/src/afl-fuzz-bitmap.c
+@@ -523,7 +523,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
+     if (likely(!new_bits)) {
+ 
+       if (unlikely(afl->crash_mode)) { ++afl->total_crashes; }
+-      return 0;
++      //return 0;
+ 
+     }
+ 
+@@ -805,7 +805,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
+ 
+       ++afl->total_crashes;
+ 
+-      if (afl->saved_crashes >= KEEP_UNIQUE_CRASH) { return keeping; }
++      //if (afl->saved_crashes >= KEEP_UNIQUE_CRASH) { return keeping; }
+ 
+       if (likely(!afl->non_instrumented_mode)) {
+ 
+@@ -818,7 +818,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
+ 
+         simplify_trace(afl, afl->fsrv.trace_bits);
+ 
+-        if (!has_new_bits(afl, afl->virgin_crash)) { return keeping; }
++        //if (!has_new_bits(afl, afl->virgin_crash)) { return keeping; }
+ 
+       }
+ 

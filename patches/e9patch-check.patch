@@ -1,0 +1,439 @@
+commit c1cbf11348a18773fb67a5114cc3fe78f5e1d1a3
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2024-11-18 14:06:32 +0900
+
+    Rework regtest runner
+    
+    The C++ script is rewritten in Makefile and shell script for concision.
+
+diff --git a/Makefile b/Makefile
+index 1218c65d1818..6c786bb91a1d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -181,3 +181,8 @@ tool.sanitize: $(E9TOOL_OBJS) $(E9TOOL_LIBS)
+ 	$(CXX) $(CXXFLAGS) $(E9TOOL_OBJS) $(E9TOOL_LIBS) -o e9tool \
+         $(E9TOOL_LDFLAGS)
+ 
++check: e9tool
++	$(MAKE) -C test/regtest
++
++.PHONY: all clean install check\
++	release debug sanitize tool tool.debug tool.sanitize
+diff --git a/test/regtest/Makefile b/test/regtest/Makefile
+index 992b1bc40984..9b29e0f72408 100644
+--- a/test/regtest/Makefile
++++ b/test/regtest/Makefile
+@@ -3,32 +3,69 @@ FCF_NONE := $(shell \
+         then true; \
+         else echo -fcf-protection=none; fi)
+ 
+-all:
++BASE ::= test test.pie bugs test.libc libtest.so test_c test_c.debug example.so
++TRAMPOLINE ::= inst patch dl init fini
++IN ::= $(wildcard *.in)
++EXE ::= $(IN:.in=.exe)
++
++check: regtest $(EXE)
++	./$^
++
++%.exe: in=$(shell head -1 $<)
++%.exe: %.in $(BASE) $(TRAMPOLINE)
++	../../e9tool $(E9TOOL_OPTIONS) -M 'addr >= &"entry"' $(in)\
++		-E data..data_END -E data2...text -E .text..begin -o $@
++
++test:
+ 	gcc -x assembler-with-cpp -o test test.s -no-pie -nostdlib \
+         -Wl,--section-start=.text=0xa000000 -Wl,--section-start=.bss=0xc000000 \
+         -Wl,-z -Wl,max-page-size=4096 -DPIE=0
++
++test.pie:
+ 	gcc -x assembler-with-cpp -o test.pie test.s -pie -nostdlib \
+         -Wl,--section-start=.text=0xa000000 -Wl,--section-start=.bss=0xc000000 \
+         -Wl,-z -Wl,max-page-size=4096 -DPIE=1 \
+ 		-Wl,--export-dynamic
++
++bugs:
+ 	gcc -x assembler-with-cpp -o bugs bugs.s -no-pie -nostdlib \
+         -Wl,--section-start=.text=0xa000000 -Wl,--section-start=.bss=0xc000000 \
+         -Wl,-z -Wl,max-page-size=4096 -DPIE=0
++
++test.libc:
+ 	gcc -x assembler-with-cpp -o test.libc test_libc.s -pie -Wl,--export-dynamic
++
++libtest.so:
+ 	gcc -x assembler-with-cpp -shared -o libtest.so libtest.s 
++
++test_c:
+ 	gcc -O2 -fPIC $(FCF_NONE) -pie -o test_c test_c.c \
+ 		-Wl,--export-dynamic -U_FORTIFY_SOURCE
+ 	strip test_c
++
++test_c.debug:
+ 	gcc -O0 -g -fPIC -pie -o test_c.debug test_c.c
++
++inst:
+ 	../../e9compile.sh inst.c -I ../../examples/ 
++
++patch:
+ 	../../e9compile.sh patch.cpp -std=c++11 -I ../../examples/ 
++
++dl:
+ 	NO_SIMD_CHECK=1 ../../e9compile.sh dl.c -I ../../examples/
++
++init:
+ 	../../e9compile.sh init.c -I ../../examples/ 
++
++fini:
+ 	../../e9compile.sh fini.c -I ../../examples/
++
++example.so:
+ 	g++ -std=c++11 -fPIC -shared -o example.so -O2 \
+         ../../examples/plugins/example.cpp -I ../../src/e9tool/
+-	g++ -std=c++11 -pie -fPIC -o regtest regtest.cpp -O2
+ 
+-clean:
+-	rm -f *.log *.out *.exe test test.pie test.libc libtest.so inst inst.o \
+-        patch patch.o init init.o regtest
++clean-check:
++	rm -f $(BASE) $(TRAMPOLINE) $(EXE)
++
++.PHONY: check clean-check
+diff --git a/test/regtest/README.md b/test/regtest/README.md
+index be3f6dd664b3..662c2af68a14 100644
+--- a/test/regtest/README.md
++++ b/test/regtest/README.md
+@@ -3,6 +3,4 @@ README
+ 
+ To run the tests:
+ 
+-    $ make
+-    $ ./regtest
+-
++    make E9TOOL_OPTIONS=
+diff --git a/test/regtest/init_dso.cmd b/test/regtest/init_dso.cmd
+index 94f6855c5d60..db31c55672fe 100644
+--- a/test/regtest/init_dso.cmd
++++ b/test/regtest/init_dso.cmd
+@@ -1 +1 @@
+-LD_PRELOAD=$PWD/init_dso.exe ./test.pie
++LD_PRELOAD=./init_dso.exe ./test.pie
+diff --git a/test/regtest/init_dso_2.cmd b/test/regtest/init_dso_2.cmd
+index d2d56823ff80..d6d59f7b3cfd 100644
+--- a/test/regtest/init_dso_2.cmd
++++ b/test/regtest/init_dso_2.cmd
+@@ -1 +1 @@
+-LD_PRELOAD=$PWD/init_dso.exe ./test.pie a b c 1 2 3
++LD_PRELOAD=./init_dso.exe ./test.pie a b c 1 2 3
+diff --git a/test/regtest/regtest b/test/regtest/regtest
+new file mode 100755
+index 000000000000..07d9577b3da4
+--- /dev/null
++++ b/test/regtest/regtest
+@@ -0,0 +1,32 @@
++#!/bin/sh
++fails=()
++for exe in $*
++do
++  tst=${exe%.exe}
++  cmd=$tst.cmd
++  out=$tst.out
++  exp=$tst.exp
++
++  if test -f $cmd
++  then env $(cat $cmd) 1>$out 2>&1
++  else ./$exe 1>$out 2>&1
++  fi 2>/dev/null
++  case $? in
++    "132") echo Illegal instruction;;
++    "133") echo Trace/breakpoint trap;;
++    "134") echo Aborted;;
++    "138") echo User defined signal 1;;
++    "139") echo Segmentation fault;;
++  esac >>$out
++
++  diff -u $out $exp
++  if test $? -ne 0
++  then fails+=($tst)
++  fi
++done
++
++if test "$fails"
++then
++  echo "Failing ${#fails[@]}/$# tests: ${fails[@]}"
++  exit 1
++fi
+diff --git a/test/regtest/regtest.cpp b/test/regtest/regtest.cpp
+deleted file mode 100644
+index e86e0af03228..000000000000
+--- a/test/regtest/regtest.cpp
++++ /dev/null
+@@ -1,269 +0,0 @@
+-/*
+- * Copyright (C) 2022 National University of Singapore
+- *
+- * This program is free software: you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation, either version 3 of the License, or
+- * (at your option) any later version.
+- * 
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- * 
+- * You should have received a copy of the GNU General Public License
+- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+- */
+-
+-#include <string>
+-#include <vector>
+-
+-#include <cctype>
+-#include <cstdio>
+-#include <cstdlib>
+-#include <cstring>
+-
+-#include <sys/types.h>
+-#include <sys/wait.h>
+-#include <dirent.h>
+-#include <unistd.h>
+-
+-static bool option_tty = false;
+-
+-#define RED     "\33[31m"
+-#define GREEN   "\33[32m"
+-#define YELLOW  "\33[33m"
+-#define WHITE "\33[0m"
+-
+-#define error(msg, ...)                                                 \
+-    do                                                                  \
+-    {                                                                   \
+-        fprintf(stderr, "%serror%s: " msg "\n",                         \
+-            (option_tty? RED: ""), (option_tty? WHITE: ""),           \
+-            ##__VA_ARGS__);                                             \
+-        exit(EXIT_FAILURE);                                             \
+-    }                                                                   \
+-    while (false)
+-
+-/*
+- * Run a single test case.
+- */
+-static bool runTest(const struct dirent *test, const std::string &options)
+-{
+-    std::string in(test->d_name);
+-    std::string basename(in, 0, in.size()-3);
+-    std::string out(basename);
+-    out += ".out";
+-    std::string exp(basename);
+-    exp += ".exp";
+-    std::string exe(basename);
+-    exe += ".exe";
+-    std::string log(basename);
+-    log += ".log";
+-    std::string cmd(basename);
+-    cmd += ".cmd";
+-    std::string diff(basename);
+-    diff += ".diff";
+-
+-    // Step (0): reset
+-    unlink(out.c_str());
+-    unlink(exe.c_str());
+-    unlink(log.c_str());
+-    unlink(diff.c_str());
+-
+-    // Step (1): generate the EXE
+-    std::string command("../../e9tool ");
+-    if (options != "")
+-    {
+-        command += options;
+-        command += ' ';
+-    }
+-    command += "-M 'addr >= &\"entry\"' ";
+-    FILE *IN = fopen(in.c_str(), "r");
+-    if (IN == nullptr)
+-        error("failed to open file \"%s\": %s", in.c_str(), strerror(errno));
+-    char c;
+-    for (int i = 0; (c = getc(IN)) != '\n' && isprint(c) && i < 1024; i++)
+-        command += c;
+-    fclose(IN);
+-    command += " -E data..data_END -E data2...text -E .text..begin -o ";
+-    command += exe;
+-    command += " >>";
+-    command += log;
+-    command += " 2>&1";
+-
+-    FILE *LOG = fopen(log.c_str(), "w");
+-    if (LOG != NULL)
+-    {
+-        fprintf(LOG, "%s\n", command.c_str());
+-        fclose(LOG);
+-    }
+-    printf("\n\t%s\n", command.c_str());
+-    int r = system(command.c_str());
+-    if (r != 0)
+-    {
+-        printf("%s%s%s: %sFAILED%s (patching failed with status %d, see %s)\n",
+-            (option_tty? YELLOW: ""), basename.c_str(), (option_tty? WHITE: ""),
+-            (option_tty? RED: ""), (option_tty? WHITE: ""),
+-            r, log.c_str());
+-        return false;
+-    }
+-
+-    // Step (2): execute the EXE
+-    FILE *CMD = fopen(cmd.c_str(), "r");
+-    command.clear();
+-    if (CMD != NULL)
+-    {
+-        for (int i = 0; (c = getc(CMD)) != '\n' && isprint(c) && i < 1024; i++)
+-            command += c;
+-        fclose(CMD);
+-    }
+-    else
+-    {
+-        command += "./";
+-        command += exe;
+-    }
+-    command += " >";
+-    command += out;
+-    command += " 2>&1";
+-    printf("\t%s\n", command.c_str());
+-    r = system(command.c_str());
+-    if (r != 0 && /*Ignore signals=*/
+-        !(WIFEXITED(r) && WEXITSTATUS(r) >= 128 && WEXITSTATUS(r) <= 128+32))
+-    {
+-        printf("%s%s%s: %sFAILED%s (execution failed with status %d, see %s)\n",
+-            (option_tty? YELLOW: ""), basename.c_str(), (option_tty? WHITE: ""),
+-            (option_tty? RED: ""), (option_tty? WHITE: ""),
+-            r, out.c_str());
+-        return false;
+-    }
+-    command.clear();
+-    command = "sed -i 's/ (core dumped)//g' ";
+-    command += out;
+-    system(command.c_str());
+-
+-    // Step (3): compare the output
+-    FILE *OUT = fopen(out.c_str(), "r");
+-    if (OUT == nullptr)
+-        error("failed to open file \"%s\" for reading: %s", out.c_str(),
+-            strerror(errno));
+-    FILE *EXP = fopen(exp.c_str(), "r");
+-    if (EXP == nullptr)
+-    {
+-        if (errno == ENOENT)
+-            EXP = fopen("/dev/null", "r");	// Missing = empty file
+-        if (EXP == nullptr)
+-            error("failed to open file \"%s\" for reading: %s", exp.c_str(),
+-                strerror(errno));
+-    }
+-    const int LIMIT = 100000;   
+-    for (int i = 0; i < LIMIT; i++)
+-    {
+-        char c = getc(OUT), d = getc(EXP);
+-        if (c != d)
+-        {
+-            fclose(OUT); fclose(EXP);
+-            command.clear();
+-            command += "diff ";
+-            command += out;
+-            command += ' ';
+-            command += exp;
+-            command += " >";
+-            command += diff;
+-            printf("\t%s\n", command.c_str());
+-            (void)system(command.c_str());
+-            printf("%s%s%s: %sFAILED%s (miscompare, see %s)\n",
+-                (option_tty? YELLOW: ""), basename.c_str(),
+-                (option_tty? WHITE: ""), (option_tty? RED: ""),
+-                (option_tty? WHITE: ""), diff.c_str());
+-            return false;
+-        }
+-        if (c == EOF)
+-            break;
+-    }
+-    fclose(OUT); fclose(EXP);
+-
+-    // Success!
+-    printf("%s%s%s: %spassed%s\n",
+-        (option_tty? YELLOW: ""), basename.c_str(), (option_tty? WHITE: ""),
+-        (option_tty? GREEN: ""), (option_tty? WHITE: ""));
+-    return true;
+-}
+-
+-/*
+- * Test if directory entry is a test case (i.e., ends with ".in").
+- */
+-static int isTest(const struct dirent *entry)
+-{
+-    size_t len = strlen(entry->d_name);
+-    if (len <= 3)
+-        return false;
+-    if (entry->d_name[len-1] != 'n' || entry->d_name[len-2] != 'i' ||
+-            entry->d_name[len-3] != '.')
+-        return false;
+-    return true;
+-}
+-
+-/*
+- * Entry.
+- */
+-int main(int argc, char **argv)
+-{
+-    std::string options;
+-    for (int i = 1; i < argc; i++)
+-    {
+-        if (i > 1)
+-            options += ' ';
+-        options += argv[i];
+-    }
+-
+-    option_tty = (isatty(STDOUT_FILENO) && isatty(STDERR_FILENO));
+-    struct dirent **tests = nullptr;
+-    int n = scandir(".", &tests, isTest, alphasort);
+-    if (n < 0)
+-        error("failed to scan current directory: %s", strerror(errno));
+-    size_t passed = 0, failed = 0, total = 0;
+-    std::vector<std::string> fails;
+-    for (int i = 0; i < n; i++)
+-    {
+-        total++;
+-        if (runTest(tests[i], options))
+-            passed++;
+-        else
+-        {
+-            fails.push_back(tests[i]->d_name);
+-            failed++;
+-        }
+-    }
+-
+-    const char *highlight = "", *off = "";
+-    if (option_tty)
+-    {
+-        if (passed == total)
+-            highlight = GREEN, off = WHITE;
+-        else if (passed == 0)
+-            highlight = RED, off = WHITE;
+-        else
+-            highlight = YELLOW, off = WHITE;
+-    }
+-    putchar('\n');
+-    printf("PASSED = %s%.2f%%%s (%zu/%zu); FAILED = %s%.2f%%%s (%zu/%zu)\n\n",
+-        highlight, (double)passed / (double)total * 100.0, off, passed, total,
+-        highlight, (double)failed / (double)total * 100.0, off, failed, total);
+-    if (fails.size() > 0)
+-    {
+-        printf("FAILED = {");
+-        bool prev = false;
+-        for (const auto &fail: fails)
+-        {
+-            if (prev)
+-                putchar(',');
+-            prev = true;
+-            printf("%s", fail.c_str());
+-        }
+-        printf("}\n\n");
+-    }
+-
+-    return 0;
+-}
+-

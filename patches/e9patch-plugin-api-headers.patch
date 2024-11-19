@@ -1,0 +1,25 @@
+From 13ddf96e29edfea8e6af5d3a3dfea8d1315fa761 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Nguy=E1=BB=85n=20Gia=20Phong?= <cnx@loang.net>
+Date: Mon, 18 Nov 2024 16:40:56 +0900
+Subject: [PATCH] Install plugin API headers to C_INCLUDE_PATH
+
+---
+ Makefile | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 1218c65..20c5584 100644
+--- a/Makefile
++++ b/Makefile
+@@ -110,9 +110,8 @@ install: all
+         doc/e9tool-user-guide.md | markdown > \
+         "$(DESTDIR)/usr/share/doc/e9tool/e9tool-user-guide.html"
+ 	install -m 444 LICENSE "$(DESTDIR)/usr/share/doc/e9tool/LICENSE"
+-	install -d "$(DESTDIR)/usr/share/e9tool/include/"
+-	install -m 444 src/e9tool/e9tool.h "$(DESTDIR)/usr/share/e9tool/include/e9tool.h"
+-	install -m 444 src/e9tool/e9plugin.h "$(DESTDIR)/usr/share/e9tool/include/e9plugin.h"
++	install -Dm 444 src/e9tool/e9tool.h "$(DESTDIR)/usr/include/e9tool/e9tool.h"
++	install -Dm 444 src/e9tool/e9plugin.h "$(DESTDIR)/usr/include/e9tool/e9plugin.h"
+ 	install -d "$(DESTDIR)/usr/share/e9tool/examples/"
+ 	install -m 444 examples/bounds.c "$(DESTDIR)/usr/share/e9tool/examples/bounds.c"
+ 	sed \
