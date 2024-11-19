@@ -43,21 +43,21 @@
                 (file-name (git-file-name name version))
                 (patches (search-patches
                            ;; https://github.com/GJDuck/e9patch/pull/94
-                           "e9patch-devendor.patch"
+                           "patches/e9patch-devendor.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/99
-                           "e9patch-plugin-api-headers.patch"
+                           "patches/e9patch-plugin-api-headers.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/92
-                           "e9patch-check.patch"
+                           "patches/e9patch-check.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/95
-                           "e9patch-check-intel-format.patch"
+                           "patches/e9patch-check-intel-format.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/88
-                           "e9patch-check-mode.patch"
+                           "patches/e9patch-check-mode.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/93
-                           "e9patch-check-mov-imm.patch"
+                           "patches/e9patch-check-mov-imm.patch"
                            ;; https://github.com/GJDuck/e9patch/issues/96
-                           "e9patch-check-rflags.patch"
+                           "patches/e9patch-check-rflags.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/97
-                           "e9patch-check-same_op_2.patch"))))
+                           "patches/e9patch-check-same_op_2.patch"))))
       (build-system gnu-build-system)
       (arguments (list #:modules `((ice-9 string-fun) ; string-replace-substring
                                    ,@%default-gnu-modules)

@@ -41,7 +41,8 @@
                 (sha256
                  (base32
                   "149f5r341v921lfmdr4s9yap4qrqzc41vc7rx5xlgb78m5lwprx8"))
-               (patches (search-patches "afl++-keep-all-crashes.patch")))))))
+               (patches (search-patches
+                          "patches/afl++-keep-all-crashes.patch")))))))
 
 (define-public afl-dyninst
   (package
