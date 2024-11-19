@@ -23,6 +23,7 @@
   #:use-module (gnu packages m4)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages))
