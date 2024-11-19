@@ -16,7 +16,8 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (gnu packages instrumentation)
+(use-modules (gnu packages debug)
+             (gnu packages instrumentation)
              (gnu packages man)
              (gnu packages m4)
              (guix build-system gnu)
