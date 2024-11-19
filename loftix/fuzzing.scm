@@ -16,15 +16,16 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (gnu packages debug)
-             (gnu packages instrumentation)
-             (gnu packages man)
-             (gnu packages m4)
-             (guix build-system gnu)
-             (guix download)
-             (guix git-download)
-             ((guix licenses) #:prefix license:)
-             (guix packages))
+(define-module (loftix fuzzing)
+  #:use-module (gnu packages debug)
+  #:use-module (gnu packages instrumentation)
+  #:use-module (gnu packages man)
+  #:use-module (gnu packages m4)
+  #:use-module (guix build-system gnu)
+  #:use-module (guix download)
+  #:use-module (guix git-download)
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix packages))
 
 (define-public afl++
   (let ((commit "42fc9acf5bdd512608e3590a78749c2cd95ee5f3")

@@ -16,13 +16,14 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (gnu packages python-build)
-             (gnu packages python-xyz)
-             (guix build-system pyproject)
-             (guix build-system python)
-             (guix download)
-             ((guix licenses) #:prefix license:)
-             (guix packages))
+(define-module (loftix synthesis)
+  #:use-module (gnu packages python-build)
+  #:use-module (gnu packages python-xyz)
+  #:use-module (guix build-system pyproject)
+  #:use-module (guix build-system python)
+  #:use-module (guix download)
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix packages))
 
 (define-public python-pacfix
   (package

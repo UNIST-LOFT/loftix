@@ -16,8 +16,9 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (gnu packages base)
-             (guix packages))
+(define-module (loftix bugs)
+  #:use-module (gnu packages base)
+  #:use-module (guix packages))
 
 (define-public binutils-2.29
   (package

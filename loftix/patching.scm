@@ -16,15 +16,16 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (gnu packages compression)
-             (gnu packages elf)
-             (gnu packages engineering)
-             (gnu packages markup)
-             (gnu packages vim)
-             (guix build-system gnu)
-             (guix git-download)
-             ((guix licenses) #:prefix license:)
-             (guix packages))
+(define-module (loftix patching)
+  #:use-module (gnu packages compression)
+  #:use-module (gnu packages elf)
+  #:use-module (gnu packages engineering)
+  #:use-module (gnu packages markup)
+  #:use-module (gnu packages vim)
+  #:use-module (guix build-system gnu)
+  #:use-module (guix git-download)
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix packages))
 
 (define-public e9patch
   (let ((commit "b4e7175abb8bd49ebbb6d09c7057aa43ddacac10")
