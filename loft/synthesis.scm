@@ -15,7 +15,7 @@
         (method url-fetch)
         (uri (pypi-uri "pacfix" version))
         (sha256
-          (base32 "1111111111111111111111111111111111111111111111111111"))))
+          (base32 "1gpr410gfwab5mg3k57r001mddqgxk9d5rbn89v1wczi51ljlsc5"))))
     (build-system pyproject-build-system)
     (native-inputs (list python-flit-core))
     (propagated-inputs (list python-pysmt))
