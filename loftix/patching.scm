@@ -17,6 +17,7 @@
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (loftix patching)
+  #:use-module (gnu packages)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages engineering)

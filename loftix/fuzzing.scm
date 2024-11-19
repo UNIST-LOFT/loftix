@@ -17,6 +17,7 @@
 ;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (loftix fuzzing)
+  #:use-module (gnu packages)
   #:use-module (gnu packages debug)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages man)
