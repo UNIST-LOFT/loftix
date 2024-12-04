@@ -30,7 +30,7 @@
   #:use-module (guix packages))
 
 (define-public e9patch
-  (let ((commit "b4e7175abb8bd49ebbb6d09c7057aa43ddacac10")
+  (let ((commit "a31c106e1e2375bb4ffc0cd9e50a4e6a3eba9ea2")
         (revision "0"))
     (package
       (name "e9patch")
@@ -42,13 +42,11 @@
                      (commit commit)))
                 (sha256
                  (base32
-                  "0a9s7h43ryyl4bvn0sid0dq78v24bnbcf271smj1a8wvffsih0jy"))
+                  "1w9am7p662kjmikx92p4w264q95na9plpnba2n7w3sbqdxs43g4l"))
                 (file-name (git-file-name name version))
                 (patches (search-patches
                            ;; https://github.com/GJDuck/e9patch/pull/94
                            "patches/e9patch-devendor.patch"
-                           ;; https://github.com/GJDuck/e9patch/pull/99
-                           "patches/e9patch-plugin-api-headers.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/92
                            "patches/e9patch-check.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/95
