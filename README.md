@@ -20,4 +20,21 @@ Add the [Guix channel] to `~/.config/guix/channels.scm`:
 
 Then run `guix pull`.
 
+## Packages
+
+### Fuzzing
+
+- [afl-dyninst]: Dyninst integration for AFL++
+
+### Patching
+
+- [e9patch]: static binary rewriting tool
+
+### Synthesis
+
+- [python-pacfix]: PAC-learning-based program systhesizer
+
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
+[afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
+[e9patch]: https://github.com/GJDuck/e9patch
+[python-pacfix]: https://github.com/hsh814/pacfix-python
