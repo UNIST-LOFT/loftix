@@ -30,22 +30,20 @@
   #:use-module (guix packages))
 
 (define-public afl++
-  (let ((commit "42fc9acf5bdd512608e3590a78749c2cd95ee5f3")
-        (revision "0"))
-    (package
-      (inherit aflplusplus)
-      (name "afl++")
-      (version (git-version "4.22a" revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                       (url "https://github.com/AFLplusplus/AFLplusplus")
-                       (commit commit)))
-                (sha256
-                 (base32
-                  "149f5r341v921lfmdr4s9yap4qrqzc41vc7rx5xlgb78m5lwprx8"))
-               (patches (search-patches
-                          "patches/afl++-keep-all-crashes.patch")))))))
+  (package
+    (inherit aflplusplus)
+    (name "afl++")
+    (version "4.30c")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/AFLplusplus/AFLplusplus")
+                    (commit (string-append "v" version))))
+              (sha256
+               (base32
+                "1lmpyf1gwz78pqxw9iqxhxzanbrid33ihq9xzmnk8c4yv449sdks"))
+              (patches (search-patches
+                        "patches/afl++-keep-all-crashes.patch"))))))
 
 (define-public afl-dyninst
   (package
