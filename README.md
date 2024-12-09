@@ -24,6 +24,7 @@ Then run `guix pull`.
 
 ### Fuzzing
 
+- [AFLRun]: multi-target directed [AFL++] with path diversity
 - [afl-dyninst]: Dyninst integration for AFL++
 
 ### Patching
@@ -35,6 +36,8 @@ Then run `guix pull`.
 - [python-pacfix]: PAC-learning-based program systhesizer
 
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
+[AFLRun]: https://trong.loang.net/~cnx/afl++/log?h=run
+[AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
