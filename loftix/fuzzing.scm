@@ -29,22 +29,6 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages))
 
-(define-public afl++
-  (package
-    (inherit aflplusplus)
-    (name "afl++")
-    (version "4.30c")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/AFLplusplus/AFLplusplus")
-                    (commit (string-append "v" version))))
-              (sha256
-               (base32
-                "1lmpyf1gwz78pqxw9iqxhxzanbrid33ihq9xzmnk8c4yv449sdks"))
-              (patches (search-patches
-                        "patches/afl++-keep-all-crashes.patch"))))))
-
 (define-public afl-dyninst
   (package
     (name "afl-dyninst")
@@ -68,7 +52,7 @@
                          (delete 'configure)
                          (delete 'check))))
     (native-inputs (list m4 help2man))
-    (inputs (list afl++ dyninst))
+    (inputs (list aflplusplus dyninst))
     (synopsis "Dyninst integration for AFL++")
     (description "Dyninst integration for AFL++")
     (home-page "https://trong.loang.net/~cnx/afl-dyninst")
