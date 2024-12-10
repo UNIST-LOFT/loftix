@@ -30,7 +30,7 @@
   #:use-module (guix packages))
 
 (define-public e9patch
-  (let ((commit "a31c106e1e2375bb4ffc0cd9e50a4e6a3eba9ea2")
+  (let ((commit "2ab9969d5314ef483936fab6c585754d961ef734")
         (revision "0"))
     (package
       (name "e9patch")
@@ -42,7 +42,7 @@
                      (commit commit)))
                 (sha256
                  (base32
-                  "1w9am7p662kjmikx92p4w264q95na9plpnba2n7w3sbqdxs43g4l"))
+                  "0snpdn8xmyg6aypbxjayqpyvxsz4vqm8ggcjcvjpjrdxydplv2cd"))
                 (file-name (git-file-name name version))
                 (patches (search-patches
                            ;; https://github.com/GJDuck/e9patch/pull/94
@@ -60,17 +60,11 @@
                            ;; https://github.com/GJDuck/e9patch/pull/97
                            "patches/e9patch-check-same_op_2.patch"))))
       (build-system gnu-build-system)
-      (arguments (list #:modules `((ice-9 string-fun) ; string-replace-substring
-                                   ,@%default-gnu-modules)
-                       #:phases
+      (arguments (list #:phases
                        #~(modify-phases %standard-phases
                            (add-after 'unpack 'fix-prefix
                              (lambda _
-                               (substitute* "Makefile"
-                                 ;; https://github.com/GJDuck/e9patch/pull/87
-                                 (("\\\\/usr")
-                                  (string-replace-substring #$output "/" "\\/"))
-                                 (("/usr") #$output))))
+                               (substitute* "Makefile" (("/usr") #$output))))
                            (delete 'configure))))
       (native-inputs (list markdown xxd))
       (inputs (list elfutils zycore zydis zlib))
