@@ -18,6 +18,7 @@
 
 (define-module (loftix fuzzing)
   #:use-module (gnu packages)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages debug)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages man)
@@ -30,7 +31,7 @@
   #:use-module (guix packages))
 
 (define-public aflrun
-  (let ((commit "2ae8a8631c031ee2b50fb91e11d9b77d8c0147ff")
+  (let ((commit "65d51e3b6dd44957c99fa57c1fb9fa4a040451a0")
         (revision "0"))
     (package
       (inherit aflplusplus)
@@ -44,11 +45,11 @@
                  commit ".tar.gz"))
           (sha256
             (base32
-              "187j6qyvrmm5jb4v870dl7abp5yaqbl7c2qzk06pyl2x96irakc7"))
-          (file-name (git-file-name name version))
+              "1q1smpk6l25cipszj917kvw1shfi5zznxsq4dcwlallym1s1gxqy"))
           (patches (search-patches
                      "patches/aflrun-keep-all-crashes.patch"
                      "patches/aflrun-disable-inst-checks.patch"))))
+      (native-inputs (list gcc-14))
       (synopsis "Multi-target directed AFL++ with path diversity")
       (description "AFLRun is a fork of AFL++
 for unbiased multiple-target fuxxing with path diversity.")
