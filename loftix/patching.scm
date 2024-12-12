@@ -30,7 +30,7 @@
   #:use-module (guix packages))
 
 (define-public e9patch
-  (let ((commit "2ab9969d5314ef483936fab6c585754d961ef734")
+  (let ((commit "840358a4aeeeb397fd10a34ae815b5bd33b73b19")
         (revision "0"))
     (package
       (name "e9patch")
@@ -42,7 +42,7 @@
                      (commit commit)))
                 (sha256
                  (base32
-                  "0snpdn8xmyg6aypbxjayqpyvxsz4vqm8ggcjcvjpjrdxydplv2cd"))
+                  "04an37kny9aznizyy0l5djx1jvlgfn5k1z2kcva9bv3dz6ljhx99"))
                 (file-name (git-file-name name version))
                 (patches (search-patches
                            ;; https://github.com/GJDuck/e9patch/pull/94
@@ -60,12 +60,10 @@
                            ;; https://github.com/GJDuck/e9patch/pull/97
                            "patches/e9patch-check-same_op_2.patch"))))
       (build-system gnu-build-system)
-      (arguments (list #:phases
-                       #~(modify-phases %standard-phases
-                           (add-after 'unpack 'fix-prefix
-                             (lambda _
-                               (substitute* "Makefile" (("/usr") #$output))))
-                           (delete 'configure))))
+      (arguments (list #:phases #~(modify-phases %standard-phases
+                                    (delete 'configure))
+                       #:make-flags #~(list (string-append
+                                              "PREFIX=" #$output))))
       (native-inputs (list markdown xxd))
       (inputs (list elfutils zycore zydis zlib))
       (home-page "https://github.com/GJDuck/e9patch")
