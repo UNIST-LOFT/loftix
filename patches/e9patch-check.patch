@@ -7,18 +7,40 @@ Date:   2024-11-18 14:06:32 +0900
     The C++ script is rewritten in Makefile and shell script for concision.
 
 diff --git a/Makefile b/Makefile
-index 1218c65d1818..6c786bb91a1d 100644
+index 754f5210b004..272e7bb4866f 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -181,3 +181,8 @@ tool.sanitize: $(E9TOOL_OBJS) $(E9TOOL_LIBS)
- 	$(CXX) $(CXXFLAGS) $(E9TOOL_OBJS) $(E9TOOL_LIBS) -o e9tool \
-         $(E9TOOL_LDFLAGS)
+@@ -1,4 +1,4 @@
+-.PHONY: all clean install dev release debug sanitize
++.PHONY: all clean install check dev release debug sanitize check-debug
+ .SECONDEXPANSION:
  
-+check: e9tool
+ #########################################################################
+@@ -67,6 +67,7 @@ clean:
+ 	$(MAKE) -C contrib/zydis clean
+ 	rm -rf $(E9PATCH_OBJS) $(E9TOOL_OBJS) e9patch e9tool \
+         src/e9patch/e9loader_*.c e9loader_*.o e9loader_*.bin
++	$(MAKE) -C test/regtest clean-check
+ 
+ src/e9patch/e9loader_elf.c: src/e9patch/e9loader_elf.cpp
+ 	$(CXX) -std=c++11 -Wall -fno-stack-protector -Wno-unused-function -fPIC \
+@@ -83,6 +84,9 @@ src/e9patch/e9loader_pe.c: src/e9patch/e9loader_pe.cpp
+ src/e9patch/e9elf.o: src/e9patch/e9loader_elf.c
+ src/e9patch/e9pe.o: src/e9patch/e9loader_pe.c
+ 
++check: all
 +	$(MAKE) -C test/regtest
 +
-+.PHONY: all clean install check\
-+	release debug sanitize tool tool.debug tool.sanitize
+ install: all
+ 	install -d "$(DESTDIR)$(PREFIX)/bin"
+ 	install -m 755 e9patch "$(DESTDIR)$(PREFIX)/bin/e9patch"
+@@ -165,3 +169,6 @@ debug: dev
+ 
+ sanitize: CXXFLAGS += -O0 -g -fsanitize=address
+ sanitize: dev
++
++check-debug: debug
++	$(MAKE) -C test/regtest
 diff --git a/test/regtest/Makefile b/test/regtest/Makefile
 index 992b1bc40984..9b29e0f72408 100644
 --- a/test/regtest/Makefile

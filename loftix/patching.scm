@@ -30,7 +30,7 @@
   #:use-module (guix packages))
 
 (define-public e9patch
-  (let ((commit "840358a4aeeeb397fd10a34ae815b5bd33b73b19")
+  (let ((commit "a6d900b997942b124c2cdc9e164500052bbaec17")
         (revision "0"))
     (package
       (name "e9patch")
@@ -42,11 +42,11 @@
                      (commit commit)))
                 (sha256
                  (base32
-                  "04an37kny9aznizyy0l5djx1jvlgfn5k1z2kcva9bv3dz6ljhx99"))
+                  "03gaf8scsmmfaxsmi5826ixnc5r7j6xaj0bq2fif633s82r7f7cg"))
                 (file-name (git-file-name name version))
                 (patches (search-patches
                            ;; https://github.com/GJDuck/e9patch/pull/94
-                           "patches/e9patch-devendor.patch"
+                           "patches/e9patch-zydis-4.1.0.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/92
                            "patches/e9patch-check.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/95

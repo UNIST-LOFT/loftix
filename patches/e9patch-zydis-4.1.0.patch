@@ -1,32 +1,9 @@
-diff --git a/Makefile b/Makefile
-index 1218c65d1818..0ebdf24ea259 100644
---- a/Makefile
-+++ b/Makefile
-@@ -37,10 +37,7 @@ E9TOOL_OBJS=\
- E9TOOL_LIBS=\
-     contrib/zydis/libZydis.a \
-     contrib/libdw/libdw.a
--E9TOOL_CXXFLAGS=\
--    -I src/e9tool/ -Wno-unused-function \
--    -I contrib/zydis/include/ \
--    -I contrib/zydis/dependencies/zycore/include/
-+E9TOOL_CXXFLAGS= -I src/e9tool/ -Wno-unused-function
- E9TOOL_LDFLAGS=\
-     -Wl,--dynamic-list=src/e9tool/e9tool.syms \
-     -ldl -lz
-@@ -52,9 +49,9 @@ E9TOOL_LDFLAGS=\
- all: e9tool e9patch
- 
- e9tool: CXXFLAGS += -O2 -DSYSTEM_LIBDW $(E9TOOL_CXXFLAGS)
--e9tool: contrib/zydis/libZydis.a $(E9TOOL_OBJS)
--	$(CXX) $(CXXFLAGS) $(E9TOOL_OBJS) contrib/zydis/libZydis.a -o e9tool \
--	    $(E9TOOL_LDFLAGS) -ldw
-+e9tool: $(E9TOOL_OBJS)
-+	$(CXX) $(CXXFLAGS) $(E9TOOL_OBJS) -o e9tool \
-+	    $(E9TOOL_LDFLAGS) -ldw -lZydis
- 	strip e9tool
- 
- e9patch: CXXFLAGS += -O2 
+commit c02dd23b12fd687a041ab3b872b3f989cd1342dc
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2024-11-18 15:13:17 +0900
+
+    Make compatible with Zydis 4.1.0
+
 diff --git a/src/e9tool/e9x86_64.cpp b/src/e9tool/e9x86_64.cpp
 index 6a7f5cff3692..03eb3a41dd66 100644
 --- a/src/e9tool/e9x86_64.cpp
