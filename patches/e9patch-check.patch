@@ -42,10 +42,14 @@ index 754f5210b004..272e7bb4866f 100644
 +check-debug: debug
 +	$(MAKE) -C test/regtest
 diff --git a/test/regtest/Makefile b/test/regtest/Makefile
-index 992b1bc40984..9b29e0f72408 100644
+index 45272826bb3c..38da5be57dde 100644
 --- a/test/regtest/Makefile
 +++ b/test/regtest/Makefile
-@@ -3,32 +3,69 @@ FCF_NONE := $(shell \
+@@ -1,36 +1,72 @@
++.PHONY: check clean-check
++
+ FCF_NONE := $(shell \
+     if gcc -fcf-protection=none --version 2>&1 | grep -q 'unrecognized'; \
          then true; \
          else echo -fcf-protection=none; fi)
  
@@ -112,14 +116,15 @@ index 992b1bc40984..9b29e0f72408 100644
  	g++ -std=c++11 -fPIC -shared -o example.so -O2 \
          ../../examples/plugins/example.cpp -I ../../src/e9tool/
 -	g++ -std=c++11 -pie -fPIC -o regtest regtest.cpp -O2
+-	echo "XXX" > FILE.txt
+-	chmod 0640 FILE.txt
  
 -clean:
 -	rm -f *.log *.out *.exe test test.pie test.libc libtest.so inst inst.o \
 -        patch patch.o init init.o regtest
 +clean-check:
 +	rm -f $(BASE) $(TRAMPOLINE) $(EXE)
-+
-+.PHONY: check clean-check
++	rm -f *.out
 diff --git a/test/regtest/README.md b/test/regtest/README.md
 index be3f6dd664b3..662c2af68a14 100644
 --- a/test/regtest/README.md
@@ -133,22 +138,28 @@ index be3f6dd664b3..662c2af68a14 100644
 -
 +    make E9TOOL_OPTIONS=
 diff --git a/test/regtest/init_dso.cmd b/test/regtest/init_dso.cmd
-index 94f6855c5d60..db31c55672fe 100644
+old mode 100644
+new mode 100755
+index 94f6855c5d60..76ce3fd12f3c
 --- a/test/regtest/init_dso.cmd
 +++ b/test/regtest/init_dso.cmd
-@@ -1 +1 @@
+@@ -1 +1,2 @@
 -LD_PRELOAD=$PWD/init_dso.exe ./test.pie
++#!/bin/sh
 +LD_PRELOAD=./init_dso.exe ./test.pie
 diff --git a/test/regtest/init_dso_2.cmd b/test/regtest/init_dso_2.cmd
-index d2d56823ff80..d6d59f7b3cfd 100644
+old mode 100644
+new mode 100755
+index d2d56823ff80..8dab0986da87
 --- a/test/regtest/init_dso_2.cmd
 +++ b/test/regtest/init_dso_2.cmd
-@@ -1 +1 @@
+@@ -1 +1,2 @@
 -LD_PRELOAD=$PWD/init_dso.exe ./test.pie a b c 1 2 3
++#!/bin/sh
 +LD_PRELOAD=./init_dso.exe ./test.pie a b c 1 2 3
 diff --git a/test/regtest/regtest b/test/regtest/regtest
 new file mode 100755
-index 000000000000..07d9577b3da4
+index 000000000000..f1d7e67c218f
 --- /dev/null
 +++ b/test/regtest/regtest
 @@ -0,0 +1,32 @@
@@ -162,7 +173,7 @@ index 000000000000..07d9577b3da4
 +  exp=$tst.exp
 +
 +  if test -f $cmd
-+  then env $(cat $cmd) 1>$out 2>&1
++  then ./$cmd 1>$out 2>&1
 +  else ./$exe 1>$out 2>&1
 +  fi 2>/dev/null
 +  case $? in
@@ -459,3 +470,14 @@ index e86e0af03228..000000000000
 -    return 0;
 -}
 -
+diff --git a/test/regtest/stat.cmd b/test/regtest/stat.cmd
+new file mode 100755
+index 000000000000..badd04fe970b
+--- /dev/null
++++ b/test/regtest/stat.cmd
+@@ -0,0 +1,5 @@
++#!/bin/sh
++trap 'rm -f FILE.txt' EXIT HUP INT TERM
++echo XXX > FILE.txt
++chmod 0640 FILE.txt
++./stat.exe

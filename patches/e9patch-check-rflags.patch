@@ -5,10 +5,16 @@ Date:   2024-12-05 16:00:06 +0900
     Disable flaky tests involving rflags
 
 diff --git a/test/regtest/Makefile b/test/regtest/Makefile
-index 9b29e0f72408..05f9ce0a6591 100644
+index 34bc81bb1da8..cf3618ea4bed 100644
 --- a/test/regtest/Makefile
 +++ b/test/regtest/Makefile
-@@ -7,8 +7,14 @@ BASE ::= test test.pie bugs test.libc libtest.so test_c test_c.debug example.so
+@@ -1,4 +1,4 @@
+-.PHONY: check clean-check
++.PHONY: check check-flaky clean-check
+ 
+ E9TOOL ?= ../../e9tool
+ E9COMPILE ?= ../../e9compile.sh
+@@ -12,8 +12,14 @@ BASE ::= test test.pie bugs test.libc libtest.so test_c test_c.debug example.so
  TRAMPOLINE ::= inst patch dl init fini
  IN ::= $(wildcard *.in)
  EXE ::= $(IN:.in=.exe)
@@ -24,9 +30,3 @@ index 9b29e0f72408..05f9ce0a6591 100644
  	./$^
  
  %.exe: in=$(shell head -1 $<)
-@@ -68,4 +74,4 @@ example.so:
- clean-check:
- 	rm -f $(BASE) $(TRAMPOLINE) $(EXE)
- 
--.PHONY: check clean-check
-+.PHONY: check check-flaky clean-check

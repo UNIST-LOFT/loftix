@@ -30,7 +30,7 @@
   #:use-module (guix packages))
 
 (define-public e9patch
-  (let ((commit "a6d900b997942b124c2cdc9e164500052bbaec17")
+  (let ((commit "e888f387a1f4650970607d20a1fae5f41940a2c8")
         (revision "0"))
     (package
       (name "e9patch")
@@ -42,7 +42,7 @@
                      (commit commit)))
                 (sha256
                  (base32
-                  "03gaf8scsmmfaxsmi5826ixnc5r7j6xaj0bq2fif633s82r7f7cg"))
+                  "0071m238xxdqrc2apq19k0kk7ibzd30b814ih7y26ykqbs2xgqp2"))
                 (file-name (git-file-name name version))
                 (patches (search-patches
                            ;; https://github.com/GJDuck/e9patch/pull/94
@@ -51,8 +51,6 @@
                            "patches/e9patch-check.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/95
                            "patches/e9patch-check-intel-format.patch"
-                           ;; https://github.com/GJDuck/e9patch/pull/88
-                           "patches/e9patch-check-mode.patch"
                            ;; https://github.com/GJDuck/e9patch/pull/93
                            "patches/e9patch-check-mov-imm.patch"
                            ;; https://github.com/GJDuck/e9patch/issues/96
