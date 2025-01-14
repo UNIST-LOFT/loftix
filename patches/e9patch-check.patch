@@ -13,10 +13,10 @@ index 754f5210b004..272e7bb4866f 100644
 @@ -1,4 +1,4 @@
 -.PHONY: all clean install dev release debug sanitize
 +.PHONY: all clean install check dev release debug sanitize check-debug
- .SECONDEXPANSION:
  
  #########################################################################
-@@ -67,6 +67,7 @@ clean:
+ # BUILD COMMON
+@@ -66,6 +66,7 @@ clean:
  	$(MAKE) -C contrib/zydis clean
  	rm -rf $(E9PATCH_OBJS) $(E9TOOL_OBJS) e9patch e9tool \
          src/e9patch/e9loader_*.c e9loader_*.o e9loader_*.bin
@@ -24,7 +24,7 @@ index 754f5210b004..272e7bb4866f 100644
  
  src/e9patch/e9loader_elf.c: src/e9patch/e9loader_elf.cpp
  	$(CXX) -std=c++11 -Wall -fno-stack-protector -Wno-unused-function -fPIC \
-@@ -83,6 +84,9 @@ src/e9patch/e9loader_pe.c: src/e9patch/e9loader_pe.cpp
+@@ -82,6 +83,9 @@ src/e9patch/e9loader_pe.c: src/e9patch/e9loader_pe.cpp
  src/e9patch/e9elf.o: src/e9patch/e9loader_elf.c
  src/e9patch/e9pe.o: src/e9patch/e9loader_pe.c
  
@@ -34,7 +34,7 @@ index 754f5210b004..272e7bb4866f 100644
  install: all
  	install -d "$(DESTDIR)$(PREFIX)/bin"
  	install -m 755 e9patch "$(DESTDIR)$(PREFIX)/bin/e9patch"
-@@ -165,3 +169,6 @@ debug: dev
+@@ -164,3 +168,6 @@ debug: dev
  
  sanitize: CXXFLAGS += -O0 -g -fsanitize=address
  sanitize: dev
@@ -159,10 +159,10 @@ index d2d56823ff80..8dab0986da87
 +LD_PRELOAD=./init_dso.exe ./test.pie a b c 1 2 3
 diff --git a/test/regtest/regtest b/test/regtest/regtest
 new file mode 100755
-index 000000000000..f1d7e67c218f
+index 000000000000..d22009e99b72
 --- /dev/null
 +++ b/test/regtest/regtest
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,25 @@
 +#!/bin/sh
 +fails=()
 +for exe in $*
@@ -173,16 +173,9 @@ index 000000000000..f1d7e67c218f
 +  exp=$tst.exp
 +
 +  if test -f $cmd
-+  then ./$cmd 1>$out 2>&1
-+  else ./$exe 1>$out 2>&1
-+  fi 2>/dev/null
-+  case $? in
-+    "132") echo Illegal instruction;;
-+    "133") echo Trace/breakpoint trap;;
-+    "134") echo Aborted;;
-+    "138") echo User defined signal 1;;
-+    "139") echo Segmentation fault;;
-+  esac >>$out
++  then ./exec.sh ./$cmd 1>$out 2>&1
++  else ./exec.sh ./$exe 1>$out 2>&1
++  fi
 +
 +  diff -u $out $exp
 +  if test $? -ne 0
@@ -200,7 +193,7 @@ deleted file mode 100644
 index e86e0af03228..000000000000
 --- a/test/regtest/regtest.cpp
 +++ /dev/null
-@@ -1,269 +0,0 @@
+@@ -1,270 +0,0 @@
 -/*
 - * Copyright (C) 2022 National University of Singapore
 - *
@@ -315,6 +308,7 @@ index e86e0af03228..000000000000
 -    // Step (2): execute the EXE
 -    FILE *CMD = fopen(cmd.c_str(), "r");
 -    command.clear();
+-    command += "./exec.sh ";
 -    if (CMD != NULL)
 -    {
 -        for (int i = 0; (c = getc(CMD)) != '\n' && isprint(c) && i < 1024; i++)

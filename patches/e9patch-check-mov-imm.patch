@@ -50,7 +50,8 @@ References: https://github.com/zyantific/zydis/discussions/538
  test/regtest/types.exp            | 2 +-
  test/regtest/zero_flags.exp       | 2 +-
  test/regtest/zero_flags_2.exp     | 2 +-
- 42 files changed, 42 insertions(+), 43 deletions(-)
+ test/regtest/zero_rflags.exp      | 2 +-
+ 43 files changed, 43 insertions(+), 44 deletions(-)
 
 diff --git a/test/regtest/after.exp b/test/regtest/after.exp
 index 9c64090..5b3b067 100644
@@ -564,6 +565,19 @@ diff --git a/test/regtest/zero_flags_2.exp b/test/regtest/zero_flags_2.exp
 index 6ea2c37..ac678cc 100644
 --- a/test/regtest/zero_flags_2.exp
 +++ b/test/regtest/zero_flags_2.exp
+@@ -2,7 +2,7 @@ jnz 0xa0002ae	# ZERO FLAGS -Z-P-
+ push %r15	# ZERO FLAGS -----
+ js 0xa000106	# ZERO FLAGS -----
+ movq 0x5e(%rip), %rax	# ZERO FLAGS -----
+-mov $0x8877665544332211, %rbx	# ZERO FLAGS -----
++mov $-0x778899aabbccddef, %rbx	# ZERO FLAGS -----
+ cmp %rax, %rbx	# ZERO FLAGS -Z-P-
+ jz 0xa000122	# ZERO FLAGS -----
+ Illegal instruction
+diff --git a/test/regtest/zero_rflags.exp b/test/regtest/zero_rflags.exp
+index 6ea2c37..ac678cc 100644
+--- a/test/regtest/zero_rflags.exp
++++ b/test/regtest/zero_rflags.exp
 @@ -2,7 +2,7 @@ jnz 0xa0002ae	# ZERO FLAGS -Z-P-
  push %r15	# ZERO FLAGS -----
  js 0xa000106	# ZERO FLAGS -----
