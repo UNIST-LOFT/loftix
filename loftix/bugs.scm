@@ -49,3 +49,18 @@
                 "0dm3k0wdny3s37zxm9s9riv46p69c14bnn532fv6cv5b6l1b0pwb"))))
     (build-system gnu-build-system)
     (inputs '(ijg-libjpeg))))
+
+(define-public libjpeg-turbo-1.5.2
+  (package
+    (inherit libjpeg-turbo)
+    (name "libjpeg-turbo")
+    (version "1.5.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/" name "/" version "/"
+                                  name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))))
+    (build-system gnu-build-system)
+    (arguments '(#:test-target "test"))))

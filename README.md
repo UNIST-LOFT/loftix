@@ -43,6 +43,17 @@ Then run `guix pull`.
 
     guix shell jasper@1.900.19 -- imginfo -f bugs/cve-2016-9557/reproducer
 
+#### CVE-2017-15232
+
+[NULL pointer dereference in quantize_ord_dither function][mozjpeg-268]
+
+    guix shell libjpeg-turbo@1.5.2 --\
+      djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
+        -targa -grayscale -outfile o bugs/cve-2017-15232/1.jpg
+    guix shell libjpeg-turbo@1.5.2 --\
+      djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
+        -targa -grayscale -outfile o bugs/cve-2017-15232/2.jpg
+
 #### CVE-2017-14745
 
 [Integer overflow in elf64-x86-64.c, binutils 2.29.1][sourceware-22148]
@@ -61,6 +72,7 @@ Then run `guix pull`.
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
+[jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
+[mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
-[jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
