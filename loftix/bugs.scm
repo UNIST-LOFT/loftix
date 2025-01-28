@@ -18,6 +18,9 @@
 
 (define-module (loftix bugs)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages image)
+  #:use-module (guix build-system gnu)
+  #:use-module (guix download)
   #:use-module (guix packages))
 
 (define-public binutils-2.29
@@ -31,3 +34,18 @@
               (sha256
                (base32 "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
               (patches '())))))
+
+(define-public jasper-1.900.19
+  (package
+    (inherit jasper)
+    (name "jasper")
+    (version "1.900.19")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://www.ece.uvic.ca/~frodo/jasper"
+                                  "/software/jasper-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0dm3k0wdny3s37zxm9s9riv46p69c14bnn532fv6cv5b6l1b0pwb"))))
+    (build-system gnu-build-system)
+    (inputs '(ijg-libjpeg))))

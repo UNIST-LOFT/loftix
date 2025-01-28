@@ -35,9 +35,32 @@ Then run `guix pull`.
 
 - [python-pacfix]: PAC-learning-based program systhesizer
 
+### Bugs
+
+#### CVE-2016-9557
+
+[Signed integer overflow in jas_image.c][jasper-d42b238]
+
+    guix shell jasper@1.900.19 -- imginfo -f bugs/cve-2016-9557/reproducer
+
+#### CVE-2017-14745
+
+[Integer overflow in elf64-x86-64.c, binutils 2.29.1][sourceware-22148]
+
+    guix shell binutils@2.29 -- objdump -d bugs/cve-2017-14745/crash_1
+
+#### CVE-2017-15025
+
+[Divide-by-zero in decode_line_info (dwarf2.c)][sourceware-22186]
+
+    guix shell binutils@2.29 -- nm -l bugs/cve-2017-15025/3899.crashes.bin
+
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
 [AFLRun]: https://trong.loang.net/~cnx/afl++/log?h=run
 [AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
+[sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
+[sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
+[jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
