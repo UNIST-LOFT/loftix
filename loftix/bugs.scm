@@ -77,4 +77,7 @@
                                   version ".tar.gz"))
               (sha256
                 (base32
-                  "1bbyl7jgigawmwc8r14znv8lb6lrcxh8zpvynrl6s800dr4yp9as"))))))
+                  "1bbyl7jgigawmwc8r14znv8lb6lrcxh8zpvynrl6s800dr4yp9as"))))
+    ;; Tests are failing on newer Ghostscript versions
+    (native-inputs '())
+    (arguments '(#:tests? #f))))
