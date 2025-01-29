@@ -20,6 +20,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages xml)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
   #:use-module (guix packages))
@@ -65,6 +66,28 @@
                 "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))))
     (build-system gnu-build-system)
     (arguments '(#:test-target "test"))))
+
+(define-public libxml2-2.9.4
+  (package
+    (inherit libxml2)
+    (name "libxml2")
+    (version "2.9.4")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0g336cr0bw6dax1q48bblphmchgihx9p1pjmxdnrd6sh3qci3fgz"))))
+    ;; $XML_CATALOG_FILES lists 'catalog.xml' files found in under the 'xml'
+    ;; sub-directory of any given package.
+    (native-search-paths (list (search-path-specification
+                                (variable "XML_CATALOG_FILES")
+                                (separator " ")
+                                (files '("xml"))
+                                (file-pattern "^catalog\\.xml$")
+                                (file-type 'regular))))
+    (search-paths native-search-paths)))
 
 (define-public potrace-1.11
   (package

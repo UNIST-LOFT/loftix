@@ -51,6 +51,13 @@ Then run `guix pull`.
 
     guix shell jasper@1.900.19 -- imginfo -f bugs/cve-2016-9557/reproducer
 
+### CVE-2017-5969
+
+[libxml2: null pointer derefence][oss-sec-20161105-3]
+
+    guix shell libxml2@2.9.4 --\
+      xmllint --recover bugs/cve-2017-5969/reproducer.xml
+
 ### CVE-2017-14745
 
 [binutils: integer overflow][sourceware-22148]
@@ -82,6 +89,7 @@ Then run `guix pull`.
 [python-pacfix]: https://github.com/hsh814/pacfix-python
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
 [jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
+[oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
