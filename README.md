@@ -37,27 +37,35 @@ Then run `guix pull`.
 
 ## Bugs
 
+### CVE-2013-7437
+
+[potrace: possible heap overflow][redhat-955808]
+
+    guix shell potrace@1.11 -- potrace bugs/cve-2013-7437/1.bmp
+    guix shell potrace@1.11 -- potrace bugs/cve-2013-7437/2.bmp
+    guix shell potrace@1.11 -- potrace bugs/cve-2013-7437/3.bmp
+
 ### CVE-2016-9557
 
-[Signed integer overflow in jas_image.c][jasper-d42b238]
+[JasPer: signed integer overflow][jasper-d42b238]
 
     guix shell jasper@1.900.19 -- imginfo -f bugs/cve-2016-9557/reproducer
 
 ### CVE-2017-14745
 
-[Integer overflow in elf64-x86-64.c, binutils 2.29.1][sourceware-22148]
+[binutils: integer overflow][sourceware-22148]
 
     guix shell binutils@2.29 -- objdump -d bugs/cve-2017-14745/crash_1
 
 ### CVE-2017-15025
 
-[Divide-by-zero in decode_line_info (dwarf2.c)][sourceware-22186]
+[binutils: divide-by-zero][sourceware-22186]
 
     guix shell binutils@2.29 -- nm -l bugs/cve-2017-15025/3899.crashes.bin
 
 ### CVE-2017-15232
 
-[NULL pointer dereference in quantize_ord_dither function][mozjpeg-268]
+[libjpeg-turbo: NULL pointer dereference][mozjpeg-268]
 
     guix shell libjpeg-turbo@1.5.2 --\
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
@@ -72,6 +80,7 @@ Then run `guix pull`.
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
+[redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
 [jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186

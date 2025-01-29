@@ -18,6 +18,7 @@
 
 (define-module (loftix bugs)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
@@ -64,3 +65,16 @@
                 "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))))
     (build-system gnu-build-system)
     (arguments '(#:test-target "test"))))
+
+(define-public potrace-1.11
+  (package
+    (inherit potrace)
+    (name "potrace")
+    (version "1.11")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/potrace/potrace-"
+                                  version ".tar.gz"))
+              (sha256
+                (base32
+                  "1bbyl7jgigawmwc8r14znv8lb6lrcxh8zpvynrl6s800dr4yp9as"))))))
