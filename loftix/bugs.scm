@@ -48,7 +48,7 @@
                (base32
                 "0dm3k0wdny3s37zxm9s9riv46p69c14bnn532fv6cv5b6l1b0pwb"))))
     (build-system gnu-build-system)
-    (inputs '(ijg-libjpeg))))
+    (inputs (list ijg-libjpeg))))
 
 (define-public libjpeg-turbo-1.5.2
   (package
