@@ -35,15 +35,15 @@ Then run `guix pull`.
 
 - [python-pacfix]: PAC-learning-based program systhesizer
 
-### Bugs
+## Bugs
 
-#### CVE-2016-9557
+### CVE-2016-9557
 
 [Signed integer overflow in jas_image.c][jasper-d42b238]
 
     guix shell jasper@1.900.19 -- imginfo -f bugs/cve-2016-9557/reproducer
 
-#### CVE-2017-15232
+### CVE-2017-15232
 
 [NULL pointer dereference in quantize_ord_dither function][mozjpeg-268]
 
@@ -54,13 +54,13 @@ Then run `guix pull`.
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
         -targa -grayscale -outfile o bugs/cve-2017-15232/2.jpg
 
-#### CVE-2017-14745
+### CVE-2017-14745
 
 [Integer overflow in elf64-x86-64.c, binutils 2.29.1][sourceware-22148]
 
     guix shell binutils@2.29 -- objdump -d bugs/cve-2017-14745/crash_1
 
-#### CVE-2017-15025
+### CVE-2017-15025
 
 [Divide-by-zero in decode_line_info (dwarf2.c)][sourceware-22186]
 
