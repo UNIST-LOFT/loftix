@@ -33,7 +33,8 @@ Then run `guix pull`.
 
 ### Synthesis
 
-- [python-pacfix]: PAC-learning-based program systhesizer
+- [python-pacfix]: PAC-learning-based program synthesizer
+- [taosc]: Makeshift binary patch generator
 
 ## Bugs
 
@@ -87,6 +88,7 @@ Then run `guix pull`.
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
+[taosc]: https://trong.loang.net/~cnx/taosc/about
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
 [jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
