@@ -1,0 +1,49 @@
+version = 1
+
+[[annotations]]
+path = '.guix-*'
+SPDX-FileCopyrightText = 'None'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2013/7437/1.bmp'
+SPDX-FileCopyrightText = '2013 Murray McAllister'
+
+[[annotations]]
+path = 'bugs/cve/2013/7437/2.bmp'
+SPDX-FileCopyrightText = '2013 Stefan Cornelius'
+
+[[annotations]]
+path = 'bugs/cve/2016/9557/signed-int-overflow.jp2'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+
+[[annotations]]
+path = 'bugs/cve/2017/5969/crash-libxml2-recover.xml'
+SPDX-FileCopyrightText = '2016 Gustavo Grieco'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2017/14745/crash_1'
+SPDX-FileCopyrightText = '2017 Junchao Luan'
+
+[[annotations]]
+path = 'bugs/cve/2017/15025/3899.crashes.bin'
+SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+
+[[annotations]]
+path = 'bugs/cve/2017/15025/floatexception.elf'
+SPDX-FileCopyrightText = '2017 Junchao Luan'
+
+[[annotations]]
+path = 'bugs/cve/2017/15232/*.jpg'
+SPDX-FileCopyrightText = '2017 Zhao Liang'
+
+[[annotations]]
+path = 'patches/*.patch'
+SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
+SPDX-License-Identifier = 'GPL-3.0-or-later'
+
+[[annotations]]
+path = 'README.md'
+SPDX-FileCopyrightText = 'None'
+SPDX-License-Identifier = 'CC0-1.0'

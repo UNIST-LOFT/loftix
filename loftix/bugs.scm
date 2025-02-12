@@ -1,20 +1,14 @@
 ;;; Packages with bugs
-;;; Copyright © 2024 Nguyễn Gia Phong
 ;;;
-;;; This file is part of Loftix.
-;;;
-;;; Loftix is free software; you can redistribute it and/or modify it
-;;; under the terms of the GNU General Public License as published by
-;;; the Free Software Foundation; either version 3 of the License, or (at
-;;; your option) any later version.
-;;;
-;;; Loftix is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU General Public License
-;;; along with Loftix.  If not, see <http://www.gnu.org/licenses/>.
+;;; SPDX-FileCopyrightText: 2012, 2014-2015 Ludovic Courtès
+;;; SPDX-FileCopyrightText: 2013 Andreas Enge
+;;; SPDX-FileCopyrightText: 2014 Eric Bavier
+;;; SPDX-FileCopyrightText: 2015 David Thompson
+;;; SPDX-FileCopyrightText: 2016 Efraim Flashner
+;;; SPDX-FileCopyrightText: 2016 Tobias Geerinckx-Rice
+;;; SPDX-FileCopyrightText: 2017, 2019 Marius Bakke
+;;; SPDX-FileCopyrightText: 2024-2025 Nguyễn Gia Phong
+;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix bugs)
   #:use-module (gnu packages base)
@@ -59,8 +53,8 @@
     (version "1.5.2")
     (source (origin
               (method url-fetch)
-              (uri (string-append "mirror://sourceforge/" name "/" version "/"
-                                  name "-" version ".tar.gz"))
+              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
+                                  version "/libjpeg-turbo-" version ".tar.gz"))
               (sha256
                (base32
                 "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))))
