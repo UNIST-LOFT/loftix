@@ -59,7 +59,8 @@
                (base32
                 "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))))
     (build-system gnu-build-system)
-    (arguments '(#:test-target "test"))))
+    (arguments '(#:make-flags '("LDFLAGS=-static")
+                 #:test-target "test"))))
 
 (define-public libxml2-2.9.4
   (package
