@@ -19,7 +19,7 @@
   #:use-module (guix download)
   #:use-module (guix packages))
 
-(define-public binutils-2.29
+(define-public binutils-2.29-asan
   (package
     (inherit binutils-2.33)
     (version "2.29")
@@ -29,7 +29,13 @@
                                   version ".tar.bz2"))
               (sha256
                (base32 "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
-              (patches '())))))
+              (patches '())))
+    (arguments '(#:phases (modify-phases %standard-phases
+                            (add-before 'build 'set-env
+                              (lambda _
+                                (setenv "ASAN_OPTIONS" "detect_leaks=0"))))
+                 #:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
+                                "LDFLAGS=-fsanitize=address")))))
 
 (define-public jasper-1.900.19
   (package

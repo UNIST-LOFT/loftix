@@ -27,6 +27,10 @@ path = 'bugs/cve/2017/14745/crash_1'
 SPDX-FileCopyrightText = '2017 Junchao Luan'
 
 [[annotations]]
+path = 'bugs/cve/2017/15020/reproducer'
+SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+
+[[annotations]]
 path = 'bugs/cve/2017/15025/3899.crashes.bin'
 SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
 

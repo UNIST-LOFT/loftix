@@ -67,6 +67,13 @@ Then run `guix pull`.
     guix shell binutils@2.29
     objdump -d bugs/cve/2017/14745/crash_1
 
+### CVE-2017-15020
+
+[binutils: heap buffer overflow][sourceware-22202]
+
+    guix shell binutils@2.29
+    nm -l bugs/cve/2017/15020/reproducer
+
 ### CVE-2017-15025
 
 [binutils: divide-by-zero][sourceware-22186]
@@ -97,5 +104,6 @@ Then run `guix pull`.
 [jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
+[sourceware-22202]: https://sourceware.org/bugzilla/show_bug.cgi?id=22202
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
