@@ -60,6 +60,13 @@ Then run `guix pull`.
     guix shell libxml2@2.9.4
     xmllint --recover bugs/cve/2017/5969/crash-libxml2-recover.xml
 
+### CVE-2017-6965
+
+[binutils: heap buffer overflow][sourceware-21137]
+
+    guix shell binutils@2.27
+    readelf -w bugs/cve/2017/6965/bug_3
+
 ### CVE-2017-14745
 
 [binutils: integer overflow][sourceware-22148]
@@ -103,6 +110,7 @@ Then run `guix pull`.
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
 [jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
+[sourceware-21137]: https://sourceware.org/bugzilla/show_bug.cgi?id=21137
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22202]: https://sourceware.org/bugzilla/show_bug.cgi?id=22202
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186

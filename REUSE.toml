@@ -23,6 +23,11 @@ SPDX-FileCopyrightText = '2016 Gustavo Grieco'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2017/6965/bug_3'
+SPDX-FileCopyrightText = '2017 Phạm Văn Thuận'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/cve/2017/14745/crash_1'
 SPDX-FileCopyrightText = '2017 Junchao Luan'
 

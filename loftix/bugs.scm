@@ -37,6 +37,18 @@
                  #:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
                                 "LDFLAGS=-fsanitize=address")))))
 
+(define-public binutils-2.27-asan
+  (package
+    (inherit binutils-2.29-asan)
+    (version "2.27")
+    (source (origin
+              (inherit (package-source binutils))
+              (uri (string-append "mirror://gnu/binutils/binutils-"
+                                  version ".tar.bz2"))
+              (sha256
+               (base32 "125clslv17xh1sab74343fg6v31msavpmaa1c1394zsqa773g5rn"))
+              (patches '())))))
+
 (define-public jasper-1.900.19
   (package
     (inherit jasper)
