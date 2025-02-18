@@ -48,6 +48,11 @@ path = 'bugs/cve/2017/15232/*.jpg'
 SPDX-FileCopyrightText = '2017 Zhao Liang'
 
 [[annotations]]
+path = 'bugs/cve/2019/9077/hbo2'
+SPDX-FileCopyrightText = '2019 陈鹏'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'patches/*.patch'
 SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'

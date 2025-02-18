@@ -100,6 +100,13 @@ Then run `guix pull`.
     djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
       -targa -grayscale -outfile o bugs/cve/2017/15232/2.jpg
 
+### CVE-2019-9077
+
+[binutils: heap buffer overflow][sourceware-24243]
+
+    guix shell binutils@2.32
+    readelf -a bugs/cve/2019/9077/hbo2
+
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
 [AFLRun]: https://trong.loang.net/~cnx/afl++/log?h=run
 [AFL++]: https://github.com/AFLplusplus/AFLplusplus
@@ -114,4 +121,5 @@ Then run `guix pull`.
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22202]: https://sourceware.org/bugzilla/show_bug.cgi?id=22202
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
+[sourceware-24243]: https://sourceware.org/bugzilla/show_bug.cgi?id=24243
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268

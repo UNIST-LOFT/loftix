@@ -19,16 +19,16 @@
   #:use-module (guix download)
   #:use-module (guix packages))
 
-(define-public binutils-2.29-asan
+(define-public binutils-2.32-asan
   (package
     (inherit binutils-2.33)
-    (version "2.29")
+    (version "2.32")
     (source (origin
               (inherit (package-source binutils))
               (uri (string-append "mirror://gnu/binutils/binutils-"
                                   version ".tar.bz2"))
               (sha256
-               (base32 "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
+               (base32 "0b8767nyal1bc4cyzg5h9iis8kpkln1i3wkamig75cifj1fb2f6y"))
               (patches '())))
     (arguments '(#:phases (modify-phases %standard-phases
                             (add-before 'build 'set-env
@@ -36,6 +36,18 @@
                                 (setenv "ASAN_OPTIONS" "detect_leaks=0"))))
                  #:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
                                 "LDFLAGS=-fsanitize=address")))))
+
+(define-public binutils-2.29-asan
+  (package
+    (inherit binutils-2.32-asan)
+    (version "2.29")
+    (source (origin
+              (inherit (package-source binutils))
+              (uri (string-append "mirror://gnu/binutils/binutils-"
+                                  version ".tar.bz2"))
+              (sha256
+               (base32 "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
+              (patches '())))))
 
 (define-public binutils-2.27-asan
   (package
