@@ -58,6 +58,6 @@ SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
 [[annotations]]
-path = 'README.md'
+path = '**/README.md'
 SPDX-FileCopyrightText = 'None'
 SPDX-License-Identifier = 'CC0-1.0'
