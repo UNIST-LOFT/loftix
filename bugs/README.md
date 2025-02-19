@@ -41,6 +41,13 @@
       guix shell jasper@1.900.19
       imginfo -f cve/2016/9557/signed-int-overflow.jp2
 
+## libarchive
+
+- CVE-2016-5844: [signed integer overflow][libarchive-717]
+
+      guix shell libarchive@3.2.0
+      bsdtar -tf cve/2016/5844/libarchive-signed-int-overflow.iso
+
 ## libjpeg-turbo
 
 - CVE-2017-15232: [null pointer dereference][mozjpeg-268]
@@ -68,6 +75,7 @@
 
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
+[libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808

@@ -14,6 +14,11 @@ path = 'bugs/cve/2013/7437/2.bmp'
 SPDX-FileCopyrightText = '2013 Stefan Cornelius'
 
 [[annotations]]
+path = 'bugs/cve/2016/5844/libarchive-signed-int-overflow.iso'
+SPDX-FileCopyrightText = '2016 Hanno Böck'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/cve/2016/8691/11.crash'
 SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
 SPDX-License-Identifier = 'CC0-1.0'

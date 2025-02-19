@@ -11,6 +11,7 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix bugs)
+  #:use-module (gnu packages backup)
   #:use-module (gnu packages base)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
@@ -89,6 +90,26 @@
                (base32
                 "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn"))))
     (arguments '(#:make-flags '("LDFLAGS=-static")))))
+
+(define-public libarchive-3.2.0
+  (package
+    (inherit libarchive)
+    (name "libarchive")
+    (version "3.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://libarchive.org/downloads/libarchive-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32 "11xabdpmvdmcdkidigmqh4ymhra95lr7ipcys4hdq0gzf7ylbkkv"))
+              (patches '())))
+    (arguments '(#:make-flags
+                 (list (string-append "CFLAGS=-O2 -g"
+                                      " -fsanitize=undefined"
+                                      " -fno-sanitize-recover=undefined")
+                       "LDFLAGS=-fsanitize=undefined")
+                 ;; Tests fail with UBSan enabled^
+                 #:tests? #f))))
 
 (define-public libjpeg-turbo-1.5.2
   (package
