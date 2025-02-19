@@ -63,6 +63,7 @@
               (patches '())))))
 
 (define-public jasper-1.900.19
+  ;; FIXME: UBSan somehow breaks build phase.
   (package
     (inherit jasper)
     (name "jasper")
@@ -91,7 +92,7 @@
                 "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn"))))
     (arguments '(#:make-flags '("LDFLAGS=-static")))))
 
-(define-public libarchive-3.2.0
+(define-public libarchive-3.2.0-ubsan
   (package
     (inherit libarchive)
     (name "libarchive")
