@@ -31,6 +31,11 @@
 
 ## JasPer
 
+- CVE-2016-8691: [divide-by-zero][jasper-22]
+
+      guix shell jasper@1.900.3
+      imginfo -f cve/2016/8691/11.crash
+
 - CVE-2016-9557: [signed integer overflow][jasper-67]
 
       guix shell jasper@1.900.19
@@ -61,6 +66,7 @@
       potrace cve/2013/7437/1.bmp
       potrace cve/2013/7437/2.bmp
 
+[jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
