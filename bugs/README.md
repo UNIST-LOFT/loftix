@@ -54,9 +54,18 @@
 
       guix shell libjpeg-turbo@1.5.2
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
-        -targa -grayscale -outfile o cve/2017/15232/1.jpg
+        -targa -grayscale -outfile /dev/null cve/2017/15232/1.jpg
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
-        -targa -grayscale -outfile o cve/2017/15232/2.jpg
+        -targa -grayscale -outfile /dev/null cve/2017/15232/2.jpg
+
+- CVE-2018-14498: [heap buffer overflow][libjpeg-turbo-258]
+
+      guix shell libjpeg-turbo@1.5.3
+      cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:209_1.bmp
+      cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:209_2.bmp
+      cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:210_1.bmp
+      cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:211_1.bmp
+      cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:211_2.bmp
 
 ## libxml2
 
@@ -76,6 +85,7 @@
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
+[libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
