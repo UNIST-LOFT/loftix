@@ -5,36 +5,36 @@
 - CVE-2017-6965: [heap buffer overflow][sourceware-21137]
 
       guix shell binutils@2.27
-      readelf -w bugs/cve/2017/6965/bug_3
+      readelf -w cve/2017/6965/bug_3
 
 - CVE-2017-14745: [integer overflow][sourceware-22148]
 
       guix shell binutils@2.29
-      objdump -d bugs/cve/2017/14745/crash_1
+      objdump -d cve/2017/14745/crash_1
 
 - CVE-2017-15020: [heap buffer overflow][sourceware-22202]
 
       guix shell binutils@2.29
-      nm -l bugs/cve/2017/15020/reproducer
+      nm -l cve/2017/15020/reproducer
 
 - CVE-2017-15025: [divide-by-zero][sourceware-22186]
 
       guix shell binutils@2.29
-      nm -l bugs/cve/2017/15025/3899.crashes.bin
-      nm -l bugs/cve/2017/15025/floatexception.elf
-      objdump -S bugs/cve/2017/15025/floatexception.elf
+      nm -l cve/2017/15025/3899.crashes.bin
+      nm -l cve/2017/15025/floatexception.elf
+      objdump -S cve/2017/15025/floatexception.elf
 
 - CVE-2019-9077: [heap buffer overflow][sourceware-24243]
 
       guix shell binutils@2.32
-      readelf -a bugs/cve/2019/9077/hbo2
+      readelf -a cve/2019/9077/hbo2
 
 ## JasPer
 
-- CVE-2016-9557: [signed integer overflow][jasper-d42b238]
+- CVE-2016-9557: [signed integer overflow][jasper-67]
 
       guix shell jasper@1.900.19
-      imginfo -f bugs/cve/2016/9557/signed-int-overflow.jp2
+      imginfo -f cve/2016/9557/signed-int-overflow.jp2
 
 ## libjpeg-turbo
 
@@ -42,26 +42,26 @@
 
       guix shell libjpeg-turbo@1.5.2
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
-        -targa -grayscale -outfile o bugs/cve/2017/15232/1.jpg
+        -targa -grayscale -outfile o cve/2017/15232/1.jpg
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
-        -targa -grayscale -outfile o bugs/cve/2017/15232/2.jpg
+        -targa -grayscale -outfile o cve/2017/15232/2.jpg
 
 ## libxml2
 
 - CVE-2017-5969: [null pointer derefence][oss-sec-20161105-3]
 
       guix shell libxml2@2.9.4
-      xmllint --recover bugs/cve/2017/5969/crash-libxml2-recover.xml
+      xmllint --recover cve/2017/5969/crash-libxml2-recover.xml
 
 ## potrace
 
 - CVE-2013-7437: [possible heap overflow][redhat-955808]
 
       guix shell potrace@1.11
-      potrace bugs/cve/2013/7437/1.bmp
-      potrace bugs/cve/2013/7437/2.bmp
+      potrace cve/2013/7437/1.bmp
+      potrace cve/2013/7437/2.bmp
 
-[jasper-d42b238]: https://blogs.gentoo.org/ago/2016/11/19/jasper-signed-integer-overflow-in-jas_image-c
+[jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808

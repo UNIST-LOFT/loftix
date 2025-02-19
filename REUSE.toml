@@ -16,6 +16,7 @@ SPDX-FileCopyrightText = '2013 Stefan Cornelius'
 [[annotations]]
 path = 'bugs/cve/2016/9557/signed-int-overflow.jp2'
 SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/5969/crash-libxml2-recover.xml'
@@ -34,10 +35,12 @@ SPDX-FileCopyrightText = '2017 Junchao Luan'
 [[annotations]]
 path = 'bugs/cve/2017/15020/reproducer'
 SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/15025/3899.crashes.bin'
 SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/15025/floatexception.elf'
