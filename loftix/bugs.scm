@@ -143,6 +143,25 @@
     (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
                                 "LDFLAGS=-static -fsanitize=address")))))
 
+(define-public libjpeg-turbo-2.0.1-asan
+  (package
+    (inherit libjpeg-turbo)
+    (name "libjpeg-turbo")
+    (version "2.0.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
+                                  version "/libjpeg-turbo-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1zv6z093l3x3jzygvni7b819j7xhn6d63jhcdrckj7fz67n6ry75"))))
+    (arguments '(#:phases (modify-phases %standard-phases
+                            (add-before 'configure 'set-env
+                              (lambda _
+                                (setenv "CFLAGS" "-O2 -g -fsanitize=address")
+                                (setenv "LDFLAGS" "-fsanitize=address"))))
+                 #:configure-flags '("-DCMAKE_INSTALL_LIBDIR:PATH=lib")))))
+
 (define-public libxml2-2.9.4
   (package
     (inherit libxml2)

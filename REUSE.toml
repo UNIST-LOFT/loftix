@@ -65,6 +65,11 @@ path = 'bugs/cve/2018/14498/*.bmp'
 SPDX-FileCopyrightText = '2018 Hongxu Chen'
 
 [[annotations]]
+path = 'bugs/cve/2018/19664/heap-buffer-overflow-2.jpg'
+SPDX-FileCopyrightText = '2018 cool-tomato'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/cve/2019/9077/hbo2'
 SPDX-FileCopyrightText = '2019 陈鹏'
 SPDX-License-Identifier = 'CC0-1.0'

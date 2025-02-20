@@ -67,6 +67,11 @@
       cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:211_1.bmp
       cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:211_2.bmp
 
+- CVE-2018-19664: [heap buffer overflow][libjpeg-turbo-305]
+
+      guix shell libjpeg-turbo@2.0.1
+      djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
+
 ## libxml2
 
 - CVE-2017-5969: [null pointer derefence][oss-sec-20161105-3]
@@ -86,6 +91,7 @@
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
+[libjpeg-turbo-305]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/305
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
