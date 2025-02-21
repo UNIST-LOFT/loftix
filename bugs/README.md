@@ -92,6 +92,7 @@
       potrace cve/2013/7437/1.bmp
       potrace cve/2013/7437/2.bmp
 
+[chromium-40058947]: https://issues.chromium.org/40058947
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
