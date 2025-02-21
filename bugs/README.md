@@ -79,6 +79,16 @@
 
 ## libxml2
 
+- CVE-2016-1838: [heap buffer overflow][chromium-42452154]
+
+      guix shell libxml2@2.9.3
+      xmllint cve/2016/1838/attachment_316158
+
+- CVE-2016-1839: [heap buffer overflow][chromium-42452152]
+
+      guix shell libxml2@2.9.3
+      xmllint --html cve/2016/1839/asan_heap-oob
+
 - CVE-2017-5969: [null pointer derefence][oss-sec-20161105-3]
 
       guix shell libxml2@2.9.4
@@ -92,7 +102,9 @@
       potrace cve/2013/7437/1.bmp
       potrace cve/2013/7437/2.bmp
 
-[chromium-40058947]: https://issues.chromium.org/40058947
+[chromium-40058947]: https://issues.chromium.org/issues/40058947
+[chromium-42452152]: https://project-zero.issues.chromium.org/issues/42452152
+[chromium-42452154]: https://project-zero.issues.chromium.org/issues/42452154
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
