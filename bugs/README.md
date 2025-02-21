@@ -79,6 +79,11 @@
 
 ## libxml2
 
+- CVE-2012-5134: [heap buffer overflow][chromium-40076524]
+
+      guix shell libxml2@2.9.0
+      xmllint cve/2012/5134/bad.xml
+
 - CVE-2016-1838: [heap buffer overflow][chromium-42452154]
 
       guix shell libxml2@2.9.3
@@ -103,6 +108,7 @@
       potrace cve/2013/7437/2.bmp
 
 [chromium-40058947]: https://issues.chromium.org/issues/40058947
+[chromium-40076524]: https://issues.chromium.org/issues/40076524
 [chromium-42452152]: https://project-zero.issues.chromium.org/issues/42452152
 [chromium-42452154]: https://project-zero.issues.chromium.org/issues/42452154
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22

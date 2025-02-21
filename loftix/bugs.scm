@@ -215,6 +215,19 @@
                  ;; Tests fail with ASan enabled^
                  #:tests? #f))))
 
+(define-public libxml2-2.9.0-asan
+  (package
+    (inherit libxml2-2.9.3-asan)
+    (name "libxml2")
+    (version "2.9.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "10ib8bpar2pl68aqksfinvfmqknwnk7i35ibq6yjl8dpb0cxj9dd"))))))
+
 (define-public potrace-1.11
   (package
     (inherit potrace)
