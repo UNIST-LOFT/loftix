@@ -143,6 +143,19 @@
     (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
                                 "LDFLAGS=-static -fsanitize=address")))))
 
+(define-public libjpeg-turbo-1.2.0-asan
+  (package
+    (inherit libjpeg-turbo-1.5.3-asan)
+    (name "libjpeg-turbo")
+    (version "1.2.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
+                                  version "/libjpeg-turbo-" version ".tar.gz"))
+              (sha256
+               (base32
+                "13pra36wn2djw2aq5vvbaf81m9jxdjixvpd8bw71nni9n6lv57b2"))))))
+
 (define-public libjpeg-turbo-2.0.1-asan
   (package
     (inherit libjpeg-turbo)

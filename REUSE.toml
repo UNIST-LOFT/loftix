@@ -6,6 +6,10 @@ SPDX-FileCopyrightText = 'None'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2012/2806/cnode0006-heap-buffer-overflow-796.jpg'
+SPDX-FileCopyrightText = '2012 Chris Evans'
+
+[[annotations]]
 path = 'bugs/cve/2013/7437/1.bmp'
 SPDX-FileCopyrightText = '2013 Murray McAllister'
 

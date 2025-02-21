@@ -50,6 +50,11 @@
 
 ## libjpeg-turbo
 
+- CVE-2012-2806: [heap buffer overflow][chromium-40058947]
+
+      guix shell libjpeg-turbo@1.2.0
+      djpeg cve/2012/2806/cnode0006-heap-buffer-overflow-796.jpg
+
 - CVE-2017-15232: [null pointer dereference][mozjpeg-268]
 
       guix shell libjpeg-turbo@1.5.2
