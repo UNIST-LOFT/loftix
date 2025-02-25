@@ -3,7 +3,7 @@
 ;;; SPDX-FileCopyrightText: 2012, 2014-2015 Ludovic Courtès
 ;;; SPDX-FileCopyrightText: 2013 Andreas Enge
 ;;; SPDX-FileCopyrightText: 2014 Eric Bavier
-;;; SPDX-FileCopyrightText: 2015 David Thompson
+;;; SPDX-FileCopyrightText: 2014-2015 David Thompson
 ;;; SPDX-FileCopyrightText: 2016 Efraim Flashner
 ;;; SPDX-FileCopyrightText: 2016 Tobias Geerinckx-Rice
 ;;; SPDX-FileCopyrightText: 2017, 2019 Marius Bakke
@@ -226,6 +226,27 @@
                                 "LDFLAGS=-static -fsanitize=address")
                  ;; Tests fail with ASan enabled^
                  #:tests? #f))))
+
+(define-public libtiff-4.0.6
+  (package
+    (inherit libtiff)
+    (version "4.0.6")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                     "ftp://ftp.remotesensing.org/pub/libtiff/tiff-" version
+                     ".tar.gz"))
+              (sha256
+               (base32
+                "136nf1rj9dp5jgv1p7z4dk0xy3wki1w0vfjbk82f645m0w4samsd"))))
+    (arguments '(#:make-flags '("LDFLAGS=-static")))
+    (outputs '("out"))))
+
+(define-public libtiff-4.0.6-asan
+  (package
+    (inherit libtiff-4.0.6)
+    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
+                                "LDFLAGS=-static -fsanitize=address")))))
 
 (define-public libtiff-4.0.7
   (package

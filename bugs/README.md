@@ -79,6 +79,31 @@
 
 ## libtiff
 
+- CVE-2016-3186: [buffer overflow][redhat-1319503]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      echo y | gif2tiff cve/2016/3186/crash.gif /dev/null
+
+- CVE-2016-5314: [heap buffer overflow][maptools-2554]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6-asan)'
+      rgb2ycbcr cve/2016/5314/oobw.tiff /dev/null
+
+- CVE-2016-5321: [invalid read][maptools-2558]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      tiffcrop cve/2016/5321/ill-read.tiff /dev/null
+
+- CVE-2016-9273: [heap buffer overflow][maptools-2587]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6-asan)'
+      tiffsplit cve/2016/9273/test049.tiff
+
+- CVE-2016-9532: [heap buffer overflow][maptools-2592]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      tiffcrop cve/2016/9532/heap-buffer-overflow.tiff /dev/null
+
 - CVE-2016-10092: [heap buffer overflow][maptools-2622]
 
       guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
@@ -184,6 +209,10 @@
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
 [libjpeg-turbo-305]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/305
+[maptools-2554]: https://bugzilla.maptools.org/show_bug.cgi?id=2554
+[maptools-2558]: https://bugzilla.maptools.org/show_bug.cgi?id=2558
+[maptools-2587]: https://bugzilla.maptools.org/show_bug.cgi?id=2587
+[maptools-2592]: https://bugzilla.maptools.org/show_bug.cgi?id=2592
 [maptools-2596]: https://bugzilla.maptools.org/show_bug.cgi?id=2596
 [maptools-2598]: https://bugzilla.maptools.org/show_bug.cgi?id=2598
 [maptools-2610]: https://bugzilla.maptools.org/show_bug.cgi?id=2610
@@ -200,6 +229,7 @@
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
+[redhat-1319503]: https://bugzilla.redhat.com/show_bug.cgi?id=1319503
 [sourceware-21137]: https://sourceware.org/bugzilla/show_bug.cgi?id=21137
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186

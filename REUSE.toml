@@ -32,6 +32,10 @@ SPDX-FileCopyrightText = '2015 Mateusz Jurczyk'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2016/3186/crash.gif'
+SPDX-FileCopyrightText = '2016 Aladdin Mubaied'
+
+[[annotations]]
 path = 'bugs/cve/2016/5844/libarchive-signed-int-overflow.iso'
 SPDX-FileCopyrightText = '2016 Hanno Böck'
 SPDX-License-Identifier = 'CC0-1.0'
@@ -39,6 +43,26 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = 'bugs/cve/2016/8691/11.crash'
 SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/5314/oobw.tiff'
+SPDX-FileCopyrightText = '2016 Kaixiang Zhang'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/5321/ill-read.tiff'
+SPDX-FileCopyrightText = '2016 Kaixiang Zhang'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/9273/test049.tiff'
+SPDX-FileCopyrightText = '2016 Brian Carpenter'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/9532/heap-buffer-overflow.tiff'
+SPDX-FileCopyrightText = '2016 Henri Salo'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
