@@ -17,7 +17,7 @@
       guix shell -e '(@@ (loftix bugs) binutils-2.29-asan)'
       nm -l cve/2017/15020/reproducer
 
-- CVE-2017-15025: [divide-by-zero][sourceware-22186]
+- CVE-2017-15025: [division by zero][sourceware-22186]
 
       guix shell -e '(@@ (loftix bugs) binutils-2.29)'
       nm -l cve/2017/15025/3899.crashes.bin
@@ -77,6 +77,74 @@
       guix shell -e '(@@ (loftix bugs) libjpeg-turbo-2.0.1-asan)'
       djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
 
+## libtiff
+
+- CVE-2016-10092: [heap buffer overflow][maptools-2622]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiffcrop -i cve/2016/10092/heapoverflow.tiff /dev/null
+
+- CVE-2016-10093: [heap buffer overflow][maptools-2610]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiffcp -i cve/2016/10093/heapoverflow.tiff /dev/null
+
+- CVE-2016-10094: [heap buffer overflow][maptools-2640]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiff2pdf cve/2016/10094/heapoverflow.tiff -o /dev/null
+
+- CVE-2016-10266: [division by zero][maptools-2596]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7)'
+      tiffcp cve/2016/10266/fpe.tiff /dev/null
+
+- CVE-2016-10267: [division by zero][maptools-2611]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7)'
+      tiffmedian cve/2016/10267/fpe.tiff /dev/null
+
+- CVE-2016-10268: [heap buffer overflow][maptools-2598]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiffcp -i cve/2016/10268/heapoverflow.tiff /dev/null
+
+- CVE-2016-10271: [heap buffer overflow][maptools-2620]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiffcrop -i cve/2016/10271/heapoverflow.tiff /dev/null
+
+- CVE-2016-10272: [heap buffer overflow][maptools-2624]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiffcrop -i cve/2016/10272/heapoverflow.tiff /dev/null
+
+- CVE-2017-5225: [heap buffer overflow][maptools-2656]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiffcp -p separate cve/2017/5225/2656.tiff /dev/null
+      tiffcp -p contig cve/2017/5225/2657.tiff /dev/null
+
+- CVE-2017-7595: [division by zero][maptools-2653]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7)'
+      tiffcp -i cve/2017/7595/fpe.tiff /dev/null
+
+- cve-2017-7599: [float cast overflow][maptools-2646]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-ubsan-float-cast-overflow)'
+      tiffcp -i cve/2017/7599/outside-short.tiff /dev/null
+
+- cve-2017-7600: [float cast overflow][maptools-2647]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-ubsan-float-cast-overflow)'
+      tiffcp -i cve/2017/7600/outside-unsigned-char.tiff /dev/null
+
+- CVE-2017-7601: [signed integer overflow][maptools-2648]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-ubsan)'
+      tiffcp -i cve/2017/7601/shift-long.tiff /dev/null
+
 ## libxml2
 
 - CVE-2012-5134: [heap buffer overflow][chromium-40076524]
@@ -116,6 +184,19 @@
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
 [libjpeg-turbo-305]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/305
+[maptools-2596]: https://bugzilla.maptools.org/show_bug.cgi?id=2596
+[maptools-2598]: https://bugzilla.maptools.org/show_bug.cgi?id=2598
+[maptools-2610]: https://bugzilla.maptools.org/show_bug.cgi?id=2610
+[maptools-2611]: https://bugzilla.maptools.org/show_bug.cgi?id=2611
+[maptools-2620]: https://bugzilla.maptools.org/show_bug.cgi?id=2620
+[maptools-2622]: https://bugzilla.maptools.org/show_bug.cgi?id=2622
+[maptools-2624]: https://bugzilla.maptools.org/show_bug.cgi?id=2624
+[maptools-2640]: https://bugzilla.maptools.org/show_bug.cgi?id=2640
+[maptools-2646]: https://bugzilla.maptools.org/show_bug.cgi?id=2646
+[maptools-2647]: https://bugzilla.maptools.org/show_bug.cgi?id=2647
+[maptools-2648]: https://bugzilla.maptools.org/show_bug.cgi?id=2648
+[maptools-2653]: https://bugzilla.maptools.org/show_bug.cgi?id=2653
+[maptools-2656]: https://bugzilla.maptools.org/show_bug.cgi?id=2656
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808

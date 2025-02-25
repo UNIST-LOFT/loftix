@@ -47,6 +47,56 @@ SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2016/10092/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10093/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10094/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10266/fpe.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10267/fpe.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10268/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10270/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10271/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2016/10272/heapoverflow.tiff'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2017/5225/*.tiff'
+SPDX-FileCopyrightText = '2017 Li Yuekang'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/cve/2017/5969/crash-libxml2-recover.xml'
 SPDX-FileCopyrightText = '2016 Gustavo Grieco'
 SPDX-License-Identifier = 'CC0-1.0'
@@ -54,6 +104,26 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = 'bugs/cve/2017/6965/bug_3'
 SPDX-FileCopyrightText = '2017 Phạm Văn Thuận'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2017/7595/fpe.tiff'
+SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2017/7599/outside-short.tiff'
+SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2017/7600/outside-unsigned-char.tiff'
+SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2017/7601/shift-long.tiff'
+SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]

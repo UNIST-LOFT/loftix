@@ -227,6 +227,45 @@
                  ;; Tests fail with ASan enabled^
                  #:tests? #f))))
 
+(define-public libtiff-4.0.7
+  (package
+    (inherit libtiff)
+    (version "4.0.7")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://download.osgeo.org/libtiff/tiff-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "06ghqhr4db1ssq0acyyz49gr8k41gzw6pqb6mbn5r7jqp77s4hwz"))))
+    (outputs '("out"))))
+
+(define-public libtiff-4.0.7-asan
+  (package
+    (inherit libtiff-4.0.7)
+    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
+                                "LDFLAGS=-static -fsanitize=address")))))
+
+(define-public libtiff-4.0.7-ubsan
+  (package
+    (inherit libtiff-4.0.7)
+    (arguments '(#:make-flags
+                 (list (string-append
+                         "CFLAGS=-O2 -g -fsanitize=undefined"
+                         " -fno-sanitize-recover=undefined")
+                       "LDFLAGS=-static -fsanitize=undefined")
+                 ;; Tests fail with ubsan enabled^
+                 #:tests? #f))))
+
+(define-public libtiff-4.0.7-ubsan-float-cast-overflow
+  (package
+    (inherit libtiff-4.0.7)
+    (arguments '(#:make-flags
+                 (list (string-append
+                         "CFLAGS=-O2 -g -fsanitize=float-cast-overflow"
+                         " -fno-sanitize-recover=float-cast-overflow")
+                       "LDFLAGS=-static -fsanitize=float-cast-overflow")))))
+
 (define-public libxml2-2.9.0-asan
   (package
     (inherit libxml2-2.9.3-asan)
