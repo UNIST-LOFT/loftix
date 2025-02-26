@@ -187,46 +187,6 @@
                                 (setenv "LDFLAGS" "-fsanitize=address"))))
                  #:configure-flags '("-DCMAKE_INSTALL_LIBDIR:PATH=lib")))))
 
-(define-public libxml2-2.9.4
-  (package
-    (inherit libxml2)
-    (name "libxml2")
-    (version "2.9.4")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "0g336cr0bw6dax1q48bblphmchgihx9p1pjmxdnrd6sh3qci3fgz"))))
-    (arguments '(#:make-flags '("LDFLAGS=-static")))
-    ;; $XML_CATALOG_FILES lists 'catalog.xml' files found in under the 'xml'
-    ;; sub-directory of any given package.
-    (native-search-paths (list (search-path-specification
-                                (variable "XML_CATALOG_FILES")
-                                (separator " ")
-                                (files '("xml"))
-                                (file-pattern "^catalog\\.xml$")
-                                (file-type 'regular))))
-    (search-paths native-search-paths)))
-
-(define-public libxml2-2.9.3-asan
-  (package
-    (inherit libxml2-2.9.4)
-    (name "libxml2")
-    (version "2.9.3")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "0bd17g6znn2r98gzpjppsqjg33iraky4px923j3k8kdl8qgy7sad"))))
-    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
-                                "LDFLAGS=-static -fsanitize=address")
-                 ;; Tests fail with ASan enabled^
-                 #:tests? #f))))
-
 (define-public libtiff-4.0.6
   (package
     (inherit libtiff)
@@ -286,6 +246,46 @@
                          "CFLAGS=-O2 -g -fsanitize=float-cast-overflow"
                          " -fno-sanitize-recover=float-cast-overflow")
                        "LDFLAGS=-static -fsanitize=float-cast-overflow")))))
+
+(define-public libxml2-2.9.4
+  (package
+    (inherit libxml2)
+    (name "libxml2")
+    (version "2.9.4")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0g336cr0bw6dax1q48bblphmchgihx9p1pjmxdnrd6sh3qci3fgz"))))
+    (arguments '(#:make-flags '("LDFLAGS=-static")))
+    ;; $XML_CATALOG_FILES lists 'catalog.xml' files found in under the 'xml'
+    ;; sub-directory of any given package.
+    (native-search-paths (list (search-path-specification
+                                (variable "XML_CATALOG_FILES")
+                                (separator " ")
+                                (files '("xml"))
+                                (file-pattern "^catalog\\.xml$")
+                                (file-type 'regular))))
+    (search-paths native-search-paths)))
+
+(define-public libxml2-2.9.3-asan
+  (package
+    (inherit libxml2-2.9.4)
+    (name "libxml2")
+    (version "2.9.3")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0bd17g6znn2r98gzpjppsqjg33iraky4px923j3k8kdl8qgy7sad"))))
+    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
+                                "LDFLAGS=-static -fsanitize=address")
+                 ;; Tests fail with ASan enabled^
+                 #:tests? #f))))
 
 (define-public libxml2-2.9.0-asan
   (package
