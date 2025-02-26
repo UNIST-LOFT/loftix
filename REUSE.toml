@@ -173,6 +173,16 @@ path = 'bugs/cve/2017/15232/*.jpg'
 SPDX-FileCopyrightText = '2017 Zhao Liang'
 
 [[annotations]]
+path = 'bugs/cve/2018/8806/heap-use-after-free.swf'
+SPDX-FileCopyrightText = '2018 ProbeFuzzer'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2018/8964/heap-use-after-free.swf'
+SPDX-FileCopyrightText = '2018 traceprobe'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/cve/2018/14498/*.bmp'
 SPDX-FileCopyrightText = '2018 Hongxu Chen'
 
@@ -195,6 +205,12 @@ SPDX-License-Identifier = 'GPL-3.0-or-later'
 path = 'patches/e9patch-*.patch'
 SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
+
+[[annotations]]
+# https://src.fedoraproject.org/rpms/ming/c/c6f24aedb4f66c5b3167b75bebc55b14fd6b5248
+path = 'patches/libming-parallel-make.patch'
+SPDX-FileCopyrightText = '2016 Dominik Mierzejewski'
+SPDX-License-Identifier = 'MIT'
 
 [[annotations]]
 path = '**/README.md'

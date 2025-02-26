@@ -11,13 +11,21 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix bugs)
+  #:use-module (gnu packages)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages backup)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages bison)
+  #:use-module (gnu packages flex)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages swig)
   #:use-module (gnu packages xml)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
+  #:use-module (guix git-download)
+  #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages))
 
 (define-public binutils-2.32-asan
@@ -186,6 +194,32 @@
                                 (setenv "CFLAGS" "-O2 -g -fsanitize=address")
                                 (setenv "LDFLAGS" "-fsanitize=address"))))
                  #:configure-flags '("-DCMAKE_INSTALL_LIBDIR:PATH=lib")))))
+
+(define-public libming-0.4.8-asan
+  (package
+    (name "libming")
+    (version "0.4.8")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/libming/libming")
+                    (commit "ming-0_4_8")))
+              (sha256
+               (base32 "0bky2spbzrlrwrj6pg8k0mn3zm1jjnyyj2b0whv29j469hpjfn5m"))
+              (file-name (git-file-name name version))
+              (patches (search-patches
+                         "patches/libming-parallel-make.patch"))))
+    (build-system gnu-build-system)
+    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fcommon -fsanitize=address"
+                                "LDFLAGS=-static -fsanitize=address")
+                 #:tests? #f))
+    (native-inputs (list autoconf automake bison flex libtool pkgconf swig))
+    (inputs (list freetype giflib libpng))
+    (synopsis "SWF output library")
+    (description "Ming is a Flash (SWF) output library.
+It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
+    (home-page "https://github.com/libming/libming")
+    (license (list license:lgpl2.1+ license:gpl2+))))
 
 (define-public libtiff-4.0.6
   (package

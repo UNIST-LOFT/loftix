@@ -77,6 +77,18 @@
       guix shell -e '(@@ (loftix bugs) libjpeg-turbo-2.0.1-asan)'
       djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
 
+## libming
+
+- CVE-2018-8806: [use after free][libming-128]
+
+      guix shell -e '(@@ (loftix bugs) libming-0.4.8-asan)'
+      swftophp cve/2018/8806/heap-use-after-free.swf
+
+- CVE-2018-8964: [use after free][libming-130]
+
+      guix shell -e '(@@ (loftix bugs) libming-0.4.8-asan)'
+      swftophp cve/2018/8964/heap-use-after-free.swf
+
 ## libtiff
 
 - CVE-2016-3186: [buffer overflow][redhat-1319503]
@@ -209,6 +221,8 @@
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
 [libjpeg-turbo-305]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/305
+[libming-128]: https://github.com/libming/libming/issues/128
+[libming-130]: https://github.com/libming/libming/issues/130
 [maptools-2554]: https://bugzilla.maptools.org/show_bug.cgi?id=2554
 [maptools-2558]: https://bugzilla.maptools.org/show_bug.cgi?id=2558
 [maptools-2587]: https://bugzilla.maptools.org/show_bug.cgi?id=2587
