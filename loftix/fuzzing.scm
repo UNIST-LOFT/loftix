@@ -17,32 +17,6 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages))
 
-(define-public aflrun
-  (let ((commit "65d51e3b6dd44957c99fa57c1fb9fa4a040451a0")
-        (revision "0"))
-    (package
-      (inherit aflplusplus)
-      (name "aflrun")
-      (version (git-version "2024.12.03" revision commit))
-      (source
-        (origin
-          (method url-fetch)
-          (uri (string-append
-                 "https://trong.loang.net/~cnx/afl++/snapshot/afl++-"
-                 commit ".tar.gz"))
-          (sha256
-            (base32
-              "1q1smpk6l25cipszj917kvw1shfi5zznxsq4dcwlallym1s1gxqy"))
-          (patches (search-patches
-                     "patches/aflrun-keep-all-crashes.patch"
-                     "patches/aflrun-disable-inst-checks.patch"))))
-      (native-inputs (list gcc-14))
-      (synopsis "Multi-target directed AFL++ with path diversity")
-      (description "AFLRun is a fork of AFL++
-for unbiased multiple-target fuxxing with path diversity.")
-      (home-page "https://trong.loang.net/~cnx/afl++/log?h=run")
-      (license license:asl2.0))))
-
 (define-public afl-dyninst
   (package
     (name "afl-dyninst")

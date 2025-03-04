@@ -24,7 +24,6 @@ Then run `guix pull`.
 
 ### Fuzzing
 
-- [AFLRun]: multi-target directed [AFL++] with path diversity
 - [afl-dyninst]: Dyninst integration for AFL++
 
 ### Patching

@@ -187,7 +187,12 @@ SPDX-FileCopyrightText = '2019 陈鹏'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'patches/*.patch'
+path = 'patches/afl++-*.patch'
+SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
+SPDX-License-Identifier = 'GPL-3.0-or-later'
+
+[[annotations]]
+path = 'patches/e9patch-*.patch'
 SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
