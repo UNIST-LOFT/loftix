@@ -79,6 +79,11 @@
 
 ## libming
 
+- CVE-2016-9264: [global buffer overflow][oss-sec-20161110-9]
+
+      guix shell -e '(@@ (loftix bugs) libming-0.4.7-asan)'
+      listmp3 cve/2016/9264/globaloverflow
+
 - CVE-2018-8806: [use after free][libming-128]
 
       guix shell -e '(@@ (loftix bugs) libming-0.4.8-asan)'
@@ -242,6 +247,7 @@
 [maptools-2656]: https://bugzilla.maptools.org/show_bug.cgi?id=2656
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
+[oss-sec-20161110-9]: https://www.openwall.com/lists/oss-security/2016/11/10/9
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
 [redhat-1319503]: https://bugzilla.redhat.com/show_bug.cgi?id=1319503
 [sourceware-21137]: https://sourceware.org/bugzilla/show_bug.cgi?id=21137

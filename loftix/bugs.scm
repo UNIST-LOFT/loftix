@@ -221,6 +221,22 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
     (home-page "https://github.com/libming/libming")
     (license (list license:lgpl2.1+ license:gpl2+))))
 
+(define-public libming-0.4.7-asan
+  (package
+    (inherit libming-0.4.8-asan)
+    (name "libming")
+    (version "0.4.7")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/libming/libming")
+                    (commit "ming-0_4_7")))
+              (sha256
+               (base32 "17ngz1n1mnknixzchywkhbw9s3scad8ajmk97gx14xbsw1603gd2"))
+              (file-name (git-file-name name version))
+              (patches (search-patches
+                         "patches/libming-parallel-make.patch"))))))
+
 (define-public libtiff-4.0.6
   (package
     (inherit libtiff)

@@ -56,6 +56,11 @@ SPDX-FileCopyrightText = '2016 Kaixiang Zhang'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2016/9264/globaloverflow'
+SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/cve/2016/9273/test049.tiff'
 SPDX-FileCopyrightText = '2016 Brian Carpenter'
 SPDX-License-Identifier = 'CC0-1.0'
