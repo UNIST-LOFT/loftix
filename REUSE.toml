@@ -7,214 +7,131 @@ SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2012/2806/cnode0006-heap-buffer-overflow-796.jpg'
-SPDX-FileCopyrightText = '2012 Chris Evans'
+SPDX-FileCopyrightText = 'Chris Evans'
 
 [[annotations]]
 path = 'bugs/cve/2012/5134/bad.xml'
-SPDX-FileCopyrightText = '2012 Jueri Aedla'
+SPDX-FileCopyrightText = 'Jueri Aedla'
 
 [[annotations]]
 path = 'bugs/cve/2013/7437/1.bmp'
-SPDX-FileCopyrightText = '2013 Murray McAllister'
+SPDX-FileCopyrightText = 'Murray McAllister'
 
 [[annotations]]
 path = 'bugs/cve/2013/7437/2.bmp'
-SPDX-FileCopyrightText = '2013 Stefan Cornelius'
+SPDX-FileCopyrightText = 'Stefan Cornelius'
 
 [[annotations]]
-path = 'bugs/cve/2016/1838/attachment_316158'
-SPDX-FileCopyrightText = '2015 Mateusz Jurczyk'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/1839/asan_heap-oob'
-SPDX-FileCopyrightText = '2015 Mateusz Jurczyk'
+path = [ 'bugs/cve/2016/1838/attachment_316158',
+         'bugs/cve/2016/1839/asan_heap-oob' ]
+SPDX-FileCopyrightText = 'Mateusz Jurczyk'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2016/3186/crash.gif'
-SPDX-FileCopyrightText = '2016 Aladdin Mubaied'
+SPDX-FileCopyrightText = 'Aladdin Mubaied'
 
 [[annotations]]
 path = 'bugs/cve/2016/5844/libarchive-signed-int-overflow.iso'
-SPDX-FileCopyrightText = '2016 Hanno Böck'
+SPDX-FileCopyrightText = 'Hanno Böck'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/cve/2016/8691/11.crash'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+path = [ 'bugs/cve/2016/8691/11.crash',
+         'bugs/cve/2016/9264/globaloverflow',
+         'bugs/cve/2016/9557/signed-int-overflow.jp2',
+         'bugs/cve/2016/10092/heapoverflow.tiff',
+         'bugs/cve/2016/10093/heapoverflow.tiff',
+         'bugs/cve/2016/10094/heapoverflow.tiff',
+         'bugs/cve/2016/10266/fpe.tiff',
+         'bugs/cve/2016/10267/fpe.tiff',
+         'bugs/cve/2016/10268/heapoverflow.tiff',
+         'bugs/cve/2016/10270/heapoverflow.tiff',
+         'bugs/cve/2016/10271/heapoverflow.tiff',
+         'bugs/cve/2016/10272/heapoverflow.tiff',
+         'bugs/cve/2017/7595/fpe.tiff',
+         'bugs/cve/2017/7599/outside-short.tiff',
+         'bugs/cve/2017/7600/outside-unsigned-char.tiff',
+         'bugs/cve/2017/7601/shift-long.tiff',
+         'bugs/cve/2017/15020/reproducer',
+         'bugs/cve/2017/15025/3899.crashes.bin' ]
+SPDX-FileCopyrightText = 'Agostino Sarubbo'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/cve/2016/5314/oobw.tiff'
-SPDX-FileCopyrightText = '2016 Kaixiang Zhang'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/5321/ill-read.tiff'
-SPDX-FileCopyrightText = '2016 Kaixiang Zhang'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/9264/globaloverflow'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+path = [ 'bugs/cve/2016/5314/oobw.tiff',
+         'bugs/cve/2016/5321/ill-read.tiff' ]
+SPDX-FileCopyrightText = 'Kaixiang Zhang'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2016/9273/test049.tiff'
-SPDX-FileCopyrightText = '2016 Brian Carpenter'
+SPDX-FileCopyrightText = 'Brian Carpenter'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2016/9532/heap-buffer-overflow.tiff'
-SPDX-FileCopyrightText = '2016 Henri Salo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/9557/signed-int-overflow.jp2'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10092/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10093/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10094/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10266/fpe.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10267/fpe.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10268/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10270/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10271/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2016/10272/heapoverflow.tiff'
-SPDX-FileCopyrightText = '2016 Agostino Sarubbo'
+SPDX-FileCopyrightText = 'Henri Salo'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/5225/*.tiff'
-SPDX-FileCopyrightText = '2017 Li Yuekang'
+SPDX-FileCopyrightText = 'Li Yuekang'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/5969/crash-libxml2-recover.xml'
-SPDX-FileCopyrightText = '2016 Gustavo Grieco'
+SPDX-FileCopyrightText = 'Gustavo Grieco'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/6965/bug_3'
-SPDX-FileCopyrightText = '2017 Phạm Văn Thuận'
+SPDX-FileCopyrightText = 'Phạm Văn Thuận'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/cve/2017/7595/fpe.tiff'
-SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2017/7599/outside-short.tiff'
-SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2017/7600/outside-unsigned-char.tiff'
-SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2017/7601/shift-long.tiff'
-SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2017/14745/crash_1'
-SPDX-FileCopyrightText = '2017 Junchao Luan'
-
-[[annotations]]
-path = 'bugs/cve/2017/15020/reproducer'
-SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2017/15025/3899.crashes.bin'
-SPDX-FileCopyrightText = '2017 Agostino Sarubbo'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
-path = 'bugs/cve/2017/15025/floatexception.elf'
-SPDX-FileCopyrightText = '2017 Junchao Luan'
+path = [ 'bugs/cve/2017/14745/crash_1',
+         'bugs/cve/2017/15025/floatexception.elf' ]
+SPDX-FileCopyrightText = 'Junchao Luan'
 
 [[annotations]]
 path = 'bugs/cve/2017/15232/*.jpg'
-SPDX-FileCopyrightText = '2017 Zhao Liang'
+SPDX-FileCopyrightText = 'Zhao Liang'
 
 [[annotations]]
 path = 'bugs/cve/2018/8806/heap-use-after-free.swf'
-SPDX-FileCopyrightText = '2018 ProbeFuzzer'
+SPDX-FileCopyrightText = 'ProbeFuzzer'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2018/8964/heap-use-after-free.swf'
-SPDX-FileCopyrightText = '2018 traceprobe'
+SPDX-FileCopyrightText = 'traceprobe'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2018/14498/*.bmp'
-SPDX-FileCopyrightText = '2018 Hongxu Chen'
+SPDX-FileCopyrightText = 'Hongxu Chen'
 
 [[annotations]]
 path = 'bugs/cve/2018/19664/heap-buffer-overflow-2.jpg'
-SPDX-FileCopyrightText = '2018 cool-tomato'
+SPDX-FileCopyrightText = 'cool-tomato'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2019/9077/hbo2'
-SPDX-FileCopyrightText = '2019 陈鹏'
+SPDX-FileCopyrightText = '陈鹏'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'patches/afl++-*.patch'
-SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
-SPDX-License-Identifier = 'GPL-3.0-or-later'
-
-[[annotations]]
-path = 'patches/e9patch-*.patch'
-SPDX-FileCopyrightText = '2024 Nguyễn Gia Phong'
+path = [ 'patches/afl++-*.patch',
+         'patches/e9patch-*.patch' ]
+SPDX-FileCopyrightText = 'Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
 [[annotations]]
 # https://src.fedoraproject.org/rpms/ming/c/c6f24aedb4f66c5b3167b75bebc55b14fd6b5248
 path = 'patches/libming-parallel-make.patch'
-SPDX-FileCopyrightText = '2016 Dominik Mierzejewski'
+SPDX-FileCopyrightText = 'Dominik Mierzejewski'
 SPDX-License-Identifier = 'MIT'
 
 [[annotations]]
