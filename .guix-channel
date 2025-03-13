@@ -1,3 +1,4 @@
 (channel
   (version 0)
+  (directory "loftix")
   (url "https://trong.loang.net/~cnx/loftix"))
