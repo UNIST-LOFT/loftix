@@ -15,7 +15,8 @@
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix packages))
+  #:use-module (guix packages)
+  #:use-module (guix utils))
 
 (define-public afl-dyninst
   (package
@@ -45,3 +46,57 @@
     (description "Dyninst integration for AFL++")
     (home-page "https://trong.loang.net/~cnx/afl-dyninst")
     (license (list license:agpl3+ license:asl2.0))))
+
+(define-public evocatio
+  (let ((commit "fc8f6dc5bbdf5f49cf1231e746a7944efa09dcc7")
+        (revision "0"))
+    (package
+      (inherit aflplusplus)
+      (name "evocatio")
+      (version (git-version "3.15a" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/HexHive/Evocatio")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "16kc2xa4dk9lq1sg7sl5489n7r3p8kc6hmfgy0gh7i1n6h269bry"))))
+      (arguments
+        `(#:make-flags
+          (list "-C" "bug-severity-AFLplusplus" "source-only"
+                (string-append "PREFIX=" (assoc-ref %outputs "out"))
+                (string-append "DOC_PATH=$(PREFIX)/share/doc/evocatio")
+                (string-append "CC=" ,(cc-for-target))
+                "CFLAGS=-O2 -g -fcommon"
+                "NO_SPLICING=1")
+          #:modules ((ice-9 string-fun)
+                     ,@%default-gnu-modules)
+          #:phases
+          (modify-phases %standard-phases
+            ;; For GCC plugins.
+            (add-after 'unpack 'patch-gcc-path
+              (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* "bug-severity-AFLplusplus/src/afl-cc.c"
+                  (("alt_cc = \"gcc\";")
+                   (format #f "alt_cc = \"~a\";"
+                           (search-input-file inputs "bin/gcc")))
+                  (("alt_cxx = \"g\\+\\+\";")
+                   (format #f "alt_cxx = \"~a\";"
+                           (search-input-file inputs "bin/g++"))))))
+            (delete 'configure)
+            (add-after 'install 'install-scripts
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let ((bin (string-append (assoc-ref outputs "out") "/bin")))
+                  (for-each
+                    (lambda (script)
+                      (let ((file (string-append
+                                    bin "/evocatio-"
+                                    (string-replace-substring script "_" "-"))))
+                        (copy-file (string-append "scripts/" script ".py")
+                                   file)
+                        (chmod file #o755)))
+                    '("calculate_severity_score" "gen_raw_data_for_cve")))))
+            ;; Tests are run during 'install phase
+            (delete 'check)))))))
