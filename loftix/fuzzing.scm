@@ -99,4 +99,14 @@
                         (chmod file #o755)))
                     '("calculate_severity_score" "gen_raw_data_for_cve")))))
             ;; Tests are run during 'install phase
-            (delete 'check)))))))
+            (delete 'check))))
+      (home-page "https://github.com/HexHive/Evocatio")
+      (description
+        "Evocatio is a bug analyzer built on top of AFL++ and AddressSanitizer.
+It automatically discovers a bug's capabilities: analyzing a crashing test case
+(i.e., an input exposing a bug) to understand the full extent
+of how an attacker can exploit a bug.
+
+Evocatio leverages a capability-guided fuzzer to efficiently uncover
+new bug capabilities (rather than only generating a single crashing test case
+for a given bug, as a traditional greybox fuzzer does)."))))

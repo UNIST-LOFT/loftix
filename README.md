@@ -24,7 +24,8 @@ Then run `guix pull`.
 
 ### Fuzzing
 
-- [afl-dyninst]: Dyninst integration for AFL++
+- [afl-dyninst]: [Dyninst] integration for [AFL++]
+- [evocatio]: Bug analyzer for bug capability discovery
 
 ### Patching
 
@@ -36,9 +37,10 @@ Then run `guix pull`.
 - [taosc]: Makeshift binary patch generator
 
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
-[AFLRun]: https://trong.loang.net/~cnx/afl++/log?h=run
-[AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
+[Dyninst]: https://github.com/dyninst/dyninst
+[AFL++]: https://aflplus.plus
+[evocatio]: https://github.com/HexHive/Evocatio
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
 [taosc]: https://trong.loang.net/~cnx/taosc/about
