@@ -110,6 +110,19 @@
     (build-system gnu-build-system)
     (inputs (list ijg-libjpeg))))
 
+(define-public jasper-1.900.5
+  (package
+    (inherit jasper-1.900.19)
+    (name "jasper")
+    (version "1.900.5")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://www.ece.uvic.ca/~frodo/jasper"
+                                  "/software/jasper-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1fvy4ngc6064g128q4484qpinsn05y9qw6lrccc4czhalla2w26m"))))))
+
 (define-public jasper-1.900.3
   (package
     (inherit jasper-1.900.19)

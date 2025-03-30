@@ -39,6 +39,7 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = [ 'bugs/cve/2016/8691/11.crash',
          'bugs/cve/2016/9264/globaloverflow',
+         'bugs/cve/2016/9387/jas_matrix.jp2',
          'bugs/cve/2016/9557/signed-int-overflow.jp2',
          'bugs/cve/2016/10092/heapoverflow.tiff',
          'bugs/cve/2016/10093/heapoverflow.tiff',

@@ -41,6 +41,11 @@
       guix shell -e '(@@ (loftix bugs) jasper-1.900.3)'
       imginfo -f cve/2016/8691/11.crash
 
+- CVE-2016-9387: [assertion failure][jasper-49]
+
+      guix shell -e '(@@ (loftix bugs) jasper-1.900.5)'
+      imginfo -f cve/2016/9387/jas_matrix.jp2
+
 - CVE-2016-9557: [signed integer overflow][jasper-67]
 
       guix shell -e '(@@ (loftix bugs) jasper-1.900.19)'
@@ -227,6 +232,7 @@
 [chromium-42452152]: https://project-zero.issues.chromium.org/issues/42452152
 [chromium-42452154]: https://project-zero.issues.chromium.org/issues/42452154
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
+[jasper-49]: https://github.com/jasper-software/jasper/issues/49
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
