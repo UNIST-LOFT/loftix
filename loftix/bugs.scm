@@ -262,6 +262,18 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
               (patches (search-patches
                          "patches/libming-parallel-make.patch"))))))
 
+(define-public libtiff-4.0.3
+  (package
+    (inherit libtiff)
+    (version "4.0.3")
+    (source (origin
+             (method url-fetch)
+             (uri (string-append "ftp://ftp.remotesensing.org/pub/libtiff/tiff-"
+                    version ".tar.gz"))
+             (sha256
+              (base32 "0wj8d1iwk9vnpax2h29xqc2hwknxg3s0ay2d5pxkg59ihbifn6pa"))))
+    (outputs '("out"))))
+
 (define-public libtiff-4.0.6
   (package
     (inherit libtiff)

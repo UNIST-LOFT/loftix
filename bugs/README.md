@@ -106,6 +106,16 @@
 
 ## libtiff
 
+- BZ#2633: [heap buffer overflow][maptools-2633]:
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      tiff2ps maptools/2633/heapoverflow.tiff
+
+- CVE-2014-8128: [buffer overflow][maptools-2489]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.3)'
+      thumbnail cve/2014/8128/03_thumbnail.tiff /dev/null
+
 - CVE-2016-3186: [buffer overflow][redhat-1319503]
 
       guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
@@ -239,23 +249,25 @@
 [libjpeg-turbo-305]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/305
 [libming-128]: https://github.com/libming/libming/issues/128
 [libming-130]: https://github.com/libming/libming/issues/130
-[maptools-2554]: https://bugzilla.maptools.org/show_bug.cgi?id=2554
-[maptools-2558]: https://bugzilla.maptools.org/show_bug.cgi?id=2558
-[maptools-2587]: https://bugzilla.maptools.org/show_bug.cgi?id=2587
-[maptools-2592]: https://bugzilla.maptools.org/show_bug.cgi?id=2592
-[maptools-2596]: https://bugzilla.maptools.org/show_bug.cgi?id=2596
-[maptools-2598]: https://bugzilla.maptools.org/show_bug.cgi?id=2598
-[maptools-2610]: https://bugzilla.maptools.org/show_bug.cgi?id=2610
-[maptools-2611]: https://bugzilla.maptools.org/show_bug.cgi?id=2611
-[maptools-2620]: https://bugzilla.maptools.org/show_bug.cgi?id=2620
-[maptools-2622]: https://bugzilla.maptools.org/show_bug.cgi?id=2622
-[maptools-2624]: https://bugzilla.maptools.org/show_bug.cgi?id=2624
-[maptools-2640]: https://bugzilla.maptools.org/show_bug.cgi?id=2640
-[maptools-2646]: https://bugzilla.maptools.org/show_bug.cgi?id=2646
-[maptools-2647]: https://bugzilla.maptools.org/show_bug.cgi?id=2647
-[maptools-2648]: https://bugzilla.maptools.org/show_bug.cgi?id=2648
-[maptools-2653]: https://bugzilla.maptools.org/show_bug.cgi?id=2653
-[maptools-2656]: https://bugzilla.maptools.org/show_bug.cgi?id=2656
+[maptools-2489]: http://bugzilla.maptools.org/show_bug.cgi?id=2489
+[maptools-2554]: http://bugzilla.maptools.org/show_bug.cgi?id=2554
+[maptools-2558]: http://bugzilla.maptools.org/show_bug.cgi?id=2558
+[maptools-2587]: http://bugzilla.maptools.org/show_bug.cgi?id=2587
+[maptools-2592]: http://bugzilla.maptools.org/show_bug.cgi?id=2592
+[maptools-2596]: http://bugzilla.maptools.org/show_bug.cgi?id=2596
+[maptools-2598]: http://bugzilla.maptools.org/show_bug.cgi?id=2598
+[maptools-2610]: http://bugzilla.maptools.org/show_bug.cgi?id=2610
+[maptools-2611]: http://bugzilla.maptools.org/show_bug.cgi?id=2611
+[maptools-2620]: http://bugzilla.maptools.org/show_bug.cgi?id=2620
+[maptools-2622]: http://bugzilla.maptools.org/show_bug.cgi?id=2622
+[maptools-2624]: http://bugzilla.maptools.org/show_bug.cgi?id=2624
+[maptools-2633]: http://bugzilla.maptools.org/show_bug.cgi?id=2633
+[maptools-2640]: http://bugzilla.maptools.org/show_bug.cgi?id=2640
+[maptools-2646]: http://bugzilla.maptools.org/show_bug.cgi?id=2646
+[maptools-2647]: http://bugzilla.maptools.org/show_bug.cgi?id=2647
+[maptools-2648]: http://bugzilla.maptools.org/show_bug.cgi?id=2648
+[maptools-2653]: http://bugzilla.maptools.org/show_bug.cgi?id=2653
+[maptools-2656]: http://bugzilla.maptools.org/show_bug.cgi?id=2656
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [oss-sec-20161110-9]: https://www.openwall.com/lists/oss-security/2016/11/10/9

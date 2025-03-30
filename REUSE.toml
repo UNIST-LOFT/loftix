@@ -22,6 +22,11 @@ path = 'bugs/cve/2013/7437/2.bmp'
 SPDX-FileCopyrightText = 'Stefan Cornelius'
 
 [[annotations]]
+path = 'bugs/cve/2014/8128/03_thumbnail.tiff'
+SPDX-FileCopyrightText = 'William Robinet'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = [ 'bugs/cve/2016/1838/attachment_316158',
          'bugs/cve/2016/1839/asan_heap-oob' ]
 SPDX-FileCopyrightText = 'Mateusz Jurczyk'
@@ -55,7 +60,8 @@ path = [ 'bugs/cve/2016/8691/11.crash',
          'bugs/cve/2017/7600/outside-unsigned-char.tiff',
          'bugs/cve/2017/7601/shift-long.tiff',
          'bugs/cve/2017/15020/reproducer',
-         'bugs/cve/2017/15025/3899.crashes.bin' ]
+         'bugs/cve/2017/15025/3899.crashes.bin',
+         'bugs/maptools/2633/heapoverflow.tiff' ]
 SPDX-FileCopyrightText = 'Agostino Sarubbo'
 SPDX-License-Identifier = 'CC0-1.0'
 
