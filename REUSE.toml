@@ -85,7 +85,8 @@ SPDX-FileCopyrightText = 'Gustavo Grieco'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/cve/2017/6965/bug_3'
+path = [ 'bugs/cve/2017/6965/bug_3',
+         'bugs/cve/2018/10372/bug3' ]
 SPDX-FileCopyrightText = 'Phạm Văn Thuận'
 SPDX-License-Identifier = 'CC0-1.0'
 

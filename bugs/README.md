@@ -24,6 +24,11 @@
       nm -l cve/2017/15025/floatexception.elf
       objdump -S cve/2017/15025/floatexception.elf
 
+- CVE-2018-10372: [heap buffer overflow][sourceware-23064]
+
+      guix shell -e '(@@ (loftix bugs) binutils-2.30-asan)'
+      readelf -w cve/2018/10372/bug3
+
 - CVE-2019-9077: [heap buffer overflow][sourceware-24243]
 
       guix shell -e '(@@ (loftix bugs) binutils-2.32-asan)'
@@ -254,4 +259,5 @@
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
 [sourceware-22202]: https://sourceware.org/bugzilla/show_bug.cgi?id=22202
+[sourceware-23064]: https://sourceware.org/bugzilla/show_bug.cgi?id=23064
 [sourceware-24243]: https://sourceware.org/bugzilla/show_bug.cgi?id=24243
