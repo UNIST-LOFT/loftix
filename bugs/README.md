@@ -1,6 +1,6 @@
 # Bug reproducers
 
-## binutils
+## GNU Binary Utilities
 
 - CVE-2017-6965: [heap buffer overflow][sourceware-21137]
 
@@ -33,6 +33,23 @@
 
       guix shell -e '(@@ (loftix bugs) binutils-2.32-asan)'
       readelf -a cve/2019/9077/hbo2
+
+## GNU Core Utilities
+
+- #19784: [heap buffer overflow](gnu-19784)
+
+      guix shell -e '(@@ (loftix bugs) coreutils-8.23-asan)'
+      make-prime-list "$(cat gnu/19784/limit)"
+
+- #25023: [global buffer overflow](gnu-25023)
+
+      guix shell -e '(@@ (loftix bugs) coreutils-8.25-asan)'
+      echo | pr -m -S"$(cat gnu/25023/separator)" -t /dev/fd/0 /dev/null
+
+- #26545: [memcpy param overlap](gnu-26545)
+
+      guix shell -e '(@@ (loftix bugs) coreutils-8.27-asan)'
+      shred -n4 -s"$(cat gnu/26545/size)" /dev/null
 
 ## JasPer
 
@@ -241,6 +258,9 @@
 [chromium-40076524]: https://issues.chromium.org/issues/40076524
 [chromium-42452152]: https://project-zero.issues.chromium.org/issues/42452152
 [chromium-42452154]: https://project-zero.issues.chromium.org/issues/42452154
+[gnu-19784]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=19784
+[gnu-25023]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=25023
+[gnu-26545]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=26545
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-49]: https://github.com/jasper-software/jasper/issues/49
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67

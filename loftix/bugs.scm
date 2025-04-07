@@ -24,9 +24,11 @@
   #:use-module (gnu packages xml)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix packages))
+  #:use-module (guix packages)
+  #:use-module (guix utils))
 
 (define-public binutils-2.32-asan
   (package
@@ -93,6 +95,68 @@
               (sha256
                (base32 "125clslv17xh1sab74343fg6v31msavpmaa1c1394zsqa773g5rn"))
               (patches '())))))
+
+(define-public coreutils-8.27-asan
+  (package
+    (inherit coreutils)
+    (version "8.27")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/coreutils/coreutils-"
+                                  version ".tar.xz"))
+              (sha256
+               (base32
+                "0sv547572iq8ayy8klir4hnngnx92a9nsazmf1wgzfc7xr4x74c8"))
+              (patches
+               (search-patches "patches/coreutils-gnulib-glibc-2.28.patch"))))
+    (arguments
+      (substitute-keyword-arguments (package-arguments coreutils)
+        ((#:make-flags flags #~'())
+         #~(cons* "CFLAGS=-O2 -g -fsanitize=address"
+                  "LDFLAGS=-fsanitize=address"
+                  #$flags))
+        ((#:phases phases #~%standard-phases)
+         #~(modify-phases #$phases
+            (add-before 'build 'set-env
+             (lambda _ (setenv "ASAN_OPTIONS" "detect_leaks=0")))))
+        ((#:tests? _ #f)
+         #f)))))
+
+(define-public coreutils-8.25-asan
+  (package
+    (inherit coreutils-8.27-asan)
+    (version "8.25")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/coreutils/coreutils-"
+                                  version ".tar.xz"))
+              (sha256
+               (base32
+                "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii"))
+              (patches (search-patches
+                        "patches/coreutils-gnulib-glibc-2.25.patch"
+                        "patches/coreutils-gnulib-glibc-2.28.patch"))))))
+
+(define-public coreutils-8.23-asan
+  (package
+    (inherit coreutils-8.25-asan)
+    (version "8.23")
+    (source (origin
+              (inherit (package-source coreutils-8.25-asan))
+              (uri (string-append "mirror://gnu/coreutils/coreutils-"
+                                  version ".tar.xz"))
+              (sha256
+               (base32
+                "0bdq6yggyl7nkc2pbl6pxhhyx15nyqhz3ds6rfn448n6rxdwlhzc"))))
+    (arguments
+      (substitute-keyword-arguments (package-arguments coreutils-8.25-asan)
+        ((#:phases phases #~%standard-phases)
+         #~(modify-phases #$phases
+            (add-after 'install 'install-make-prime-list
+             (lambda* (#:key outputs #:allow-other-keys)
+               (install-file
+                "src/make-prime-list"
+                (string-append (assoc-ref outputs "out") "/bin"))))))))))
 
 (define-public jasper-1.900.19
   ;; FIXME: UBSan somehow breaks build phase.
