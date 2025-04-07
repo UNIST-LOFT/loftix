@@ -62,44 +62,58 @@
                 (file-name (git-file-name name version))
                 (sha256
                  (base32
-                  "16kc2xa4dk9lq1sg7sl5489n7r3p8kc6hmfgy0gh7i1n6h269bry"))))
+                  "16kc2xa4dk9lq1sg7sl5489n7r3p8kc6hmfgy0gh7i1n6h269bry"))
+                (patches
+                 (search-patches "patches/evocatio-argv-fuzz-amd64-only.patch"))))
+                ;;(patches
+                ;; (search-patches "patches/evocatio-keep-all-crashes.patch"))))
       (arguments
-        `(#:make-flags
-          (list "-C" "bug-severity-AFLplusplus" "source-only"
-                (string-append "PREFIX=" (assoc-ref %outputs "out"))
-                (string-append "DOC_PATH=$(PREFIX)/share/doc/evocatio")
-                (string-append "CC=" ,(cc-for-target))
-                "CFLAGS=-O2 -g -fcommon"
-                "NO_SPLICING=1")
-          #:modules ((ice-9 string-fun)
-                     ,@%default-gnu-modules)
-          #:phases
-          (modify-phases %standard-phases
-            ;; For GCC plugins.
-            (add-after 'unpack 'patch-gcc-path
-              (lambda* (#:key inputs #:allow-other-keys)
-                (substitute* "bug-severity-AFLplusplus/src/afl-cc.c"
-                  (("alt_cc = \"gcc\";")
-                   (format #f "alt_cc = \"~a\";"
-                           (search-input-file inputs "bin/gcc")))
-                  (("alt_cxx = \"g\\+\\+\";")
-                   (format #f "alt_cxx = \"~a\";"
-                           (search-input-file inputs "bin/g++"))))))
-            (delete 'configure)
-            (add-after 'install 'install-scripts
-              (lambda* (#:key outputs #:allow-other-keys)
-                (let ((bin (string-append (assoc-ref outputs "out") "/bin")))
-                  (for-each
-                    (lambda (script)
-                      (let ((file (string-append
-                                    bin "/evocatio-"
-                                    (string-replace-substring script "_" "-"))))
-                        (copy-file (string-append "scripts/" script ".py")
-                                   file)
-                        (chmod file #o755)))
-                    '("calculate_severity_score" "gen_raw_data_for_cve")))))
-            ;; Tests are run during 'install phase
-            (delete 'check))))
+        (substitute-keyword-arguments (package-arguments aflplusplus)
+          ((#:make-flags make-flags)
+           #~(cons* "-C" "bug-severity-AFLplusplus"
+                    "CFLAGS=-O2 -g -fcommon"
+                    "NO_SPLICING=1"
+                    #$make-flags))
+          ((#:build-target _) "source-only")
+          ((#:modules modules %default-gnu-modules)
+           `((ice-9 string-fun) ,@modules))
+          ((#:phases phases)
+           #~(modify-phases #$phases
+               (replace 'patch-gcc-path
+                 (lambda* (#:key inputs #:allow-other-keys)
+                   ;; AFL++ is prefixed with bug-severity-AFLplusplus
+                   (substitute* "bug-severity-AFLplusplus/src/afl-cc.c"
+                     (("alt_cc = \"gcc\";")
+                      (format #f "alt_cc = \"~a\";"
+                              (search-input-file inputs "bin/gcc")))
+                     (("alt_cxx = \"g\\+\\+\";")
+                      (format #f "alt_cxx = \"~a\";"
+                              (search-input-file inputs "bin/g++"))))))
+               (add-after 'build 'build-argv-fuzzing
+                 (lambda* (#:key make-flags #:allow-other-keys)
+                   (apply invoke
+                     "make" "-C" "bug-severity-AFLplusplus/utils/argv_fuzzing"
+                     (cdddr make-flags))))
+               (add-after 'install 'install-argv-fuzzing
+                 (lambda* (#:key make-flags #:allow-other-keys)
+                   (apply invoke
+                     "make" "-C" "bug-severity-AFLplusplus/utils/argv_fuzzing"
+                     "install" (cdddr make-flags))))
+               (add-after 'install 'install-scripts
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (let ((bin (string-append (assoc-ref outputs "out")
+                                             "/bin")))
+                     (for-each
+                       (lambda (script)
+                         (let ((file (string-append
+                                       bin "/evocatio-"
+                                       (string-replace-substring script
+                                         "_" "-"))))
+                           (copy-file (string-append "scripts/" script ".py")
+                                      file)
+                           (chmod file #o755)))
+                       '("calculate_severity_score"
+                         "gen_raw_data_for_cve")))))))))
       (home-page "https://github.com/HexHive/Evocatio")
       (description
         "Evocatio is a bug analyzer built on top of AFL++ and AddressSanitizer.
