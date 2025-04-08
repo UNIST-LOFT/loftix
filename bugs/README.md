@@ -143,6 +143,14 @@
       guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
       echo y | gif2tiff cve/2016/3186/crash.gif /dev/null
 
+- CVE-2016-3186: [division by zero][maptools-2569]
+
+      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      tar xvf $(guix build -S libtiff@4.0.6)\
+        tiff-4.0.6/test/images/logluv-3c-16b.tiff
+      rgb2ycbcr -h 0 tiff-4.0.6/test/images/logluv-3c-16b.tiff /dev/null
+      rgb2ycbcr -v 0 tiff-4.0.6/test/images/logluv-3c-16b.tiff /dev/null
+
 - CVE-2016-5314: [heap buffer overflow][maptools-2554]
 
       guix shell -e '(@@ (loftix bugs) libtiff-4.0.6-asan)'
@@ -278,6 +286,7 @@
 [maptools-2489]: http://bugzilla.maptools.org/show_bug.cgi?id=2489
 [maptools-2554]: http://bugzilla.maptools.org/show_bug.cgi?id=2554
 [maptools-2558]: http://bugzilla.maptools.org/show_bug.cgi?id=2558
+[maptools-2569]: http://bugzilla.maptools.org/show_bug.cgi?id=2569
 [maptools-2587]: http://bugzilla.maptools.org/show_bug.cgi?id=2587
 [maptools-2592]: http://bugzilla.maptools.org/show_bug.cgi?id=2592
 [maptools-2596]: http://bugzilla.maptools.org/show_bug.cgi?id=2596
