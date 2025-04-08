@@ -137,7 +137,8 @@ SPDX-FileCopyrightText = 'Yury Usishchev'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/gnu/26545/size'
+path = [ 'bugs/gnu/25003/chunks',
+         'bugs/gnu/26545/size' ]
 SPDX-FileCopyrightText = 'Pádraig Brady'
 SPDX-License-Identifier = 'CC0-1.0'
 

@@ -41,6 +41,11 @@
       guix shell -e '(@@ (loftix bugs) coreutils-8.23-asan)'
       make-prime-list "$(cat gnu/19784/limit)"
 
+- #25003: [negative size param](gnu-25003)
+
+      guix shell -e '(@@ (loftix bugs) coreutils-8.26-sans-4954f79-asan)'
+      split -n"$(cat gnu/25003/chunks)" /dev/null
+
 - #25023: [global buffer overflow](gnu-25023)
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.25-asan)'
@@ -259,6 +264,7 @@
 [chromium-42452152]: https://project-zero.issues.chromium.org/issues/42452152
 [chromium-42452154]: https://project-zero.issues.chromium.org/issues/42452154
 [gnu-19784]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=19784
+[gnu-25003]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=25003
 [gnu-25023]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=25023
 [gnu-26545]: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=26545
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22

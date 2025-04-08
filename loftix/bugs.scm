@@ -122,6 +122,23 @@
         ((#:tests? _ #f)
          #f)))))
 
+(define-public coreutils-8.26-sans-4954f79-asan
+  (package
+    (inherit coreutils-8.27-asan)
+    (version "8.26")
+    (source (origin
+              (inherit (package-source coreutils-8.27-asan))
+              (method url-fetch)
+              (uri (string-append "mirror://gnu/coreutils/coreutils-"
+                                  version ".tar.xz"))
+              (sha256
+               (base32
+                "13lspazc7xkviy93qz7ks9jv4sldvgmwpq36ghrbrqpq93br8phm"))
+              (patches (cons (search-patch
+                              "patches/bugs/coreutils-unfix-bug-25003.patch")
+                             (origin-patches
+                              (package-source coreutils-8.27-asan))))))))
+
 (define-public coreutils-8.25-asan
   (package
     (inherit coreutils-8.27-asan)
