@@ -143,7 +143,7 @@
       guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
       echo y | gif2tiff cve/2016/3186/crash.gif /dev/null
 
-- CVE-2016-3186: [division by zero][maptools-2569]
+- CVE-2016-3623: [division by zero][maptools-2569]
 
       guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
       tar xvf $(guix build -S libtiff@4.0.6)\
