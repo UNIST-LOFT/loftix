@@ -155,7 +155,8 @@ SPDX-FileCopyrightText = 'Eric Blake'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
 [[annotations]]
-path = 'patches/coreutils-gnulib-glibc-2.28.patch'
+path = [ 'patches/bugs/coreutils-unfix-bug-25003.patch',
+         'patches/coreutils-gnulib-glibc-2.28.patch' ]
 SPDX-FileCopyrightText = 'Paul Eggert'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
