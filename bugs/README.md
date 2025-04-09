@@ -36,22 +36,22 @@
 
 ## GNU Core Utilities
 
-- #19784: [heap buffer overflow](gnu-19784)
+- #19784: [heap buffer overflow][gnu-19784]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.23-asan)'
       make-prime-list "$(cat gnu/19784/limit)"
 
-- #25003: [negative size param](gnu-25003)
+- #25003: [negative size param][gnu-25003]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.26-sans-4954f79-asan)'
       split -n"$(cat gnu/25003/chunks)" /dev/null
 
-- #25023: [global buffer overflow](gnu-25023)
+- #25023: [global buffer overflow][gnu-25023]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.25-asan)'
       echo | pr -m -S"$(cat gnu/25023/separator)" -t /dev/fd/0 /dev/null
 
-- #26545: [memcpy param overlap](gnu-26545)
+- #26545: [memcpy param overlap][gnu-26545]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.27-asan)'
       shred -n4 -s"$(cat gnu/26545/size)" /dev/null
