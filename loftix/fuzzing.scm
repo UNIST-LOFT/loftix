@@ -64,9 +64,8 @@
                  (base32
                   "16kc2xa4dk9lq1sg7sl5489n7r3p8kc6hmfgy0gh7i1n6h269bry"))
                 (patches
-                 (search-patches "patches/evocatio-argv-fuzz-amd64-only.patch"))))
-                ;;(patches
-                ;; (search-patches "patches/evocatio-keep-all-crashes.patch"))))
+                 (search-patches
+                   "patches/evocatio-argv-fuzz-amd64-only.patch"))))
       (arguments
         (substitute-keyword-arguments (package-arguments aflplusplus)
           ((#:make-flags make-flags)

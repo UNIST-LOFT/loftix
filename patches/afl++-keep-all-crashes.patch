@@ -1,16 +1,16 @@
 diff --git a/src/afl-fuzz-bitmap.c b/src/afl-fuzz-bitmap.c
-index f05bb7db59d5..de275e374ff1 100644
+index 19cdf511149f..dd7cb510b62c 100644
 --- a/src/afl-fuzz-bitmap.c
 +++ b/src/afl-fuzz-bitmap.c
-@@ -556,7 +556,6 @@ save_if_interesting(afl_state_t *afl, void *mem, u32 len, u8 fault, u8 inc) {
-     if (likely(!new_bits && !new_paths)) {
+@@ -639,7 +639,6 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
+       if (san_fault == FSRV_RUN_OK) {
  
-       if (unlikely(afl->crash_mode)) { ++afl->total_crashes; }
--      return 0;
+         if (unlikely(afl->crash_mode)) { ++afl->total_crashes; }
+-        return 0;
  
-     }
+       } else {
  
-@@ -837,16 +836,12 @@ save_if_interesting(afl_state_t *afl, void *mem, u32 len, u8 fault, u8 inc) {
+@@ -934,8 +933,6 @@ may_save_fault:
  
        ++afl->total_crashes;
  
@@ -18,7 +18,8 @@ index f05bb7db59d5..de275e374ff1 100644
 -
        if (likely(!afl->non_instrumented_mode)) {
  
-         if (!classified) { classify_counts(&afl->fsrv); }
+         if (unlikely(!classified)) {
+@@ -947,8 +944,6 @@ may_save_fault:
  
          simplify_trace(afl, afl->fsrv.trace_bits);
  
