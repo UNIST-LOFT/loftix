@@ -94,7 +94,7 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = [ 'bugs/cve/2017/6965/bug_3',
          'bugs/cve/2018/10372/bug3',
-         'bugs/gnu/25023/separator', ]
+         'bugs/gnu/25023/argv', ]
 SPDX-FileCopyrightText = 'Phạm Văn Thuận'
 SPDX-License-Identifier = 'CC0-1.0'
 
@@ -132,13 +132,13 @@ SPDX-FileCopyrightText = '陈鹏'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/gnu/19784/limit'
+path = 'bugs/gnu/19784/argv'
 SPDX-FileCopyrightText = 'Yury Usishchev'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = [ 'bugs/gnu/25003/chunks',
-         'bugs/gnu/26545/size' ]
+path = [ 'bugs/gnu/25003/argv',
+         'bugs/gnu/26545/argv' ]
 SPDX-FileCopyrightText = 'Pádraig Brady'
 SPDX-License-Identifier = 'CC0-1.0'
 

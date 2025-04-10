@@ -150,9 +150,10 @@
               (sha256
                (base32
                 "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii"))
-              (patches (search-patches
-                        "patches/coreutils-gnulib-glibc-2.25.patch"
-                        "patches/coreutils-gnulib-glibc-2.28.patch"))))))
+              (patches (cons (search-patch
+                              "patches/coreutils-gnulib-glibc-2.25.patch")
+                             (origin-patches
+                               (package-source coreutils-8.27-asan))))))))
 
 (define-public coreutils-8.23-asan
   (package

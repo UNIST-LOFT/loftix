@@ -39,22 +39,22 @@
 - #19784: [heap buffer overflow][gnu-19784]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.23-asan)'
-      make-prime-list "$(cat gnu/19784/limit)"
+      make-prime-list 3  # or: $(xargs -0 -a gnu/19784/argv)
 
 - #25003: [negative size param][gnu-25003]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.26-sans-4954f79-asan)'
-      split -n"$(cat gnu/25003/chunks)" /dev/null
+      split -n2/3 /dev/null  # or: $(xargs -0 -a gnu/25003/argv)
 
 - #25023: [global buffer overflow][gnu-25023]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.25-asan)'
-      echo | pr -m -S"$(cat gnu/25023/separator)" -t /dev/fd/0 /dev/null
+      pr -m -S"$(printf '\t\t\t')" -t /dev/null /dev/zero
 
 - #26545: [memcpy param overlap][gnu-26545]
 
       guix shell -e '(@@ (loftix bugs) coreutils-8.27-asan)'
-      shred -n4 -s"$(cat gnu/26545/size)" /dev/null
+      shred -n4 -s7 /dev/null  # or: $(xargs -0 -a gnu/26545/argv)
 
 ## JasPer
 
