@@ -4,56 +4,56 @@
 
 - CVE-2017-6965: [heap buffer overflow][sourceware-21137]
 
-      guix shell -e '(@@ (loftix bugs) binutils-2.27-asan)'
+      guix shell binutils-with-asan@2.27
       readelf -w cve/2017/6965/bug_3
 
 - CVE-2017-14745: [integer overflow][sourceware-22148]
 
-      guix shell -e '(@@ (loftix bugs) binutils-2.29)'
+      guix shell binutils@2.29
       objdump -d cve/2017/14745/crash_1
 
 - CVE-2017-15020: [heap buffer overflow][sourceware-22202]
 
-      guix shell -e '(@@ (loftix bugs) binutils-2.29-asan)'
+      guix shell binutils-with-asan@2.29
       nm -l cve/2017/15020/reproducer
 
 - CVE-2017-15025: [division by zero][sourceware-22186]
 
-      guix shell -e '(@@ (loftix bugs) binutils-2.29)'
+      guix shell binutils@2.29
       nm -l cve/2017/15025/3899.crashes.bin
       nm -l cve/2017/15025/floatexception.elf
       objdump -S cve/2017/15025/floatexception.elf
 
 - CVE-2018-10372: [heap buffer overflow][sourceware-23064]
 
-      guix shell -e '(@@ (loftix bugs) binutils-2.30-asan)'
+      guix shell binutils-with-asan@2.30
       readelf -w cve/2018/10372/bug3
 
 - CVE-2019-9077: [heap buffer overflow][sourceware-24243]
 
-      guix shell -e '(@@ (loftix bugs) binutils-2.32-asan)'
+      guix shell binutils-with-asan@2.32
       readelf -a cve/2019/9077/hbo2
 
 ## GNU Core Utilities
 
 - #19784: [heap buffer overflow][gnu-19784]
 
-      guix shell -e '(@@ (loftix bugs) coreutils-8.23-asan)'
+      guix shell coreutils-with-make-prime-list-with-asan@8.23
       make-prime-list 3  # or: $(xargs -0 -a gnu/19784/argv)
 
 - #25003: [negative size param][gnu-25003]
 
-      guix shell -e '(@@ (loftix bugs) coreutils-8.26-sans-4954f79-asan)'
+      guix shell coreutils-with-asan@8.26-sans-4954f79
       split -n2/3 /dev/null  # or: $(xargs -0 -a gnu/25003/argv)
 
 - #25023: [global buffer overflow][gnu-25023]
 
-      guix shell -e '(@@ (loftix bugs) coreutils-8.25-asan)'
+      guix shell coreutils-with-asan@8.25
       pr -m -S"$(printf '\t\t\t')" -t /dev/null /dev/zero
 
 - #26545: [memcpy param overlap][gnu-26545]
 
-      guix shell -e '(@@ (loftix bugs) coreutils-8.27-asan)'
+      guix shell coreutils-with-asan@8.27
       shred -n4 -s7 /dev/null  # or: $(xargs -0 -a gnu/26545/argv)
 
 ## JasPer

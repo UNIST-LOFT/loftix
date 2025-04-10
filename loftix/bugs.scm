@@ -28,153 +28,155 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils))
+  #:use-module (guix utils)
+  #:use-module (srfi srfi-26))
 
-(define-public binutils-2.32-asan
+(define (at-version base version uri checksum)
   (package
-    (inherit binutils-2.33)
-    (version "2.32")
-    (source (origin
-              (inherit (package-source binutils))
-              (uri (string-append "mirror://gnu/binutils/binutils-"
-                                  version ".tar.bz2"))
-              (sha256
-               (base32 "0b8767nyal1bc4cyzg5h9iis8kpkln1i3wkamig75cifj1fb2f6y"))
-              (patches '())))
-    (arguments '(#:phases (modify-phases %standard-phases
-                            (add-before 'build 'set-env
-                              (lambda _
-                                (setenv "ASAN_OPTIONS" "detect_leaks=0"))))
-                 #:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
-                                "LDFLAGS=-fsanitize=address")))))
+    (inherit base)
+    (version version)
+    (source
+     (origin
+       (inherit (package-source base))
+       (uri (uri version))
+       (sha256 (base32 checksum))))))
 
-(define-public binutils-2.30-asan
-  (package
-    (inherit binutils-2.32-asan)
-    (version "2.30")
-    (source (origin
-              (inherit (package-source binutils))
-              (uri (string-append "mirror://gnu/binutils/binutils-"
-                                  version ".tar.bz2"))
-              (sha256
-               (base32 "028cklfqaab24glva1ks2aqa1zxa6w6xmc8q34zs1sb7h22dxspg"))
-              (patches '())))))
+(define (binutils-at-version base version checksum)
+  (at-version
+   (package
+     (inherit base)
+     (source
+      (origin
+        (inherit (package-source base))
+        (patches '()))))
+   version
+   (cut string-append "mirror://gnu/binutils/binutils-" <> ".tar.bz2")
+   checksum))
 
-(define-public binutils-2.29-asan
-  (package
-    (inherit binutils-2.32-asan)
-    (version "2.29")
-    (source (origin
-              (inherit (package-source binutils))
-              (uri (string-append "mirror://gnu/binutils/binutils-"
-                                  version ".tar.bz2"))
-              (sha256
-               (base32 "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
-              (patches '())))))
+(define-public binutils-2.32
+  (binutils-at-version
+   binutils-2.33
+   "2.32"
+   "0b8767nyal1bc4cyzg5h9iis8kpkln1i3wkamig75cifj1fb2f6y"))
+
+(define-public binutils-2.30
+  (binutils-at-version
+   binutils-2.33
+   "2.30"
+   "028cklfqaab24glva1ks2aqa1zxa6w6xmc8q34zs1sb7h22dxspg"))
 
 (define-public binutils-2.29
-  (package
-    (inherit binutils-2.33)
-    (version "2.29")
-    (source (origin
-              (inherit (package-source binutils))
-              (uri (string-append "mirror://gnu/binutils/binutils-"
-                                  version ".tar.bz2"))
-              (sha256
-               (base32 "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
-              (patches '())))))
+  (binutils-at-version
+   binutils-2.33
+   "2.29"
+   "1gqfyksdnj3iir5gzyvlp785mnk60g1pll6zbzbslfchhr4rb8i9"))
 
-(define-public binutils-2.27-asan
-  (package
-    (inherit binutils-2.29-asan)
-    (version "2.27")
-    (source (origin
-              (inherit (package-source binutils))
-              (uri (string-append "mirror://gnu/binutils/binutils-"
-                                  version ".tar.bz2"))
-              (sha256
-               (base32 "125clslv17xh1sab74343fg6v31msavpmaa1c1394zsqa773g5rn"))
-              (patches '())))))
+(define-public binutils-2.27
+  (binutils-at-version
+   binutils-2.33
+   "2.27"
+   "125clslv17xh1sab74343fg6v31msavpmaa1c1394zsqa773g5rn"))
 
-(define-public coreutils-8.27-asan
+(define (gnu-build-with-asan base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-with-asan"))
+    (arguments
+     (substitute-keyword-arguments (package-arguments coreutils)
+       ((#:make-flags flags #~'())
+        (with-imported-modules '((loftix transform))
+          #~((@ (loftix transform) append-make-flag)
+             #$flags
+             '(("CFLAGS" "-fsanitize=address" "-O2 -g")
+               ("LDFLAGS" "-fsanitize=address")))))
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-before 'build 'set-env
+              (lambda _ (setenv "ASAN_OPTIONS" "detect_leaks=0")))))
+       ((#:tests? _ #f)
+        #f)))))
+
+(define-public binutils-with-asan-2.32 (gnu-build-with-asan binutils-2.32))
+(define-public binutils-with-asan-2.30 (gnu-build-with-asan binutils-2.30))
+(define-public binutils-with-asan-2.29 (gnu-build-with-asan binutils-2.29))
+(define-public binutils-with-asan-2.27 (gnu-build-with-asan binutils-2.27))
+
+(define-public coreutils-8.27
   (package
     (inherit coreutils)
     (version "8.27")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/coreutils/coreutils-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "0sv547572iq8ayy8klir4hnngnx92a9nsazmf1wgzfc7xr4x74c8"))
-              (patches
-               (search-patches "patches/coreutils-gnulib-glibc-2.28.patch"))))
-    (arguments
-      (substitute-keyword-arguments (package-arguments coreutils)
-        ((#:make-flags flags #~'())
-         #~(cons* "CFLAGS=-O2 -g -fsanitize=address"
-                  "LDFLAGS=-fsanitize=address"
-                  #$flags))
-        ((#:phases phases #~%standard-phases)
-         #~(modify-phases #$phases
-            (add-before 'build 'set-env
-             (lambda _ (setenv "ASAN_OPTIONS" "detect_leaks=0")))))
-        ((#:tests? _ #f)
-         #f)))))
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "mirror://gnu/coreutils/coreutils-" version
+                           ".tar.xz"))
+       (sha256 (base32 "0sv547572iq8ayy8klir4hnngnx92a9nsazmf1wgzfc7xr4x74c8"))
+       (patches (search-patches
+                 "patches/coreutils-gnulib-glibc-2.28.patch"))))))
 
-(define-public coreutils-8.26-sans-4954f79-asan
-  (package
-    (inherit coreutils-8.27-asan)
-    (version "8.26")
-    (source (origin
-              (inherit (package-source coreutils-8.27-asan))
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/coreutils/coreutils-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "13lspazc7xkviy93qz7ks9jv4sldvgmwpq36ghrbrqpq93br8phm"))
-              (patches (cons (search-patch
-                              "patches/bugs/coreutils-unfix-bug-25003.patch")
-                             (origin-patches
-                              (package-source coreutils-8.27-asan))))))))
+(define-public coreutils-with-asan-8.27 (gnu-build-with-asan coreutils-8.27))
 
-(define-public coreutils-8.25-asan
-  (package
-    (inherit coreutils-8.27-asan)
-    (version "8.25")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://gnu/coreutils/coreutils-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii"))
-              (patches (cons (search-patch
-                              "patches/coreutils-gnulib-glibc-2.25.patch")
-                             (origin-patches
-                               (package-source coreutils-8.27-asan))))))))
+(define (coreutils-at-version base version checksum)
+  (at-version
+   base
+   version
+   (cut string-append "mirror://gnu/coreutils/coreutils-" <> ".tar.xz")
+   checksum))
 
-(define-public coreutils-8.23-asan
+(define-public coreutils-8.26
+  (coreutils-at-version
+   coreutils-8.27
+   "8.26"
+   "13lspazc7xkviy93qz7ks9jv4sldvgmwpq36ghrbrqpq93br8phm"))
+
+(define (with-patches base . patches)
   (package
-    (inherit coreutils-8.25-asan)
-    (version "8.23")
-    (source (origin
-              (inherit (package-source coreutils-8.25-asan))
-              (uri (string-append "mirror://gnu/coreutils/coreutils-"
-                                  version ".tar.xz"))
-              (sha256
-               (base32
-                "0bdq6yggyl7nkc2pbl6pxhhyx15nyqhz3ds6rfn448n6rxdwlhzc"))))
-    (arguments
-      (substitute-keyword-arguments (package-arguments coreutils-8.25-asan)
-        ((#:phases phases #~%standard-phases)
-         #~(modify-phases #$phases
-            (add-after 'install 'install-make-prime-list
-             (lambda* (#:key outputs #:allow-other-keys)
-               (install-file
-                "src/make-prime-list"
-                (string-append (assoc-ref outputs "out") "/bin"))))))))))
+    (inherit base)
+    (source
+     (origin
+       (inherit (package-source base))
+       (patches (append (origin-patches (package-source base))
+                        (map search-patch patches)))))))
+
+(define coreutils-8.26-sans-4954f79
+  (with-patches (package
+                  (inherit coreutils-8.26)
+                  (version "8.26-sans-4954f79"))
+                "patches/bugs/coreutils-unfix-bug-25003.patch"))
+
+(define-public coreutils-with-asan-8.26-sans-4954f79
+  (gnu-build-with-asan coreutils-8.26-sans-4954f79))
+
+(define-public coreutils-8.25
+  (with-patches
+   (coreutils-at-version
+    coreutils-8.27
+    "8.25"
+    "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii")
+   "patches/coreutils-gnulib-glibc-2.25.patch"))
+
+(define-public coreutils-with-asan-8.25 (gnu-build-with-asan coreutils-8.25))
+
+(define-public coreutils-8.23
+  (coreutils-at-version
+    coreutils-8.25
+    "8.23"
+    "0bdq6yggyl7nkc2pbl6pxhhyx15nyqhz3ds6rfn448n6rxdwlhzc"))
+
+(define-public coreutils-with-make-prime-list-with-asan-8.23
+  (let ((base (gnu-build-with-asan coreutils-8.23)))
+    (package
+      (inherit base)
+      (name "coreutils-with-make-prime-list-with-asan")
+      (arguments
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:phases phases #~%standard-phases)
+           #~(modify-phases #$phases
+              (add-after 'install 'install-make-prime-list
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (install-file
+                  "src/make-prime-list"
+                  (string-append (assoc-ref outputs "out") "/bin")))))))))))
 
 (define-public jasper-1.900.19
   ;; FIXME: UBSan somehow breaks build phase.
