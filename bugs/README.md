@@ -60,24 +60,24 @@
 
 - CVE-2016-8691: [divide-by-zero][jasper-22]
 
-      guix shell -e '(@@ (loftix bugs) jasper-1.900.3)'
+      guix shell jasper@1.900.3
       imginfo -f cve/2016/8691/11.crash
 
 - CVE-2016-9387: [assertion failure][jasper-49]
 
-      guix shell -e '(@@ (loftix bugs) jasper-1.900.5)'
+      guix shell jasper@1.900.5
       imginfo -f cve/2016/9387/jas_matrix.jp2
 
 - CVE-2016-9557: [signed integer overflow][jasper-67]
 
-      guix shell -e '(@@ (loftix bugs) jasper-1.900.19)'
+      guix shell jasper-with-ubsan@1.900.19
       imginfo -f cve/2016/9557/signed-int-overflow.jp2
 
 ## libarchive
 
 - CVE-2016-5844: [signed integer overflow][libarchive-717]
 
-      guix shell -e '(@@ (loftix bugs) libarchive-3.2.0-ubsan)'
+      guix shell libarchive-with-ubsan@3.2.0
       bsdtar -tf cve/2016/5844/libarchive-signed-int-overflow.iso
 
 ## libjpeg-turbo

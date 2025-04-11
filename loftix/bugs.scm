@@ -22,6 +22,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages swig)
   #:use-module (gnu packages xml)
+  #:use-module (guix build-system)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
   #:use-module (guix gexp)
@@ -77,29 +78,32 @@
    "2.27"
    "125clslv17xh1sab74343fg6v31msavpmaa1c1394zsqa773g5rn"))
 
-(define (gnu-build-with-asan base)
+(define (with-asan base)
   (package
     (inherit base)
     (name (string-append (package-name base) "-with-asan"))
     (arguments
-     (substitute-keyword-arguments (package-arguments coreutils)
-       ((#:make-flags flags #~'())
-        (with-imported-modules '((loftix transform))
-          #~((@ (loftix transform) append-make-flag)
-             #$flags
-             '(("CFLAGS" "-fsanitize=address" "-O2 -g")
-               ("LDFLAGS" "-fsanitize=address")))))
-       ((#:phases phases #~%standard-phases)
-        #~(modify-phases #$phases
-            (add-before 'build 'set-env
-              (lambda _ (setenv "ASAN_OPTIONS" "detect_leaks=0")))))
-       ((#:tests? _ #f)
-        #f)))))
+     (case (build-system-name (package-build-system base))
+       ((gnu)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                '(("CFLAGS" "-fsanitize=address" "-O2 -g")
+                  ("LDFLAGS" "-fsanitize=address")))))
+          ((#:phases phases #~%standard-phases)
+           #~(modify-phases #$phases
+               (add-before 'build 'set-env
+                 (lambda _
+                   (setenv "ASAN_OPTIONS" "detect_leaks=0")))))
+          ((#:tests? _ #f)
+           #f)))))))
 
-(define-public binutils-with-asan-2.32 (gnu-build-with-asan binutils-2.32))
-(define-public binutils-with-asan-2.30 (gnu-build-with-asan binutils-2.30))
-(define-public binutils-with-asan-2.29 (gnu-build-with-asan binutils-2.29))
-(define-public binutils-with-asan-2.27 (gnu-build-with-asan binutils-2.27))
+(define-public binutils-with-asan-2.32 (with-asan binutils-2.32))
+(define-public binutils-with-asan-2.30 (with-asan binutils-2.30))
+(define-public binutils-with-asan-2.29 (with-asan binutils-2.29))
+(define-public binutils-with-asan-2.27 (with-asan binutils-2.27))
 
 (define-public coreutils-8.27
   (package
@@ -114,7 +118,7 @@
        (patches (search-patches
                  "patches/coreutils-gnulib-glibc-2.28.patch"))))))
 
-(define-public coreutils-with-asan-8.27 (gnu-build-with-asan coreutils-8.27))
+(define-public coreutils-with-asan-8.27 (with-asan coreutils-8.27))
 
 (define (coreutils-at-version base version checksum)
   (at-version
@@ -145,7 +149,7 @@
                 "patches/bugs/coreutils-unfix-bug-25003.patch"))
 
 (define-public coreutils-with-asan-8.26-sans-4954f79
-  (gnu-build-with-asan coreutils-8.26-sans-4954f79))
+  (with-asan coreutils-8.26-sans-4954f79))
 
 (define-public coreutils-8.25
   (with-patches
@@ -155,7 +159,7 @@
     "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii")
    "patches/coreutils-gnulib-glibc-2.25.patch"))
 
-(define-public coreutils-with-asan-8.25 (gnu-build-with-asan coreutils-8.25))
+(define-public coreutils-with-asan-8.25 (with-asan coreutils-8.25))
 
 (define-public coreutils-8.23
   (coreutils-at-version
@@ -164,7 +168,7 @@
     "0bdq6yggyl7nkc2pbl6pxhhyx15nyqhz3ds6rfn448n6rxdwlhzc"))
 
 (define-public coreutils-with-make-prime-list-with-asan-8.23
-  (let ((base (gnu-build-with-asan coreutils-8.23)))
+  (let ((base (with-asan coreutils-8.23)))
     (package
       (inherit base)
       (name "coreutils-with-make-prime-list-with-asan")
@@ -178,50 +182,56 @@
                   "src/make-prime-list"
                   (string-append (assoc-ref outputs "out") "/bin")))))))))))
 
-(define-public jasper-1.900.19
-  ;; FIXME: UBSan somehow breaks build phase.
+(define (jasper-at-version version checksum)
   (package
     (inherit jasper)
-    (name "jasper")
-    (version "1.900.19")
+    (version version)
     (source (origin
               (method url-fetch)
               (uri (string-append "https://www.ece.uvic.ca/~frodo/jasper"
                                   "/software/jasper-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0dm3k0wdny3s37zxm9s9riv46p69c14bnn532fv6cv5b6l1b0pwb"))))
+              (sha256 (base32 checksum))
+              (patches (search-patches
+                        "patches/jasper-no-define-int-types.patch"))))
     (build-system gnu-build-system)
     (inputs (list ijg-libjpeg))))
 
+(define-public jasper-1.900.19
+  (jasper-at-version "1.900.19"
+                     "0dm3k0wdny3s37zxm9s9riv46p69c14bnn532fv6cv5b6l1b0pwb"))
+
+(define (with-ubsan base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-with-ubsan"))
+    (arguments
+     (case (build-system-name (package-build-system base))
+       ((gnu)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                '(("CFLAGS"
+                   "-fsanitize=undefined -fno-sanitize-recover=undefined"
+                   "-O2 -g")
+                  ("LDFLAGS" "-fsanitize=undefined")))))
+          ((#:tests? _ #f)
+           #f)))))))
+
+(define-public jasper-with-ubsan-1.900.19
+  (with-ubsan jasper-1.900.19))
+
 (define-public jasper-1.900.5
-  (package
-    (inherit jasper-1.900.19)
-    (name "jasper")
-    (version "1.900.5")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://www.ece.uvic.ca/~frodo/jasper"
-                                  "/software/jasper-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1fvy4ngc6064g128q4484qpinsn05y9qw6lrccc4czhalla2w26m"))))))
+  (jasper-at-version "1.900.5"
+                     "1fvy4ngc6064g128q4484qpinsn05y9qw6lrccc4czhalla2w26m"))
 
+;; TODO: static build for taosc.
 (define-public jasper-1.900.3
-  (package
-    (inherit jasper-1.900.19)
-    (name "jasper")
-    (version "1.900.3")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://www.ece.uvic.ca/~frodo/jasper"
-                                  "/software/jasper-" version ".tar.gz"))
-              (sha256
-               (base32
-                "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn"))))
-    (arguments '(#:make-flags '("LDFLAGS=-static")))))
+  (jasper-at-version "1.900.3"
+                     "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn"))
 
-(define-public libarchive-3.2.0-ubsan
+(define-public libarchive-3.2.0
   (package
     (inherit libarchive)
     (name "libarchive")
@@ -232,14 +242,10 @@
                                   version ".tar.gz"))
               (sha256
                (base32 "11xabdpmvdmcdkidigmqh4ymhra95lr7ipcys4hdq0gzf7ylbkkv"))
-              (patches '())))
-    (arguments '(#:make-flags
-                 (list (string-append "CFLAGS=-O2 -g"
-                                      " -fsanitize=undefined"
-                                      " -fno-sanitize-recover=undefined")
-                       "LDFLAGS=-fsanitize=undefined")
-                 ;; Tests fail with UBSan enabled^
-                 #:tests? #f))))
+              (patches '())))))
+
+(define-public libarchive-with-ubsan-3.2.0
+  (with-ubsan libarchive-3.2.0))
 
 (define-public libjpeg-turbo-1.5.2
   (package
