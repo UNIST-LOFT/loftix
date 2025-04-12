@@ -146,7 +146,8 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = [ 'patches/afl++-*.patch',
          'patches/e9patch-*.patch',
-         'patches/evocatio-*.patch' ]
+         'patches/evocatio-*.patch',
+         'patches/jasper-no-define-int-types.patch' ]
 SPDX-FileCopyrightText = 'Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
