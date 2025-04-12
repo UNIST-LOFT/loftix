@@ -29,18 +29,22 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils)
-  #:use-module (srfi srfi-26))
+  #:use-module (guix utils))
 
 (define (at-version base version uri checksum)
   (package
     (inherit base)
     (version version)
     (source
-     (origin
-       (inherit (package-source base))
-       (uri (uri version))
-       (sha256 (base32 checksum))))))
+     (let ((src (package-source base)))
+       (origin
+         (inherit src)
+         (uri uri)
+         (sha256 (base32 checksum))
+         (file-name (cond ((eq? (origin-method src) git-fetch)
+                           (git-file-name (package-name base) version))
+                          ((eq? (origin-method src) url-fetch)
+                           (origin-file-name src)))))))))
 
 (define (binutils-at-version base version checksum)
   (at-version
@@ -51,7 +55,7 @@
         (inherit (package-source base))
         (patches '()))))
    version
-   (cut string-append "mirror://gnu/binutils/binutils-" <> ".tar.bz2")
+   (string-append "mirror://gnu/binutils/binutils-" version ".tar.bz2")
    checksum))
 
 (define-public binutils-2.32
@@ -84,6 +88,19 @@
     (name (string-append (package-name base) "-with-asan"))
     (arguments
      (case (build-system-name (package-build-system base))
+       ((cmake)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:phases phases #~%standard-phases)
+           (with-imported-modules '((loftix transform))
+             #~(modify-phases #$phases
+                 (add-before 'configure 'set-env
+                   (lambda _
+                     (use-modules (loftix transform))
+                     (append-env "CFLAGS" "-fsanitize=address" "-O2 -g")
+                     (append-env "LDFLAGS" "-fsanitize=address" #f)
+                     (setenv "ASAN_OPTIONS" "detect_leaks=0"))))))
+          ((#:tests? _ #f)
+           #f)))
        ((gnu)
         (substitute-keyword-arguments (package-arguments base)
           ((#:make-flags flags #~'())
@@ -124,7 +141,7 @@
   (at-version
    base
    version
-   (cut string-append "mirror://gnu/coreutils/coreutils-" <> ".tar.xz")
+   (string-append "mirror://gnu/coreutils/coreutils-" version ".tar.xz")
    checksum))
 
 (define-public coreutils-8.26
@@ -226,7 +243,6 @@
   (jasper-at-version "1.900.5"
                      "1fvy4ngc6064g128q4484qpinsn05y9qw6lrccc4czhalla2w26m"))
 
-;; TODO: static build for taosc.
 (define-public jasper-1.900.3
   (jasper-at-version "1.900.3"
                      "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn"))
@@ -247,70 +263,48 @@
 (define-public libarchive-with-ubsan-3.2.0
   (with-ubsan libarchive-3.2.0))
 
+(define (libjpeg-turbo-at-version base version checksum)
+  (at-version
+   base
+   version
+   (string-append "mirror://sourceforge/libjpeg-turbo/" version
+                  "/libjpeg-turbo-" version ".tar.gz")
+   checksum))
+
+(define-public libjpeg-turbo-2.0.1
+  (libjpeg-turbo-at-version
+   libjpeg-turbo
+   "2.0.1"
+   "1zv6z093l3x3jzygvni7b819j7xhn6d63jhcdrckj7fz67n6ry75"))
+
+(define-public libjpeg-turbo-1.5.3
+  (libjpeg-turbo-at-version
+   (package
+     (inherit libjpeg-turbo)
+     (build-system gnu-build-system)
+     (arguments
+      (substitute-keyword-arguments (package-arguments libjpeg-turbo)
+        ((#:configure-flags _) #~'())))) ;discard CMake flags
+   "1.5.3"
+   "08r5b5mywwrxv4axvq80dm31cklz81grczlzlxr2xqa6pgi90j5j"))
+
 (define-public libjpeg-turbo-1.5.2
-  (package
-    (inherit libjpeg-turbo)
-    (name "libjpeg-turbo")
-    (version "1.5.2")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
-                                  version "/libjpeg-turbo-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))))
-    (build-system gnu-build-system)
-    (arguments '(#:make-flags '("LDFLAGS=-static")
-                 #:test-target "test"))))
+  (libjpeg-turbo-at-version
+   libjpeg-turbo-1.5.3
+   "1.5.2"
+   "0a5m0psfp5952y5vrcs0nbdz1y9wqzg2ms0xwrx752034wxr964h"))
 
-(define-public libjpeg-turbo-1.5.3-asan
-  (package
-    (inherit libjpeg-turbo-1.5.2)
-    (name "libjpeg-turbo")
-    (version "1.5.3")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
-                                  version "/libjpeg-turbo-" version ".tar.gz"))
-              (sha256
-               (base32
-                "08r5b5mywwrxv4axvq80dm31cklz81grczlzlxr2xqa6pgi90j5j"))))
-    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
-                                "LDFLAGS=-static -fsanitize=address")))))
+(define-public libjpeg-turbo-1.2.0
+  (libjpeg-turbo-at-version
+   libjpeg-turbo-1.5.3
+   "1.2.0"
+   "13pra36wn2djw2aq5vvbaf81m9jxdjixvpd8bw71nni9n6lv57b2"))
 
-(define-public libjpeg-turbo-1.2.0-asan
-  (package
-    (inherit libjpeg-turbo-1.5.3-asan)
-    (name "libjpeg-turbo")
-    (version "1.2.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
-                                  version "/libjpeg-turbo-" version ".tar.gz"))
-              (sha256
-               (base32
-                "13pra36wn2djw2aq5vvbaf81m9jxdjixvpd8bw71nni9n6lv57b2"))))))
+(define-public libjpeg-turbo-with-asan-2.0.1 (with-asan libjpeg-turbo-2.0.1))
+(define-public libjpeg-turbo-with-asan-1.5.3 (with-asan libjpeg-turbo-1.5.3))
+(define-public libjpeg-turbo-with-asan-1.2.0 (with-asan libjpeg-turbo-1.2.0))
 
-(define-public libjpeg-turbo-2.0.1-asan
-  (package
-    (inherit libjpeg-turbo)
-    (name "libjpeg-turbo")
-    (version "2.0.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/libjpeg-turbo/"
-                                  version "/libjpeg-turbo-" version ".tar.gz"))
-              (sha256
-               (base32
-                "1zv6z093l3x3jzygvni7b819j7xhn6d63jhcdrckj7fz67n6ry75"))))
-    (arguments '(#:phases (modify-phases %standard-phases
-                            (add-before 'configure 'set-env
-                              (lambda _
-                                (setenv "CFLAGS" "-O2 -g -fsanitize=address")
-                                (setenv "LDFLAGS" "-fsanitize=address"))))
-                 #:configure-flags '("-DCMAKE_INSTALL_LIBDIR:PATH=lib")))))
-
-(define-public libming-0.4.8-asan
+(define-public libming-0.4.8
   (package
     (name "libming")
     (version "0.4.8")
@@ -325,8 +319,7 @@
               (patches (search-patches
                          "patches/libming-parallel-make.patch"))))
     (build-system gnu-build-system)
-    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fcommon -fsanitize=address"
-                                "LDFLAGS=-static -fsanitize=address")
+    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fcommon")
                  #:tests? #f))
     (native-inputs (list autoconf automake bison flex libtool pkgconf swig))
     (inputs (list freetype giflib libpng))
@@ -336,54 +329,26 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
     (home-page "https://github.com/libming/libming")
     (license (list license:lgpl2.1+ license:gpl2+))))
 
-(define-public libming-0.4.7-asan
-  (package
-    (inherit libming-0.4.8-asan)
-    (name "libming")
-    (version "0.4.7")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/libming/libming")
-                    (commit "ming-0_4_7")))
-              (sha256
-               (base32 "17ngz1n1mnknixzchywkhbw9s3scad8ajmk97gx14xbsw1603gd2"))
-              (file-name (git-file-name name version))
-              (patches (search-patches
-                         "patches/libming-parallel-make.patch"))))))
+(define-public libming-with-asan-0.4.8
+  (with-asan libming-0.4.8))
 
-(define-public libtiff-4.0.3
-  (package
-    (inherit libtiff)
-    (version "4.0.3")
-    (source (origin
-             (method url-fetch)
-             (uri (string-append "ftp://ftp.remotesensing.org/pub/libtiff/tiff-"
-                    version ".tar.gz"))
-             (sha256
-              (base32 "0wj8d1iwk9vnpax2h29xqc2hwknxg3s0ay2d5pxkg59ihbifn6pa"))))
-    (outputs '("out"))))
+(define (libming-at-version base version checksum)
+  (at-version
+   base
+   version
+   (git-reference
+    (url "https://github.com/libming/libming")
+    (commit (string-append "ming-"
+                           (string-map (lambda (char)
+                                         (if (eq? char #\.) #\_ char))
+                                       version))))
+   checksum))
 
-(define-public libtiff-4.0.6
-  (package
-    (inherit libtiff)
-    (version "4.0.6")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                     "ftp://ftp.remotesensing.org/pub/libtiff/tiff-" version
-                     ".tar.gz"))
-              (sha256
-               (base32
-                "136nf1rj9dp5jgv1p7z4dk0xy3wki1w0vfjbk82f645m0w4samsd"))))
-    (arguments '(#:make-flags '("LDFLAGS=-static")))
-    (outputs '("out"))))
-
-(define-public libtiff-4.0.6-asan
-  (package
-    (inherit libtiff-4.0.6)
-    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
-                                "LDFLAGS=-static -fsanitize=address")))))
+(define-public libming-0.4.7
+  (libming-at-version
+   libming-0.4.8
+   "0.4.7"
+   "17ngz1n1mnknixzchywkhbw9s3scad8ajmk97gx14xbsw1603gd2"))
 
 (define-public libtiff-4.0.7
   (package
@@ -398,84 +363,92 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
                 "06ghqhr4db1ssq0acyyz49gr8k41gzw6pqb6mbn5r7jqp77s4hwz"))))
     (outputs '("out"))))
 
-(define-public libtiff-4.0.7-asan
-  (package
-    (inherit libtiff-4.0.7)
-    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
-                                "LDFLAGS=-static -fsanitize=address")))))
+(define (libtiff-at-version base version checksum)
+  (at-version
+   base
+   version
+   (string-append
+    "ftp://ftp.remotesensing.org/pub/libtiff/tiff-" version ".tar.gz")
+   checksum))
 
-(define-public libtiff-4.0.7-ubsan
-  (package
-    (inherit libtiff-4.0.7)
-    (arguments '(#:make-flags
-                 (list (string-append
-                         "CFLAGS=-O2 -g -fsanitize=undefined"
-                         " -fno-sanitize-recover=undefined")
-                       "LDFLAGS=-static -fsanitize=undefined")
-                 ;; Tests fail with ubsan enabled^
-                 #:tests? #f))))
+(define-public libtiff-4.0.6
+  (libtiff-at-version
+   libtiff-4.0.7
+   "4.0.6"
+   "136nf1rj9dp5jgv1p7z4dk0xy3wki1w0vfjbk82f645m0w4samsd"))
 
-(define-public libtiff-4.0.7-ubsan-float-cast-overflow
+(define-public libtiff-4.0.3
+  (libtiff-at-version
+   libtiff-4.0.7
+   "4.0.3"
+   "0wj8d1iwk9vnpax2h29xqc2hwknxg3s0ay2d5pxkg59ihbifn6pa"))
+
+(define-public libtiff-with-asan-4.0.7 (with-asan libtiff-4.0.7))
+(define-public libtiff-with-asan-4.0.6 (with-asan libtiff-4.0.6))
+(define-public libtiff-with-ubsan-4.0.7 (with-ubsan libtiff-4.0.7))
+
+(define (with-ubsan-float-cast-overflow base)
   (package
-    (inherit libtiff-4.0.7)
-    (arguments '(#:make-flags
-                 (list (string-append
-                         "CFLAGS=-O2 -g -fsanitize=float-cast-overflow"
-                         " -fno-sanitize-recover=float-cast-overflow")
-                       "LDFLAGS=-static -fsanitize=float-cast-overflow")))))
+    (inherit base)
+    (name (string-append (package-name base)
+                         "-with-ubsan-float-cast-overflow"))
+    (arguments
+     (case (build-system-name (package-build-system base))
+       ((gnu)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                `(("CFLAGS"
+                   ,(string-append
+                     "-fsanitize=float-cast-overflow"
+                     " -fno-sanitize-recover=float-cast-overflow")
+                   "-O2 -g")
+                  ("LDFLAGS" "-fsanitize=float-cast-overflow")))))
+          ((#:tests? _ #f)
+           #f)))))))
+
+(define-public libtiff-with-ubsan-float-cast-overflow-4.0.7
+  (with-ubsan-float-cast-overflow libtiff-4.0.7))
+
+(define (libxml2-at-version base version checksum)
+  (at-version
+   base
+   version
+   (string-append "ftp://xmlsoft.org/libxml2/libxml2-" version ".tar.gz")
+   checksum))
 
 (define-public libxml2-2.9.4
-  (package
-    (inherit libxml2)
-    (name "libxml2")
-    (version "2.9.4")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "0g336cr0bw6dax1q48bblphmchgihx9p1pjmxdnrd6sh3qci3fgz"))))
-    (arguments '(#:make-flags '("LDFLAGS=-static")))
-    ;; $XML_CATALOG_FILES lists 'catalog.xml' files found in under the 'xml'
-    ;; sub-directory of any given package.
-    (native-search-paths (list (search-path-specification
-                                (variable "XML_CATALOG_FILES")
-                                (separator " ")
-                                (files '("xml"))
-                                (file-pattern "^catalog\\.xml$")
-                                (file-type 'regular))))
-    (search-paths native-search-paths)))
+  (libxml2-at-version
+   (package
+     (inherit libxml2)
+     ;; $XML_CATALOG_FILES lists 'catalog.xml' files found in under the 'xml'
+     ;; sub-directory of any given package.
+     (native-search-paths (list (search-path-specification
+                                 (variable "XML_CATALOG_FILES")
+                                 (separator " ")
+                                 (files '("xml"))
+                                 (file-pattern "^catalog\\.xml$")
+                                 (file-type 'regular))))
+     (search-paths native-search-paths))
+   "2.9.4"
+   "0g336cr0bw6dax1q48bblphmchgihx9p1pjmxdnrd6sh3qci3fgz"))
 
-(define-public libxml2-2.9.3-asan
-  (package
-    (inherit libxml2-2.9.4)
-    (name "libxml2")
-    (version "2.9.3")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "0bd17g6znn2r98gzpjppsqjg33iraky4px923j3k8kdl8qgy7sad"))))
-    (arguments '(#:make-flags '("CFLAGS=-O2 -g -fsanitize=address"
-                                "LDFLAGS=-static -fsanitize=address")
-                 ;; Tests fail with ASan enabled^
-                 #:tests? #f))))
+(define-public libxml2-2.9.3
+  (libxml2-at-version
+   libxml2-2.9.4
+   "2.9.3"
+   "0bd17g6znn2r98gzpjppsqjg33iraky4px923j3k8kdl8qgy7sad"))
 
-(define-public libxml2-2.9.0-asan
-  (package
-    (inherit libxml2-2.9.3-asan)
-    (name "libxml2")
-    (version "2.9.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "ftp://xmlsoft.org/libxml2/libxml2-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "10ib8bpar2pl68aqksfinvfmqknwnk7i35ibq6yjl8dpb0cxj9dd"))))))
+(define-public libxml2-2.9.0
+  (libxml2-at-version
+   libxml2-2.9.4
+   "2.9.0"
+   "10ib8bpar2pl68aqksfinvfmqknwnk7i35ibq6yjl8dpb0cxj9dd"))
+
+(define-public libxml2-with-asan-2.9.3 (with-asan libxml2-2.9.3))
+(define-public libxml2-with-asan-2.9.0 (with-asan libxml2-2.9.0))
 
 (define-public potrace-1.11
   (package

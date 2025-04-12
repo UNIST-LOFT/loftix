@@ -84,12 +84,12 @@
 
 - CVE-2012-2806: [heap buffer overflow][chromium-40058947]
 
-      guix shell -e '(@@ (loftix bugs) libjpeg-turbo-1.2.0-asan)'
+      guix shell libjpeg-turbo-with-asan@1.2.0
       djpeg cve/2012/2806/cnode0006-heap-buffer-overflow-796.jpg
 
 - CVE-2017-15232: [null pointer dereference][mozjpeg-268]
 
-      guix shell -e '(@@ (loftix bugs) libjpeg-turbo-1.5.2)'
+      guix shell libjpeg-turbo@1.5.2
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
         -targa -grayscale -outfile /dev/null cve/2017/15232/1.jpg
       djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
@@ -97,7 +97,7 @@
 
 - CVE-2018-14498: [heap buffer overflow][libjpeg-turbo-258]
 
-      guix shell -e '(@@ (loftix bugs) libjpeg-turbo-1.5.3-asan)'
+      guix shell libjpeg-turbo-with-asan@1.5.3
       cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:209_1.bmp
       cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:209_2.bmp
       cjpeg -outfile /dev/null cve/2018/14498/hbo_rdbmp.c:210_1.bmp
@@ -106,46 +106,47 @@
 
 - CVE-2018-19664: [heap buffer overflow][libjpeg-turbo-305]
 
-      guix shell -e '(@@ (loftix bugs) libjpeg-turbo-2.0.1-asan)'
+      guix shell libjpeg-turbo-with-asan@2.0.1
       djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
 
 ## libming
 
-- CVE-2016-9264: [global buffer overflow][oss-sec-20161110-9]
+- CVE-2016-9265: [division by zero][oss-sec-20161110-9]
 
-      guix shell -e '(@@ (loftix bugs) libming-0.4.7-asan)'
-      listmp3 cve/2016/9264/globaloverflow
+      guix shell libming@0.4.7
+      listmp3 cve/2016/9265/34.mp3
+      listmp3 cve/2016/9265/45.mp3
 
 - CVE-2018-8806: [use after free][libming-128]
 
-      guix shell -e '(@@ (loftix bugs) libming-0.4.8-asan)'
+      guix shell libming-with-asan@0.4.8
       swftophp cve/2018/8806/heap-use-after-free.swf
 
 - CVE-2018-8964: [use after free][libming-130]
 
-      guix shell -e '(@@ (loftix bugs) libming-0.4.8-asan)'
+      guix shell libming-with-asan@0.4.8
       swftophp cve/2018/8964/heap-use-after-free.swf
 
 ## libtiff
 
 - BZ#2633: [heap buffer overflow][maptools-2633]:
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiff2ps maptools/2633/heapoverflow.tiff
 
 - CVE-2014-8128: [buffer overflow][maptools-2489]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.3)'
+      guix shell libtiff@4.0.3
       thumbnail cve/2014/8128/03_thumbnail.tiff /dev/null
 
 - CVE-2016-3186: [buffer overflow][redhat-1319503]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
-      echo y | gif2tiff cve/2016/3186/crash.gif /dev/null
+      guix shell libtiff@4.0.6
+      gif2tiff cve/2016/3186/crash.gif -
 
 - CVE-2016-3623: [division by zero][maptools-2569]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      guix shell libtiff@4.0.6
       tar xvf $(guix build -S libtiff@4.0.6)\
         tiff-4.0.6/test/images/logluv-3c-16b.tiff
       rgb2ycbcr -h 0 tiff-4.0.6/test/images/logluv-3c-16b.tiff /dev/null
@@ -153,37 +154,37 @@
 
 - CVE-2016-5314: [heap buffer overflow][maptools-2554]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6-asan)'
+      guix shell libtiff-with-asan@4.0.6
       rgb2ycbcr cve/2016/5314/oobw.tiff /dev/null
 
 - CVE-2016-5321: [invalid read][maptools-2558]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      guix shell libtiff@4.0.6
       tiffcrop cve/2016/5321/ill-read.tiff /dev/null
 
 - CVE-2016-9273: [heap buffer overflow][maptools-2587]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6-asan)'
+      guix shell libtiff-with-asan@4.0.6
       tiffsplit cve/2016/9273/test049.tiff
 
 - CVE-2016-9532: [heap buffer overflow][maptools-2592]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.6)'
+      guix shell libtiff-with-asan@4.0.6
       tiffcrop cve/2016/9532/heap-buffer-overflow.tiff /dev/null
 
 - CVE-2016-10092: [heap buffer overflow][maptools-2622]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiffcrop -i cve/2016/10092/heapoverflow.tiff /dev/null
 
 - CVE-2016-10093: [heap buffer overflow][maptools-2610]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiffcp -i cve/2016/10093/heapoverflow.tiff /dev/null
 
 - CVE-2016-10094: [heap buffer overflow][maptools-2640]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiff2pdf cve/2016/10094/heapoverflow.tiff -o /dev/null
 
 - CVE-2016-10266: [division by zero][maptools-2596]
@@ -198,65 +199,65 @@
 
 - CVE-2016-10268: [heap buffer overflow][maptools-2598]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiffcp -i cve/2016/10268/heapoverflow.tiff /dev/null
 
 - CVE-2016-10271: [heap buffer overflow][maptools-2620]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiffcrop -i cve/2016/10271/heapoverflow.tiff /dev/null
 
 - CVE-2016-10272: [heap buffer overflow][maptools-2624]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiffcrop -i cve/2016/10272/heapoverflow.tiff /dev/null
 
 - CVE-2017-5225: [heap buffer overflow][maptools-2656]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-asan)'
+      guix shell libtiff-with-asan@4.0.7
       tiffcp -p separate cve/2017/5225/2656.tiff /dev/null
       tiffcp -p contig cve/2017/5225/2657.tiff /dev/null
 
 - CVE-2017-7595: [division by zero][maptools-2653]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7)'
+      guix shell libtiff@4.0.7
       tiffcp -i cve/2017/7595/fpe.tiff /dev/null
 
 - cve-2017-7599: [float cast overflow][maptools-2646]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-ubsan-float-cast-overflow)'
+      guix shell libtiff-with-ubsan-float-cast-overflow@4.0.7
       tiffcp -i cve/2017/7599/outside-short.tiff /dev/null
 
 - cve-2017-7600: [float cast overflow][maptools-2647]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-ubsan-float-cast-overflow)'
+      guix shell libtiff-with-ubsan-float-cast-overflow@4.0.7
       tiffcp -i cve/2017/7600/outside-unsigned-char.tiff /dev/null
 
 - CVE-2017-7601: [signed integer overflow][maptools-2648]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7-ubsan)'
+      guix shell libtiff-with-ubsan@4.0.7
       tiffcp -i cve/2017/7601/shift-long.tiff /dev/null
 
 ## libxml2
 
 - CVE-2012-5134: [heap buffer overflow][chromium-40076524]
 
-      guix shell -e '(@@ (loftix bugs) libxml2-2.9.0-asan)'
+      guix shell libxml2-with-asan@2.9.0
       xmllint cve/2012/5134/bad.xml
 
 - CVE-2016-1838: [heap buffer overflow][chromium-42452154]
 
-      guix shell -e '(@@ (loftix bugs) libxml2-2.9.3-asan)'
+      guix shell libxml2-with-asan@2.9.3
       xmllint cve/2016/1838/attachment_316158
 
 - CVE-2016-1839: [heap buffer overflow][chromium-42452152]
 
-      guix shell -e '(@@ (loftix bugs) libxml2-2.9.3-asan)'
+      guix shell libxml2-with-asan@2.9.3
       xmllint --html cve/2016/1839/asan_heap-oob
 
 - CVE-2017-5969: [null pointer derefence][oss-sec-20161105-3]
 
-      guix shell -e '(@@ (loftix bugs) libxml2-2.9.4
+      guix shell libxml2@2.9.4
       xmllint --recover cve/2017/5969/crash-libxml2-recover.xml
 
 ## potrace

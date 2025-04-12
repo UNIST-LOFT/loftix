@@ -1,4 +1,4 @@
-;;; Package transformations
+;;; Package recipe transformations
 ;;;
 ;;; SPDX-FileCopyrightText: 2025 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
@@ -7,7 +7,15 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
-  #:export (append-make-flag))
+  #:export (append-env
+            append-make-flag))
+
+(define (append-env name addition default)
+  (setenv name
+          (let ((value (or (getenv name) default)))
+            (if value
+                (string-append value " " addition)
+                addition))))
 
 (define (append-make-flag original additions)
   (let ((orig-ls (map (lambda (flag)
