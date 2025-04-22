@@ -1,6 +1,6 @@
 ;;; Packages for software fuzzing
 ;;;
-;;; SPDX-FileCopyrightText: 2024 Nguyễn Gia Phong
+;;; SPDX-FileCopyrightText: 2024-2025 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix fuzzing)
@@ -16,7 +16,8 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils))
+  #:use-module (guix utils)
+  #:export (for-evocatio))
 
 (define-public afl-dyninst
   (package
@@ -123,3 +124,26 @@ of how an attacker can exploit a bug.
 Evocatio leverages a capability-guided fuzzer to efficiently uncover
 new bug capabilities (rather than only generating a single crashing test case
 for a given bug, as a traditional greybox fuzzer does)."))))
+
+(define (for-evocatio base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-for-evocatio"))
+    (arguments
+     (substitute-keyword-arguments (package-arguments base)
+       ((#:configure-flags flags #~'())
+        #~(cons (string-append "CC=" #$evocatio "/bin/afl-cc")
+                #$flags))
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-before 'configure 'set-env
+              (lambda _
+                (setenv "CC" #$(file-append evocatio "/bin/afl-cc"))
+                (setenv "AFL_USE_ASAN" "1")
+                (setenv "AFL_USE_UBSAN" "1")
+                (setenv "ASAN_OPTIONS" "detect_leaks=0")))))
+       ((#:tests? _ #f)
+        #f)))
+    (native-inputs
+      (modify-inputs (package-native-inputs base)
+        (append evocatio)))))
