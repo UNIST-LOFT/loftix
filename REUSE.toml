@@ -103,10 +103,12 @@ SPDX-License-Identifier = 'CC0-1.0'
 path = [ 'bugs/cve/2017/14745/crash_1',
          'bugs/cve/2017/15025/floatexception.elf' ]
 SPDX-FileCopyrightText = 'Junchao Luan'
+SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2017/15232/*.jpg'
 SPDX-FileCopyrightText = 'Zhao Liang'
+S232PDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2018/8806/heap-use-after-free.swf'
@@ -121,6 +123,7 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = 'bugs/cve/2018/14498/*.bmp'
 SPDX-FileCopyrightText = 'Hongxu Chen'
+SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2018/19664/heap-buffer-overflow-2.jpg'
