@@ -1,0 +1,34 @@
+commit d36429fa541c69c566f981cd159b82f85d02b4fd
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2025-04-24 13:10:50 +0900
+
+    Install libraries and tools
+
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index 558c01b7c725..aca4d9210862 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -31,7 +31,9 @@ target_link_libraries(Z3Fuzzy_static
+ target_link_libraries(Z3Fuzzy_shared
+                       PUBLIC ${XXHASH_LIBRARIES}
+                       PUBLIC ${Z3_LIBRARIES})
+-set_target_properties(Z3Fuzzy_static PROPERTIES OUTPUT_NAME Z3Fuzzy)
+-set_target_properties(Z3Fuzzy_shared PROPERTIES OUTPUT_NAME Z3Fuzzy)
++set_target_properties(Z3Fuzzy_static PROPERTIES OUTPUT_NAME Z3Fuzzy
++                      PUBLIC_HEADER z3-fuzzy.h)
++set_target_properties(Z3Fuzzy_shared PROPERTIES OUTPUT_NAME Z3Fuzzy
++                      PUBLIC_HEADER z3-fuzzy.h)
+ 
+-install(FILES z3-fuzzy.h DESTINATION include)
++install(TARGETS Z3Fuzzy_shared Z3Fuzzy_static)
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index a9c1a07fc541..732818c3ad9e 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -27,3 +27,6 @@ add_executable(stats-collection-z3
+     stats-collection-z3.c
+     pretty-print.c)
+ LinkBin(stats-collection-z3)
++
++install(TARGETS fuzzy-solver fuzzy-solver-vs-z3
++        stats-collection-fuzzy stats-collection-z3)

@@ -36,6 +36,10 @@ Then run `guix pull`.
 - [python-pacfix]: PAC-learning-based program synthesizer
 - [taosc]: Makeshift binary patch generator
 
+### Theorem Proving
+
+- [fuzzy-sat]: Approximate solver for concolic execution
+
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [Dyninst]: https://github.com/dyninst/dyninst
@@ -44,3 +48,4 @@ Then run `guix pull`.
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
 [taosc]: https://trong.loang.net/~cnx/taosc/about
+[fuzzy-sat]: https://github.com/season-lab/fuzzy-sat
