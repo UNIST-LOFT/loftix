@@ -113,7 +113,7 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = 'bugs/cve/2017/15232/*.jpg'
 SPDX-FileCopyrightText = 'Zhao Liang'
-S232PDX-License-Identifier = 'CC0-1.0'
+SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
 path = 'bugs/cve/2018/8806/heap-use-after-free.swf'

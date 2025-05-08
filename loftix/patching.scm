@@ -20,11 +20,11 @@
   (package
     (name "e9patch")
     (version "1.0.0-rc10")
+    (home-page "https://github.com/GJDuck/e9patch")
     (source (origin
               (method git-fetch)
-              (uri (git-reference
-                   (url "https://github.com/GJDuck/e9patch")
-                   (commit (string-append "v" version))))
+              (uri (git-reference (url home-page)
+                                  (commit (string-append "v" version))))
               (sha256
                (base32
                 "1l2pjxgr2mckpffvj7hf0sjvv3678138afjb0wc3f6c2zrcpspf8"))
@@ -47,7 +47,6 @@
                                             "PREFIX=" #$output))))
     (native-inputs (list markdown xxd))
     (inputs (list elfutils zycore zydis zlib))
-    (home-page "https://github.com/GJDuck/e9patch")
     (synopsis "Static binary rewriting tool")
     (description
      "E9Patch is a static binary rewriting tool for x86-64 ELF binaries.
