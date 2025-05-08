@@ -1,11 +1,42 @@
-commit d36429fa541c69c566f981cd159b82f85d02b4fd
+commit 3a8ce277d2f26409a1eb139641f0733979bd21ab
 Author: Nguyễn Gia Phong <cnx@loang.net>
 Date:   2025-04-24 13:10:50 +0900
 
     Install libraries and tools
 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7cfa95cc7174..695bc8757fa5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ cmake_minimum_required(VERSION 3.7)
+-
++include(CMakePackageConfigHelpers)
+ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+ 
+ project(Z3Fuzzy)
+@@ -7,3 +7,10 @@ project(Z3Fuzzy)
+ set(Z3_BUILD_PYTHON_BINDINGS true)
+ add_subdirectory(lib)
+ add_subdirectory(tools)
++
++install(EXPORT Z3Fuzzy DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Z3Fuzzy)
++configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
++  "${CMAKE_CURRENT_BINARY_DIR}/Z3FuzzyConfig.cmake"
++  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Z3Fuzzy)
++install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Z3FuzzyConfig.cmake"
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Z3Fuzzy)
+diff --git a/Config.cmake.in b/Config.cmake.in
+new file mode 100644
+index 000000000000..64b0eaa487fb
+--- /dev/null
++++ b/Config.cmake.in
+@@ -0,0 +1,3 @@
++@PACKAGE_INIT@
++include("${CMAKE_CURRENT_LIST_DIR}/Z3Fuzzy.cmake")
++check_required_components(Z3Fuzzy)
 diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
-index 558c01b7c725..aca4d9210862 100644
+index 558c01b7c725..c30f0f41206a 100644
 --- a/lib/CMakeLists.txt
 +++ b/lib/CMakeLists.txt
 @@ -31,7 +31,9 @@ target_link_libraries(Z3Fuzzy_static
@@ -20,7 +51,7 @@ index 558c01b7c725..aca4d9210862 100644
 +                      PUBLIC_HEADER z3-fuzzy.h)
  
 -install(FILES z3-fuzzy.h DESTINATION include)
-+install(TARGETS Z3Fuzzy_shared Z3Fuzzy_static)
++install(TARGETS Z3Fuzzy_shared Z3Fuzzy_static EXPORT Z3Fuzzy)
 diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
 index a9c1a07fc541..732818c3ad9e 100644
 --- a/tools/CMakeLists.txt

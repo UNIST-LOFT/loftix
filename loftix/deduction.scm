@@ -9,7 +9,6 @@
   #:use-module (gnu packages digest)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages pkg-config)
-  #:use-module (gnu packages python-build)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system pyproject)
   #:use-module (guix download)
@@ -18,39 +17,40 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages))
 
-(define z3-for-fuzzolic
+(define-public z3-for-fuzzolic
   (let* ((base z3)
          (base-version "4.14.1")
          (base-tag (string-append "z3-" base-version))
          (revision "fuzzolic")
-         (commit "8a9e291dc2117e5cf48bdf2810f254000c6dd3d9")
+         (commit "268d10d0d99083a18cde2d615e0f9de82d7b201d")
          (upstream "https://github.com/Z3Prover/z3"))
-    (package
-      (inherit base)
-      (name "z3-for-fuzzolic")
-      (version (git-version base-version revision commit))
-      (source
-       (origin
-         (inherit (package-source base))
-         (uri (git-reference (url upstream)
-                             (commit base-tag)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "1gdknrqnnigfh1h833ks3vbrp4j74mfg6188c0k4xbl5zv6h6fx5"))
-         (patches
-          (list
-            (origin
-              (method url-fetch)
-              (uri (string-append upstream "/compare/" base-tag
-                                  ".." commit ".diff"))
-              (sha256
-               (base32 "1qgfz4rz4xm1ivr5s0wz5d16mc1gr5yyc400sfbxm8r288pb56bq"))
-              (file-name (string-append name ".patch")))))))
-      (home-page "https://github.com/season-lab/z3")
-      (synopsis "Z3 for FUZZOLIC"))))
+    (hidden-package
+     (package
+       (inherit base)
+       (name "z3-for-fuzzolic")
+       (version (git-version base-version revision commit))
+       (source
+        (origin
+          (inherit (package-source base))
+          (uri (git-reference (url upstream)
+                              (commit base-tag)))
+          (file-name (git-file-name name version))
+          (sha256
+           (base32 "1gdknrqnnigfh1h833ks3vbrp4j74mfg6188c0k4xbl5zv6h6fx5"))
+          (patches
+           (list
+             (origin
+               (method url-fetch)
+               (uri (string-append upstream "/compare/" base-tag
+                                   ".." commit ".diff"))
+               (sha256
+                (base32 "07fga2jn5830fz9snwbzz2mpm2qqfjchsb969rqs7pf5py0h93fp"))
+               (file-name (string-append name ".patch")))))))
+       (home-page "https://github.com/season-lab/z3")
+       (synopsis "Z3 for FUZZOLIC")))))
 
 (define-public fuzzy-sat
-  (let ((commit "5939b998a28ce2017b2c0dd89434792ab9ce5e51"))
+  (let ((commit "99094f664abcc7cb8ff7d04eb894616b89a15efc"))
     (package
       (name "fuzzy-sat")
       (version (git-version "0.1" "master" commit))
@@ -62,16 +62,15 @@
                             (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "1wm8sznv9w09vfb6nk1c4kbych34zpiywxkz37az81wsvpbwk82s"))
-         (patches (search-patches "patches/fuzzy-sat-include.patch"
-                                  "patches/fuzzy-sat-unbundle.patch"
+          (base32 "1wq2a5j73aigw64bhf4s2qgkda114vfpmwiy353m0f54f5fg6sh3"))
+         (patches (search-patches "patches/fuzzy-sat-unbundle.patch"
                                   "patches/fuzzy-sat-install.patch"))))
       (build-system cmake-build-system)
       (arguments
        '(#:phases (modify-phases %standard-phases
                     (replace 'check
                       (lambda* (#:key source tests? #:allow-other-keys)
-                        (when (not tests?)
+                        (when tests?
                           (setenv "FUZZY_BIN" "tools/fuzzy-solver")
                           (invoke "pytest" "-p" "no:cacheprovider" "-v"
                                   (string-append source "/tests/run.py"))))))))
