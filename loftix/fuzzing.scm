@@ -5,18 +5,28 @@
 
 (define-module (loftix fuzzing)
   #:use-module (gnu packages)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages debug)
+  #:use-module (gnu packages digest)
+  #:use-module (gnu packages glib)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages man)
   #:use-module (gnu packages m4)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
+  #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix download)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix utils)
+  #:use-module (loftix deduction)
+  #:use-module (loftix emulation)
   #:export (for-evocatio))
 
 (define-public afl-dyninst
@@ -147,3 +157,145 @@ for a given bug, as a traditional greybox fuzzer does)."))))
     (native-inputs
       (modify-inputs (package-native-inputs base)
         (append evocatio)))))
+
+(define-public fuzzolic-showmap
+  (hidden-package
+   (package
+     (inherit aflplusplus)
+     (name "fuzzolic-showmap")
+     (source (origin
+               (inherit (package-source aflplusplus))
+               (patches (search-patches "patches/fuzzolic-showmap.patch"))))
+     (arguments
+      (substitute-keyword-arguments (package-arguments aflplusplus)
+        ((#:phases phases #~%standard-phases)
+         #~(modify-phases #$phases
+             (replace 'install
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (let* ((dir (string-append (assoc-ref outputs "out")
+                                            "/bin"))
+                        (file (string-append dir "/fuzzolic-showmap")))
+                   (mkdir-p dir)
+                   (copy-file "afl-showmap" file)))))))))))
+
+(define-public fuzzolic
+  (let* ((base-name "fuzzolic")
+         (commit "0567365dcca1a9b2e1e3a31342e9c9fb7a4f7936")
+         (revision "master")
+         (version (git-version "0" revision commit))
+         (base-source
+          (origin
+            (method git-fetch)
+            (uri (git-reference
+                  (url "https://github.com/season-lab/fuzzolic")
+                  (commit commit)))
+            (file-name (git-file-name base-name version))
+            (sha256
+             (base32
+              "0qbpvbq9lqh07b98aingkg2w9vn8w88g4g7zglcz8i6wm8bv6k99"))))
+         (description "FUZZOLIC is a concolic executor based on QEMU.
+
+It can instrument binary programs at runtime in order to build
+symbolic expressions and queries.  To reduce the runtime overhead
+and improve accuracy of the queries, it devises three analysis modes
+that are dynamically enabled during the program execution based on
+the running context.
+
+Moreover, differently from other concolic executors,
+FUZZOLIC runs the solver component, which reasons over the symbolic queries
+generated when analyzing a program, inside another process to reduce
+execution interferences that may be caused by the solver
+and negatively affect the analyzed application.")
+         (home-page "https://season-lab.github.io/fuzzolic")
+         (solver
+          (package
+            (name (string-append base-name "-solver"))
+            (version version)
+            (source (origin
+                      (inherit base-source)
+                      (patches (search-patches
+                                "patches/fuzzolic-solver-unbundle.patch"
+                                "patches/fuzzolic-solver-install.patch"))))
+            (build-system cmake-build-system)
+            (arguments '(#:configure-flags '("-S" "../source/solver")
+                         #:tests? #f))
+            (native-inputs (list pkg-config))
+            (inputs (list fuzzy-sat
+                          glib
+                          qemu-for-fuzzolic
+                          xxhash
+                          z3-for-fuzzolic))
+            (synopsis "Fuzzy constraint solver for FUZZOLIC")
+            (description description)
+            (home-page home-page)
+            (license license:gpl2+)))
+         (utils
+          (package
+            (name (string-append base-name "-utils"))
+            (version version)
+            (source (origin
+                      (inherit base-source)
+                      (patches (search-patches
+                                "patches/fuzzolic-utils-make.patch"))))
+            (build-system gnu-build-system)
+            (arguments
+             (list #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                                        (string-append "PREFIX=" #$output))
+                   #:phases #~(modify-phases %standard-phases
+                                (delete 'configure)
+                                (delete 'check))))
+            (inputs (list python))
+            (synopsis "Fuzzy constraint solver for FUZZOLIC")
+            (description description)
+            (home-page home-page)
+            (license license:gpl2+))))
+    (package
+      (name base-name)
+      (version version)
+      (source (origin
+                (inherit base-source)
+                (snippet #~(call-with-output-file "pyproject.toml"
+                             (lambda (port)
+                               (display (string-append "
+[build-system]
+requires = ['flit_core >=3.2']
+build-backend = 'flit_core.buildapi'
+
+[project]
+name = '" #$base-name "'
+version = '0'
+description = '''" #$description "
+'''
+
+[project.scripts]
+fuzzolic = 'fuzzolic.fuzzolic:main'
+fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
+") port))))
+                (patches (search-patches
+                          "patches/fuzzolic-python-package.patch"
+                          "patches/fuzzolic-unbundle.patch"
+                          ;; https://github.com/season-lab/fuzzolic/pull/13
+                          "patches/fuzzolic-timeout-solver.patch"
+                          ;; https://github.com/season-lab/fuzzolic/pull/16
+                          "patches/fuzzolic-test-driver-include-libc.patch"
+                          "patches/fuzzolic-test-fix-runner.patch"
+                          "patches/fuzzolic-test-skip-nondeterministic.patch"))))
+      (build-system pyproject-build-system)
+      (arguments
+       '(#:phases (modify-phases %standard-phases
+                    (replace 'check
+                      (lambda* (#:key tests? #:allow-other-keys)
+                        (when tests?
+                          (invoke "make" "-C" "tests")
+                          (invoke "pytest" "-v" "tests/run.py" "--fuzzy")
+                          (invoke "pytest" "-v" "tests/run.py")))))))
+      (native-inputs (list python-flit-core python-pytest))
+      (propagated-inputs (list aflplusplus
+                               fuzzolic-showmap
+                               qemu-for-fuzzolic
+                               solver
+                               utils))
+      (synopsis "Concolic fuzzer")
+      (description description)
+      (home-page home-page)
+      (license license:gpl2+))))

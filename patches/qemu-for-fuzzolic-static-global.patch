@@ -1,0 +1,24 @@
+commit a0646eac1b56e4df51e7c6d2e99cb8807c59a1a3
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2025-04-30 12:10:05 +0900
+
+    Avoid global variable in header
+    
+    Such global would be defined in each compilation unit including the header,
+    preventing them from being linked together.
+
+diff --git a/tcg/symbolic/symbolic-struct.h b/tcg/symbolic/symbolic-struct.h
+index 350522935bf9..684d32acfebd 100644
+--- a/tcg/symbolic/symbolic-struct.h
++++ b/tcg/symbolic/symbolic-struct.h
+@@ -503,9 +503,9 @@ static inline size_t get_opkind_width(OPKIND opkind)
+ }
+ 
+ #define MAX_PRINT_CHECK (1024 * 1024)
+-uint8_t            printed[MAX_PRINT_CHECK];
+ static inline void print_expr_internal(Expr* expr, uint8_t reset)
+ {
++    static uint8_t printed[MAX_PRINT_CHECK];
+     if (reset)
+         for (size_t i = 0; i < MAX_PRINT_CHECK; i++)
+             printed[i] = 0;

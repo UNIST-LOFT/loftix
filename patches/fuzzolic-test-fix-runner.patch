@@ -1,0 +1,326 @@
+commit c9d5d6f3872991e7f5cffc8146d3abe121883d61
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2025-05-08 11:13:10 +0900
+
+    Use temporary directories for tests
+
+diff --git a/tests/run.py b/tests/run.py
+index 2144d96c7544..0b69d990faf5 100755
+--- a/tests/run.py
++++ b/tests/run.py
+@@ -9,14 +9,13 @@ import time
+ import pytest
+ 
+ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+-WORKDIR = SCRIPT_DIR + "/workdir"
+ 
+ 
+ def pytest_addoption(parser):
+     parser.addoption("--fuzzy", action="store_true", default="run tests using Fuzzy-SAT")
+ 
+ 
+-def run(test, 
++def run(test, workdir,
+         use_duplicate_testcase_checker=False, 
+         expected_inputs=1, 
+         perf_run=False, 
+@@ -25,8 +24,7 @@ def run(test,
+         use_fuzzy=False,
+         use_memory_slice=False,
+         use_address_reasoning=False):
+-
+-    initial_input = "%s/%s_0.dat" % (SCRIPT_DIR, test)
++    initial_input = os.path.join(SCRIPT_DIR, f"{test}_0.dat")
+     assert os.path.exists(initial_input)
+ 
+     env = os.environ.copy()
+@@ -36,14 +34,10 @@ def run(test,
+     native_time = None
+     if perf_run:
+         start = time.time()
+-        p = subprocess.Popen(
+-                                [
+-                                    SCRIPT_DIR + "/driver", test
+-                                ],
+-                                stderr=subprocess.DEVNULL,
+-                                stdin=subprocess.PIPE,
+-                                env=env
+-                            )
++        p = subprocess.Popen((os.path.join(SCRIPT_DIR, "driver"), test),
++                             stderr=subprocess.DEVNULL,
++                             stdin=subprocess.PIPE,
++                             env=env)
+         with open(initial_input, "rb") as f:
+             p.stdin.write(f.read())
+             p.stdin.close()
+@@ -51,27 +45,18 @@ def run(test,
+         end = time.time()
+         native_time = end - start
+ 
++    (workdir/'.fuzzolic_workdir').mkdir()
++    command = ['fuzzolic', '-o', workdir, '-i', initial_input, '-k']
++    if perf_run: command.extend(('-d', 'out'))
++    if use_lib_models: command.append('-l')
++    if use_fuzzy: command.append('-f')
++    if use_memory_slice: command.append('-s')
++    if use_address_reasoning: command.append('-r')
++    command.extend((os.path.join(SCRIPT_DIR, "driver"), test))
++    print(*command)
++
+     start = time.time()
+-    p = subprocess.Popen(
+-                            [
+-                                SCRIPT_DIR + "/../fuzzolic/fuzzolic.py",
+-                                "-o", WORKDIR,
+-                                "-i", initial_input,
+-                                "-k",
+-                            ] 
+-                            + (['-d', 'out'] if perf_run else []) 
+-                            + (['-l'] if use_lib_models else [])
+-                            + (['-f'] if use_fuzzy else [])
+-                            + (['-s'] if use_memory_slice else [])
+-                            + (['-r'] if use_address_reasoning else [])
+-                            + [
+-                                SCRIPT_DIR + "/driver", test
+-                            ],
+-                            stderr=subprocess.DEVNULL,
+-                            stdin=subprocess.DEVNULL,
+-                            env=env
+-                        )
+-    p.wait()
++    subprocess.run(command, env=env)
+     end = time.time()
+     emulated_time = end - start
+ 
+@@ -80,25 +65,17 @@ def run(test,
+         print("Slowdown: %s" % round(slowdown, 1))
+         assert slowdown < 70
+ 
+-    if expected_inputs > 0:
+-        testcases = glob.glob(WORKDIR + "/tests/test_*.dat") 
+-        assert len(testcases) == expected_inputs
+-    else:
+-        testcases = glob.glob(WORKDIR + "/fuzzolic-00000/test_*.dat")
++    testcases = tuple(workdir.glob('**/test_case_*.dat'))
++    assert len(testcases) >= expected_inputs
+ 
+     match = False
+-
+     if match_output:
+         for f in testcases:
+-            p = subprocess.Popen(
+-                                    [
+-                                        SCRIPT_DIR + "/driver", test
+-                                    ],
+-                                    stderr=subprocess.DEVNULL,
+-                                    stdin=subprocess.PIPE,
+-                                    stdout=subprocess.PIPE,
+-                                    env=env
+-                                )
++            p = subprocess.Popen([os.path.join(SCRIPT_DIR, "driver"), test],
++                                 stderr=subprocess.DEVNULL,
++                                 stdin=subprocess.PIPE,
++                                 stdout=subprocess.PIPE,
++                                 env=env)
+             with open(f, "rb") as fp:
+                 p.stdin.write(fp.read())
+             stdout = p.communicate()[0].decode("utf-8") 
+@@ -114,125 +91,142 @@ def run(test,
+     assert match
+ 
+ 
+-def test_simple_if(fuzzy):
+-    run("simple_if", use_fuzzy=fuzzy)
++def test_simple_if(tmp_path, fuzzy):
++    run("simple_if", tmp_path, use_fuzzy=fuzzy)
+ 
+ 
+-def test_nested_if(fuzzy):
+-    run("nested_if", expected_inputs=4, use_fuzzy=fuzzy)
++def test_nested_if(tmp_path, fuzzy):
++    run("nested_if", tmp_path, expected_inputs=4, use_fuzzy=fuzzy)
+ 
+ 
+-def test_mystrcmp(fuzzy):
++def test_mystrcmp(tmp_path, fuzzy):
+     # FixMe: to generate the correct input, we have to: 
+     #   (1) disable bitmap filtering
+     #   (2) start with a seed with enough bytes
+-    run("mystrcmp", use_duplicate_testcase_checker=True, expected_inputs=8, use_fuzzy=fuzzy)
++    run("mystrcmp", tmp_path, use_duplicate_testcase_checker=True,
++        expected_inputs=8, use_fuzzy=fuzzy)
+ 
+ 
+-def test_all_concrete(fuzzy):
++def test_all_concrete(tmp_path, fuzzy):
+     # performance test
+-    run("all_concrete", use_duplicate_testcase_checker=False, expected_inputs=1, perf_run=True, use_fuzzy=fuzzy)
++    run("all_concrete", tmp_path, perf_run=True,
++        use_duplicate_testcase_checker=False, use_fuzzy=fuzzy)
+ 
+ 
+-def test_div3(fuzzy):
++def test_div3(tmp_path, fuzzy):
+     if fuzzy:
+         pytest.skip("Fuzzy-SAT cannot deterministically solve this")
+-    run("div3", expected_inputs=1)
++    run("div3", tmp_path)
+ 
+ 
+-def test_addq(fuzzy):
+-    run("addq", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_addq(tmp_path, fuzzy):
++    run("addq", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_addl(fuzzy):
+-    run("addl", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_addl(tmp_path, fuzzy):
++    run("addl", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_addw(fuzzy):
+-    run("addw", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_addw(tmp_path, fuzzy):
++    run("addw", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_addb(fuzzy):
+-    run("addb", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_addb(tmp_path, fuzzy):
++    run("addb", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_adcq(fuzzy):
+-    run("adcq", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_adcq(tmp_path, fuzzy):
++    run("adcq", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_adcl(fuzzy):
+-    run("adcl", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_adcl(tmp_path, fuzzy):
++    run("adcl", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_adcw(fuzzy):
+-    run("adcw", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_adcw(tmp_path, fuzzy):
++    run("adcw", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_adcb(fuzzy):
+-    run("adcb", expected_inputs=1, match_output=True, use_fuzzy=fuzzy)
++def test_adcb(tmp_path, fuzzy):
++    run("adcb", tmp_path, match_output=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_strcmp(fuzzy):
+-    run("model_strcmp", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_strcmp(tmp_path, fuzzy):
++    run("model_strcmp", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_strncmp(fuzzy):
+-    run("model_strncmp", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_strncmp(tmp_path, fuzzy):
++    run("model_strncmp", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_strlen(fuzzy):
+-    run("model_strlen", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_strlen(tmp_path, fuzzy):
++    run("model_strlen", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_strnlen_v0(fuzzy):
+-    run("model_strnlen_v0", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_strnlen_v0(tmp_path, fuzzy):
++    run("model_strnlen_v0", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_strnlen_v1(fuzzy):
+-    run("model_strnlen_v1", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_strnlen_v1(tmp_path, fuzzy):
++    run("model_strnlen_v1", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_memcmp_v0(fuzzy):
+-    run("model_memcmp_v0", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_memcmp_v0(tmp_path, fuzzy):
++    run("model_memcmp_v0", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_memcmp_v1(fuzzy):
+-    run("model_memcmp_v1", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_memcmp_v1(tmp_path, fuzzy):
++    run("model_memcmp_v1", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_memchr(fuzzy):
+-    run("model_memchr", expected_inputs=1, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++def test_model_memchr(tmp_path, fuzzy):
++    run("model_memchr", tmp_path, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_symbolic_index(fuzzy):
++def test_symbolic_index(tmp_path, fuzzy):
+     pytest.skip("This test requires to build the tracer with memory slice support")
+-    run("symbolic_index", expected_inputs=1, use_fuzzy=fuzzy, use_memory_slice=True)
++    run("symbolic_index", tmp_path, use_fuzzy=fuzzy,
++        use_memory_slice=True)
+ 
+ 
+-def test_symbolic_read(fuzzy):
+-    run("symbolic_read", expected_inputs=2, match_output=True, use_fuzzy=fuzzy, use_memory_slice=True)
++def test_symbolic_read(tmp_path, fuzzy):
++    run("symbolic_read", tmp_path, expected_inputs=2, match_output=True,
++        use_fuzzy=fuzzy, use_memory_slice=True)
+ 
+ 
+-def test_switch(fuzzy):
++def test_switch(tmp_path, fuzzy):
+     pytest.skip("This test requires to build the tracer with memory slice support")
+-    run("switch", expected_inputs=7, match_output=True, use_fuzzy=fuzzy, use_address_reasoning=True)
++    run("switch", tmp_path, expected_inputs=7, match_output=True,
++        use_fuzzy=fuzzy, use_address_reasoning=True)
+ 
+ 
+-def test_model_malloc_min(fuzzy):
++def test_model_malloc_min(tmp_path, fuzzy):
+     pytest.skip("We need to revise this test")
+-    run("model_malloc_min", expected_inputs=0, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++    run("model_malloc_min", tmp_path, expected_inputs=0, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_malloc_max(fuzzy):
++def test_model_malloc_max(tmp_path, fuzzy):
+     pytest.skip("We need to revise this test")
+-    run("model_malloc_max", expected_inputs=0, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++    run("model_malloc_max", tmp_path, expected_inputs=0, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_realloc_min(fuzzy):
++def test_model_realloc_min(tmp_path, fuzzy):
+     pytest.skip("We need to revise this test")
+-    run("model_realloc_min", expected_inputs=0, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++    run("model_realloc_min", tmp_path, expected_inputs=0, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)
+ 
+ 
+-def test_model_realloc_max(fuzzy):
++def test_model_realloc_max(tmp_path, fuzzy):
+     pytest.skip("We need to revise this test")
+-    run("model_realloc_max", expected_inputs=0, match_output=True, use_lib_models=True, use_fuzzy=fuzzy)
++    run("model_realloc_max", tmp_path, expected_inputs=0, match_output=True,
++        use_lib_models=True, use_fuzzy=fuzzy)

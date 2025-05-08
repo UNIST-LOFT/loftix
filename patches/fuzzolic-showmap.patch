@@ -1,0 +1,69 @@
+diff --git a/src/afl-showmap.c b/src/afl-showmap.c
+index 881ca2a63ffe..a3485b881b3e 100644
+--- a/src/afl-showmap.c
++++ b/src/afl-showmap.c
+@@ -410,15 +410,16 @@ void pre_afl_fsrv_write_to_testcase(afl_forkserver_t *fsrv, u8 *mem, u32 len) {
+ 
+ /* Execute target application. */
+ 
+-static void showmap_run_target_forkserver(afl_forkserver_t *fsrv, u8 *mem,
+-                                          u32 len) {
++static fsrv_run_result_t showmap_run_target_forkserver(afl_forkserver_t *fsrv,
++                                                       u8 *mem, u32 len) {
+ 
+   pre_afl_fsrv_write_to_testcase(fsrv, mem, len);
+ 
+   if (!quiet_mode) { SAYF("-- Program output begins --\n" cRST); }
+ 
+-  if (afl_fsrv_run_target(fsrv, fsrv->exec_tmout, &stop_soon) ==
+-      FSRV_RUN_ERROR) {
++  const fsrv_run_result_t result =
++      afl_fsrv_run_target(fsrv, fsrv->exec_tmout, &stop_soon);
++  if (result == FSRV_RUN_ERROR) {
+ 
+     FATAL("Error running target");
+ 
+@@ -477,6 +478,7 @@ static void showmap_run_target_forkserver(afl_forkserver_t *fsrv, u8 *mem,
+ 
+   }
+ 
++  return result;
+ }
+ 
+ /* Read initial file. */
+@@ -867,7 +869,11 @@ u32 execute_testcases(u8 *dir) {
+ 
+       }
+ 
+-      showmap_run_target_forkserver(fsrv, in_data, in_len);
++      if (showmap_run_target_forkserver(fsrv, in_data, in_len)
++          == FSRV_RUN_CRASH)
++        snprintf(outfile, sizeof(outfile), "%s/%s.crash", out_file, fn2);
++      else
++        snprintf(outfile, sizeof(outfile), "%s/%s", out_file, fn2);
+       ck_free(in_data);
+       ++done;
+ 
+@@ -1422,9 +1428,19 @@ int main(int argc, char **argv_orig, char **envp) {
+ 
+     }
+ 
+-    stdin_file = at_file ? strdup(at_file)
+-                         : (char *)alloc_printf("%s/.afl-showmap-temp-%u",
+-                                                use_dir, (u32)getpid());
++    if (at_file) {
++      stdin_file = strdup(at_file);
++    } else {
++      char* file_ext = get_afl_env("FILE_EXT");
++      if (file_ext)
++        stdin_file =
++            (char *)alloc_printf("%s/.afl-showmap-temp-%u.%s",
++                                 use_dir, (u32)getpid(), file_ext);
++      else
++        stdin_file =
++            (char *)alloc_printf("%s/.afl-showmap-temp-%u",
++                                 use_dir, (u32)getpid());
++    }
+     unlink(stdin_file);
+ 
+     // If @@ are in the target args, replace them and also set use_stdin=false.

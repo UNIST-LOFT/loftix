@@ -1,0 +1,23 @@
+commit 8350c6e96aba15b548ecd423b99b88da35310645
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2025-05-08 11:23:51 +0900
+
+    Skip nondeterministic test
+    
+    Test div3 probably used to depend on an implementation detail of Z3
+    that is no longer present.
+
+diff --git a/tests/run.py b/tests/run.py
+index 0b69d990faf5..7db888dfa973 100755
+--- a/tests/run.py
++++ b/tests/run.py
+@@ -114,8 +114,7 @@ def test_all_concrete(tmp_path, fuzzy):
+ 
+ 
+ def test_div3(tmp_path, fuzzy):
+-    if fuzzy:
+-        pytest.skip("Fuzzy-SAT cannot deterministically solve this")
++    pytest.skip("Not deterministic")
+     run("div3", tmp_path)
+ 
+ 

@@ -26,6 +26,7 @@ Then run `guix pull`.
 
 - [afl-dyninst]: [Dyninst] integration for [AFL++]
 - [evocatio]: Bug analyzer for bug capability discovery
+- [fuzzolic]: Concolic fuzzer
 
 ### Patching
 
@@ -45,6 +46,7 @@ Then run `guix pull`.
 [Dyninst]: https://github.com/dyninst/dyninst
 [AFL++]: https://aflplus.plus
 [evocatio]: https://github.com/HexHive/Evocatio
+[fuzzolic]: https://season-lab.github.io/fuzzolic
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
 [taosc]: https://trong.loang.net/~cnx/taosc/about

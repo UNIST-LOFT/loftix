@@ -1,0 +1,598 @@
+commit 7b451dd864314d30aa4137163aa318fad711833b
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2025-04-29 11:23:26 +0900
+
+    Unbundle FUZZY-SAT, QEMU, xxHash and Z3
+
+diff --git a/solver/CMakeLists.txt b/solver/CMakeLists.txt
+index a159187a5b27..4a252172da29 100644
+--- a/solver/CMakeLists.txt
++++ b/solver/CMakeLists.txt
+@@ -2,27 +2,40 @@ cmake_minimum_required(VERSION 3.7)
+ 
+ project(Solver)
+ 
+-add_executable(solver-smt main.c i386.c branch_coverage.c opts.c xxHash/xxhash.c)
+-add_executable(solver-fuzzy main.c i386.c branch_coverage.c opts.c xxHash/xxhash.c)
++add_executable(solver-smt main.c i386.c branch_coverage.c opts.c)
++add_executable(solver-fuzzy main.c i386.c branch_coverage.c opts.c)
+ 
+ target_compile_definitions(solver-smt PRIVATE USE_FUZZY_SOLVER=0)
+ target_compile_definitions(solver-fuzzy PRIVATE USE_FUZZY_SOLVER=1)
+ 
+ # z3
+-target_link_libraries(solver-smt z3)
+-target_link_libraries(solver-fuzzy z3)
++find_package(Z3 REQUIRED)
++target_include_directories(solver-smt PRIVATE ${Z3_INCLUDE_DIRS})
++target_include_directories(solver-fuzzy PRIVATE ${Z3_INCLUDE_DIRS})
++target_link_libraries(solver-smt ${Z3_LIBRARIES})
++target_link_libraries(solver-fuzzy ${Z3_LIBRARIES})
+ 
+ # fuzzy
+-target_link_libraries(solver-smt ${CMAKE_SOURCE_DIR}/fuzzy-sat/libZ3Fuzzy.a)
+-target_link_libraries(solver-fuzzy ${CMAKE_SOURCE_DIR}/fuzzy-sat/libZ3Fuzzy.a)
++find_package(Z3Fuzzy REQUIRED)
++target_include_directories(solver-smt PRIVATE ${Z3Fuzzy_INCLUDE_DIRS})
++target_include_directories(solver-fuzzy PRIVATE ${Z3Fuzzy_INCLUDE_DIRS})
++target_link_libraries(solver-smt "Z3Fuzzy")
++target_link_libraries(solver-fuzzy "Z3Fuzzy")
+ 
+ # glib
+ find_package(PkgConfig REQUIRED)
+ pkg_search_module(GLIB REQUIRED glib-2.0)
+ target_include_directories(solver-smt PRIVATE ${GLIB_INCLUDE_DIRS})
+ target_include_directories(solver-fuzzy PRIVATE ${GLIB_INCLUDE_DIRS})
+-target_link_libraries(solver-smt ${GLIB_LDFLAGS})
+-target_link_libraries(solver-fuzzy ${GLIB_LDFLAGS})
++target_link_libraries(solver-smt ${GLIB_LIBRARIES})
++target_link_libraries(solver-fuzzy ${GLIB_LIBRARIES})
++
++# xxHash
++pkg_search_module(XXHASH REQUIRED libxxhash)
++target_include_directories(solver-smt PRIVATE ${XXHASH_INCLUDE_DIRS})
++target_include_directories(solver-fuzzy PRIVATE ${XXHASH_INCLUDE_DIRS})
++target_link_libraries(solver-smt ${XXHASH_LIBRARIES})
++target_link_libraries(solver-fuzzy ${XXHASH_LIBRARIES})
+ 
+ set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3 -g")
+ set(CMAKE_C_FLAGS "-O3 -g")
+diff --git a/solver/branch_coverage.c b/solver/branch_coverage.c
+index 4d726f6e592c..88ca22b37ad2 100644
+--- a/solver/branch_coverage.c
++++ b/solver/branch_coverage.c
+@@ -3,8 +3,7 @@
+ 
+ extern Config config;
+ 
+-#define XXH_STATIC_LINKING_ONLY
+-#include "xxHash/xxhash.h"
++#include <xxhash.h>
+ 
+ #include <stdio.h>
+ 
+@@ -42,11 +41,13 @@ static inline uintptr_t hash_pc(uintptr_t pc, uint8_t taken)
+         taken = 1;
+     }
+ 
+-    XXH32_state_t state;
+-    XXH32_reset(&state, 0); // seed = 0
+-    XXH32_update(&state, &pc, sizeof(pc));
+-    XXH32_update(&state, &taken, sizeof(taken));
+-    return XXH32_digest(&state) % BRANCH_BITMAP_SIZE;
++    XXH32_state_t *state = XXH32_createState();
++    XXH32_reset(state, 0); // seed = 0
++    XXH32_update(state, &pc, sizeof(pc));
++    XXH32_update(state, &taken, sizeof(taken));
++    const uintptr_t digest = XXH32_digest(state) % BRANCH_BITMAP_SIZE;
++    XXH32_freeState(state);
++    return digest;
+ }
+ 
+ static inline void load_bitmap(const char* path, uint8_t* data, size_t size)
+@@ -126,17 +127,17 @@ static inline int is_interesting_context(uintptr_t h, uint8_t bits)
+     gpointer       key, value;
+     GHashTableIter iter;
+     g_hash_table_iter_init(&iter, visited_branches);
++    XXH32_state_t *state = XXH32_createState();
+     while (g_hash_table_iter_next(&iter, &key, &value)) {
+ 
+         uintptr_t prev_h = (uintptr_t)key;
+ 
+         // Calculate hash(prev_h || h)
+-        XXH32_state_t state;
+-        XXH32_reset(&state, 0);
+-        XXH32_update(&state, &prev_h, sizeof(prev_h));
+-        XXH32_update(&state, &h, sizeof(h));
++        XXH32_reset(state, 0);
++        XXH32_update(state, &prev_h, sizeof(prev_h));
++        XXH32_update(state, &h, sizeof(h));
+ 
+-        uintptr_t hash = XXH32_digest(&state) % (BRANCH_BITMAP_SIZE * CHAR_BIT);
++        uintptr_t hash = XXH32_digest(state) % (BRANCH_BITMAP_SIZE * CHAR_BIT);
+         uintptr_t idx  = hash / CHAR_BIT;
+         uintptr_t mask = 1 << (hash % CHAR_BIT);
+ 
+@@ -145,6 +146,7 @@ static inline int is_interesting_context(uintptr_t h, uint8_t bits)
+             interesting = 1;
+         }
+     }
++    XXH32_freeState(state);
+ 
+     if (bits == 0) {
+         g_hash_table_add(visited_branches, (gpointer)h);
+diff --git a/solver/debug.h b/solver/debug.h
+index b3ce2405074a..02614765f780 100644
+--- a/solver/debug.h
++++ b/solver/debug.h
+@@ -17,6 +17,8 @@
+ #ifndef _HAVE_DEBUG_H
+ #define _HAVE_DEBUG_H
+ 
++#include <z3.h>
++
+ #include <errno.h>
+ 
+ //#include "config.h"
+diff --git a/solver/eval-driver.c b/solver/eval-driver.c
+index 1140a87570a8..25390384114b 100644
+--- a/solver/eval-driver.c
++++ b/solver/eval-driver.c
+@@ -14,7 +14,6 @@
+ #include <stdlib.h>
+ #include <assert.h>
+ #include <sys/time.h>
+-static_assert(Z3_VERSION == 487, "This executable requires z3 4.8.7+");
+ 
+ typedef struct {
+     uint8_t* data;
+@@ -120,15 +119,15 @@ unsigned long z3fuzz_evaluate_expression_z3(Z3_context ctx,
+ 
+     // evaluate the query in the model
+     Z3_ast  solution;
+-    Z3_bool successfulEval =
+-        Z3_model_eval(ctx, z3_m, query, Z3_TRUE, &solution);
++    bool    successfulEval =
++        Z3_model_eval(ctx, z3_m, query, true, &solution);
+     assert(successfulEval && "Failed to evaluate model");
+ 
+     Z3_model_dec_ref(ctx, z3_m);
+     if (Z3_get_ast_kind(ctx, solution) == Z3_NUMERAL_AST) {
+-        Z3_bool successGet = Z3_get_numeral_uint64(ctx, solution, &res);
+-        assert(successGet == Z3_TRUE &&
+-               "z3fuzz_evaluate_expression_z3() failed to get "
++        bool successGet = Z3_get_numeral_uint64(ctx, solution, &res);
++        assert(successGet
++	       && "z3fuzz_evaluate_expression_z3() failed to get "
+                "constant");
+     } else
+         res = Z3_get_bool_value(ctx, solution) == Z3_L_TRUE ? 1UL : 0UL;
+@@ -179,15 +178,11 @@ __evaluate_expression(Z3_context ctx, Z3_ast value, Z3_ast* values,
+                     Z3_symbol s = Z3_get_decl_name(ctx, decl);
+ #if 0
+                     int       symbol_index = Z3_get_symbol_int(ctx, s);
+-                    Z3_bool   successGet =
++                    bool      successGet =
+                         Z3_get_numeral_uint64(ctx, values[symbol_index],
+-#if Z3_VERSION <= 451
+-                                              (long long unsigned int*)&res
+-#else
+                                               (uint64_t*)&res
+-#endif
+                         );
+-                    assert(successGet == Z3_TRUE &&
++                    assert(successGet &&
+                            "z3fuzz_evaluate_expression() failed to get "
+                            "constant (symbol)");
+ #else
+@@ -971,15 +966,9 @@ __evaluate_expression(Z3_context ctx, Z3_ast value, Z3_ast* values,
+             break;
+         }
+         case Z3_NUMERAL_AST: {
+-            Z3_bool successGet =
+-                Z3_get_numeral_uint64(ctx, value,
+-#if Z3_VERSION <= 451
+-                                      (long long unsigned int*)&res
+-#else
+-                                      (uint64_t*)&res
+-#endif
+-                );
+-            assert(successGet == Z3_TRUE &&
++            bool successGet =
++                Z3_get_numeral_uint64(ctx, value, (uint64_t*) &res);
++            assert(successGet &&
+                    "z3fuzz_evaluate_expression() failed to get constant");
+             break;
+         }
+diff --git a/solver/eval.c b/solver/eval.c
+index 4fd0e11bc187..837f1152adb9 100644
+--- a/solver/eval.c
++++ b/solver/eval.c
+@@ -1,6 +1,4 @@
+-
+-#define XXH_STATIC_LINKING_ONLY
+-#include "xxHash/xxhash.h"
++#include <xxhash.h>
+ 
+ #define DICT_DATA_T uint64_t
+ #include "dict.h"
+@@ -534,12 +532,8 @@ static uintptr_t conc_eval(uint8_t* m, size_t n, dict__uint64_t* m_others,
+ 
+         case Z3_NUMERAL_AST: {
+             uint64_t value;
+-            Z3_bool  r = Z3_get_numeral_uint64(ctx, e,
+-#if Z3_VERSION <= 451
+-                                              (long long unsigned int*)
+-#endif
+-                                              &value);
+-            assert(r == Z3_TRUE);
++            bool     r = Z3_get_numeral_uint64(ctx, e, &value);
++            assert(r);
+             res = value;
+             break;
+         }
+diff --git a/solver/fuzzy-solver-expr.c b/solver/fuzzy-solver-expr.c
+index a54b782456d7..f5a44032230c 100644
+--- a/solver/fuzzy-solver-expr.c
++++ b/solver/fuzzy-solver-expr.c
+@@ -7,9 +7,6 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#include <z3.h>
+-#define Z3_VERSION 487
+-
+ #define USE_COLOR
+ #include "debug.h"
+ 
+@@ -17,7 +14,9 @@
+ #define EXPR_QUEUE_POLLING_TIME_NS 5000
+ 
+ #include "index-queue.h"
+-#include "../tracer/tcg/symbolic/symbolic-struct.h"
++
++#include <qemu/tcg/symbolic/symbolic-struct.h>
++#include <z3.h>
+ 
+ static unsigned char* testcase_bytes   = 0;
+ static unsigned char* tmp_testcase     = 0;
+@@ -40,17 +39,9 @@ static void exitf(const char* message)
+     exit(1);
+ }
+ 
+-#if Z3_VERSION <= 441
+-static void smt_error_handler(Z3_context c)
+-#else
+ static void smt_error_handler(Z3_context c, Z3_error_code e)
+-#endif
+ {
+-#if Z3_VERSION <= 441
+-    printf("Error code: %s\n", Z3_get_error_msg(smt_solver.ctx));
+-#else
+     printf("Error code: %s\n", Z3_get_error_msg(smt_solver.ctx, e));
+-#endif
+     exitf("incorrect use of Z3");
+ }
+ 
+@@ -141,14 +132,14 @@ static void     smt_dump_solution(Z3_model m)
+         Z3_ast  input_slice = Z3_mk_extract(smt_solver.ctx, (8 * (i + 1)) - 1,
+                                            8 * i, cached_input);
+         Z3_ast  solution;
+-        Z3_bool successfulEval =
++        bool    successfulEval =
+             Z3_model_eval(smt_solver.ctx, m, input_slice,
+-                          /*model_completion=*/Z3_TRUE, &solution);
++                          /*model_completion=*/true, &solution);
+         assert(successfulEval && "Failed to evaluate model");
+         assert(Z3_get_ast_kind(smt_solver.ctx, solution) == Z3_NUMERAL_AST &&
+                "Evaluated expression has wrong sort");
+         int     solution_byte = 0;
+-        Z3_bool successGet =
++        bool    successGet =
+             Z3_get_numeral_int(smt_solver.ctx, solution, &solution_byte);
+         if (solution_byte)
+             printf("Solution[%ld]: %x\n", i, solution_byte);
+diff --git a/solver/fuzzy-solver.c b/solver/fuzzy-solver.c
+index 5661dffb0dcb..42bb37f6c890 100644
+--- a/solver/fuzzy-solver.c
++++ b/solver/fuzzy-solver.c
+@@ -7,8 +7,6 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#include <z3.h>
+-#define Z3_VERSION 487
+ 
+ #define FOUND_SUB_AND 1
+ #define FOUND_COMPARISON 2
+@@ -23,7 +21,9 @@
+ 
+ #include "index-queue.h"
+ #include "testcase-list.h"
+-#include "../tracer/tcg/symbolic/symbolic-struct.h"
++
++#include <qemu/tcg/symbolic/symbolic-struct.h>
++#include <z3.h>
+ 
+ static int expr_pool_shm_id = -1;
+ Expr*      pool;
+@@ -48,17 +48,9 @@ static void exitf(const char* message)
+     exit(1);
+ }
+ 
+-#if Z3_VERSION <= 441
+-static void smt_error_handler(Z3_context c)
+-#else
+ static void smt_error_handler(Z3_context c, Z3_error_code e)
+-#endif
+ {
+-#if Z3_VERSION <= 441
+-    printf("Error code: %s\n", Z3_get_error_msg(smt_solver.ctx));
+-#else
+     printf("Error code: %s\n", Z3_get_error_msg(smt_solver.ctx, e));
+-#endif
+     exitf("incorrect use of Z3");
+ }
+ 
+@@ -131,9 +123,9 @@ static void     smt_dump_solution(Z3_model m)
+         Z3_ast  input_slice = Z3_mk_extract(smt_solver.ctx, (8 * (i + 1)) - 1,
+                                            8 * i, cached_input);
+         Z3_ast  solution;
+-        Z3_bool successfulEval =
++        bool    successfulEval =
+             Z3_model_eval(smt_solver.ctx, m, input_slice,
+-                          /*model_completion=*/Z3_TRUE, &solution);
++                          /*model_completion=*/true, &solution);
+         assert(successfulEval && "Failed to evaluate model");
+         solution = Z3_simplify(smt_solver.ctx,
+                                solution); // otherwise, concrete expression...
+@@ -141,7 +133,7 @@ static void     smt_dump_solution(Z3_model m)
+         assert(Z3_get_ast_kind(smt_solver.ctx, solution) == Z3_NUMERAL_AST &&
+                "Evaluated expression has wrong sort");
+         int     solution_byte = 0;
+-        Z3_bool successGet =
++        bool    successGet =
+             Z3_get_numeral_int(smt_solver.ctx, solution, &solution_byte);
+         if (solution_byte)
+             printf("Solution[%ld]: %x\n", i, solution_byte);
+@@ -191,7 +183,7 @@ static int ast_find_early_constants(Z3_ast v, unsigned long* sub_add,
+     int res = 0;
+     switch (Z3_get_ast_kind(smt_solver.ctx, v)) {
+         case Z3_APP_AST: {
+-            Z3_bool      successGet;
++            bool         successGet;
+             Z3_ast       child1, child2;
+             Z3_app       app       = Z3_to_app(smt_solver.ctx, v);
+             Z3_func_decl decl      = Z3_get_app_decl(smt_solver.ctx, app);
+@@ -218,15 +210,13 @@ static int ast_find_early_constants(Z3_ast v, unsigned long* sub_add,
+                         Z3_NUMERAL_AST) {
+                         successGet = Z3_get_numeral_uint64(smt_solver.ctx,
+                                                            child1, comparison);
+-                        assert(successGet == Z3_TRUE &&
+-                               "failed to get constant");
++                        assert(successGet && "failed to get constant");
+                         res = FOUND_COMPARISON;
+                     } else if (Z3_get_ast_kind(smt_solver.ctx, child2) ==
+                                Z3_NUMERAL_AST) {
+                         successGet = Z3_get_numeral_uint64(smt_solver.ctx,
+                                                            child2, comparison);
+-                        assert(successGet == Z3_TRUE &&
+-                               "failed to get constant");
++                        assert(successGet && "failed to get constant");
+                         res = FOUND_COMPARISON;
+                     }
+ 
+@@ -255,15 +245,13 @@ static int ast_find_early_constants(Z3_ast v, unsigned long* sub_add,
+                         Z3_NUMERAL_AST) {
+                         successGet = Z3_get_numeral_uint64(smt_solver.ctx,
+                                                            child1, sub_add);
+-                        assert(successGet == Z3_TRUE &&
+-                               "failed to get constant");
++                        assert(successGet && "failed to get constant");
+                         res = FOUND_SUB_AND;
+                     } else if (Z3_get_ast_kind(smt_solver.ctx, child2) ==
+                                Z3_NUMERAL_AST) {
+                         successGet = Z3_get_numeral_uint64(smt_solver.ctx,
+                                                            child2, sub_add);
+-                        assert(successGet == Z3_TRUE &&
+-                               "failed to get constant");
++                        assert(successGet && "failed to get constant");
+                         res = FOUND_SUB_AND;
+                     }
+                     break;
+@@ -352,9 +340,9 @@ static void ast_find_involved_inputs(Z3_ast v)
+     switch (Z3_get_ast_kind(smt_solver.ctx, v)) {
+         case Z3_NUMERAL_AST: {
+             unsigned long value = -1;
+-            Z3_bool       successGet =
++            bool          successGet =
+                 Z3_get_numeral_uint64(smt_solver.ctx, v, &value);
+-            assert(successGet == Z3_TRUE && "failed to get constant");
++            assert(successGet && "failed to get constant");
+             ADD_VALUE(value);
+             break;
+         }
+@@ -457,8 +445,8 @@ static int smt_query_evaluate(Z3_symbol input, Z3_ast input_val, Z3_ast query,
+ 
+     // evaluate the query in the model
+     Z3_ast  solution;
+-    Z3_bool successfulEval =
+-        Z3_model_eval(smt_solver.ctx, z3_m, query, Z3_TRUE, &solution);
++    bool    successfulEval =
++        Z3_model_eval(smt_solver.ctx, z3_m, query, true, &solution);
+     assert(successfulEval && "Failed to evaluate model");
+     assert(Z3_get_ast_kind(smt_solver.ctx, solution) == Z3_APP_AST &&
+            "Evaluated expression has wrong sort");
+diff --git a/solver/main.c b/solver/main.c
+index 42bedd8841fa..d0a0b58d51cd 100644
+--- a/solver/main.c
++++ b/solver/main.c
+@@ -9,11 +9,11 @@
+ #include <execinfo.h>
+ #include <string.h>
+ 
++#include <z3-fuzzy.h>
++
+ #include "debug-config.h"
+ #include "solver.h"
+ #include "i386.h"
+-#include "fuzzy-sat/z3-fuzzy.h"
+-
+ 
+ #define EXPR_QUEUE_POLLING_TIME_SECS 0
+ #define EXPR_QUEUE_POLLING_TIME_NS   5000
+@@ -177,17 +177,9 @@ static void exitf(const char* message)
+     exit(1);
+ }
+ 
+-#if Z3_VERSION <= 451
+-static void smt_error_handler(Z3_context c, Z3_error_code e)
+-#else
+ static void smt_error_handler(Z3_context c, Z3_error_code e)
+-#endif
+ {
+-#if Z3_VERSION <= 451
+-    printf("Error code: %s\n", Z3_get_error_msg(e));
+-#else
+     printf("Error code: %s\n", Z3_get_error_msg(smt_solver.ctx, e));
+-#endif
+     ABORT();
+     exitf("incorrect use of Z3");
+ }
+@@ -834,12 +826,12 @@ static void smt_dump_solution(Z3_context ctx, Z3_model m, size_t idx,
+         if (input_slice) {
+             // SAYF("input slice %ld\n", i);
+             Z3_ast  solution;
+-            Z3_bool successfulEval = Z3_model_eval(ctx, m, input_slice,
+-                                                   Z3_FALSE, // model_completion
++            bool    successfulEval = Z3_model_eval(ctx, m, input_slice,
++                                                   false, // model_completion
+                                                    &solution);
+             assert(successfulEval && "Failed to evaluate model");
+             if (Z3_get_ast_kind(ctx, solution) == Z3_NUMERAL_AST) {
+-                Z3_bool successGet =
++                bool successGet =
+                     Z3_get_numeral_int(ctx, solution, &solution_byte);
+                 if (successGet) { // && solution_byte
+                     // printf("Solution[%ld]: 0x%x\n", i, solution_byte);
+@@ -997,7 +989,7 @@ static void inline smt_dump_debug_query(Z3_solver solver, Z3_ast expr, uint64_t
+         Z3_model model = Z3_solver_get_model(smt_solver.ctx, solver);
+         Z3_model_inc_ref(smt_solver.ctx, model);
+         Z3_ast solution = NULL;
+-        Z3_model_eval(smt_solver.ctx, model, expr, Z3_TRUE, &solution);
++        Z3_model_eval(smt_solver.ctx, model, expr, true, &solution);
+         uint64_t value = 0;
+         if (is_bool) {
+           Z3_lbool res = Z3_get_bool_value(smt_solver.ctx, solution);
+@@ -1028,9 +1020,10 @@ static void inline smt_dump_debug_query(Z3_solver solver, Z3_ast expr, uint64_t
+             if (input_slice) {
+                 // SAYF("input slice %ld\n", i);
+                 Z3_ast  solution;
+-                Z3_bool successfulEval = Z3_model_eval(smt_solver.ctx, model, input_slice,
+-                                                    Z3_FALSE, // model_completion
+-                                                    &solution);
++                bool    successfulEval = Z3_model_eval(smt_solver.ctx,
++                                                       model, input_slice,
++                                  /*model_completion=*/false,
++                                                       &solution);
+                 assert(successfulEval && "Failed to evaluate model");
+                 if (Z3_get_ast_kind(smt_solver.ctx, solution) == Z3_NUMERAL_AST) {
+                     Z3_get_numeral_int(smt_solver.ctx, solution, &solution_byte);
+@@ -1113,18 +1106,12 @@ static uintptr_t smt_query_eval_uint64(Z3_model m, Z3_ast e)
+ {
+     uintptr_t value;
+     Z3_ast    solution;
+-    Z3_bool   successfulEval =
+-        Z3_model_eval(smt_solver.ctx, m, e, Z3_TRUE, &solution);
++    bool      successfulEval =
++        Z3_model_eval(smt_solver.ctx, m, e, true, &solution);
+     assert(successfulEval && "Failed to evaluate model");
+     if (Z3_get_ast_kind(smt_solver.ctx, solution) == Z3_NUMERAL_AST) {
+-
+-#if Z3_VERSION <= 451
+-        Z3_bool successGet = Z3_get_numeral_int64(smt_solver.ctx, solution,
+-                                                  (long long int*)&value);
+-#else
+-        Z3_bool successGet =
++        bool successGet =
+             Z3_get_numeral_int64(smt_solver.ctx, solution, (int64_t*)&value);
+-#endif
+         return value;
+     } else {
+         ABORT("Failed to evaluate using Z3 model.\n");
+@@ -1204,12 +1191,8 @@ static void print_z3_ast_internal(Z3_ast e, uint8_t invert_op,
+             Z3_sort  sort = Z3_get_sort(ctx, e);
+             size_t   size = Z3_get_bv_sort_size(ctx, sort);
+             uint64_t value;
+-            Z3_bool  r = Z3_get_numeral_uint64(ctx, e,
+-#if Z3_VERSION <= 451
+-                                              (long long unsigned int*)
+-#endif
+-                                              &value);
+-            if (r == Z3_TRUE) {
++            bool     r = Z3_get_numeral_uint64(ctx, e, &value);
++            if (r) {
+                 printf("%lx#%lu", value, size);
+             } else {
+                 const char* z3_query_str = Z3_ast_to_string(smt_solver.ctx, e);
+@@ -1557,12 +1540,8 @@ static inline uint8_t is_zero_const(Z3_ast e)
+ 
+     if (kind == Z3_NUMERAL_AST) {
+         uint64_t value;
+-        Z3_bool  r = Z3_get_numeral_uint64(ctx, e,
+-#if Z3_VERSION <= 451
+-                                          (long long unsigned int*)
+-#endif
+-                                          &value);
+-        if (r == Z3_FALSE) {
++        bool     r = Z3_get_numeral_uint64(ctx, e, &value);
++        if (!r) {
+             // result does not fit into 64 bits
+             return 0;
+         }
+@@ -1578,12 +1557,8 @@ static inline uint8_t is_const(Z3_ast e, uint64_t* value)
+     Z3_ast_kind kind = Z3_get_ast_kind(ctx, e);
+ 
+     if (kind == Z3_NUMERAL_AST) {
+-        Z3_bool r = Z3_get_numeral_uint64(ctx, e,
+-#if Z3_VERSION <= 451
+-                                          (long long unsigned int*)
+-#endif
+-                                              value);
+-        if (r == Z3_FALSE) {
++        bool r = Z3_get_numeral_uint64(ctx, e, value);
++        if (!r) {
+             // result does not fit into 64 bits
+             return 0;
+         }
+@@ -5518,8 +5493,8 @@ static int get_eval_uint64(Z3_model m, Z3_ast e, uintptr_t* value)
+ {
+     Z3_ast solution;
+ 
+-    Z3_bool successfulEval =
+-        Z3_model_eval(smt_solver.ctx, m, e, Z3_FALSE, &solution);
++    bool successfulEval =
++        Z3_model_eval(smt_solver.ctx, m, e, false, &solution);
+     assert(successfulEval && "Failed to evaluate model");
+ 
+     if (Z3_get_ast_kind(smt_solver.ctx, solution) == Z3_NUMERAL_AST) {
+diff --git a/solver/solver.h b/solver/solver.h
+index 3efb1ebcb163..bea15d608bf7 100644
+--- a/solver/solver.h
++++ b/solver/solver.h
+@@ -6,13 +6,11 @@
+ 
+ #include <gmodule.h>
+ 
+-#include <z3.h>
+-#define Z3_VERSION 487
+-
+ #define USE_COLOR
+ #include "debug.h"
+ 
+-#include "../tracer/tcg/symbolic/symbolic-struct.h"
++#include <qemu/tcg/symbolic/symbolic-struct.h>
++#include <z3.h>
+ 
+ typedef enum ExprAnnotationType {
+     COSTANT_AND,

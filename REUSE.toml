@@ -151,7 +151,17 @@ path = [ 'patches/afl++-*.patch',
          'patches/e9patch-*.patch',
          'patches/evocatio-*.patch',
          'patches/fuzzy-sat-*.patch',
-         'patches/jasper-no-define-int-types.patch' ]
+         'patches/fuzzolic-install.patch',
+         'patches/fuzzolic-python-package.patch',
+         'patches/fuzzolic-solver-install.patch',
+         'patches/fuzzolic-solver-unbundle.patch',
+         'patches/fuzzolic-test-driver-include-libc.patch',
+         'patches/fuzzolic-test-fix-runner.patch',
+         'patches/fuzzolic-test-skip-nondeterministic.patch',
+         'patches/fuzzolic-unbundle.patch',
+         'patches/fuzzolic-utils-make.patch',
+         'patches/jasper-no-define-int-types.patch',
+         'patches/qemu-for-fuzzolic-static-global.patch' ]
 SPDX-FileCopyrightText = 'Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
@@ -167,10 +177,27 @@ SPDX-FileCopyrightText = 'Paul Eggert'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
 [[annotations]]
+path = 'patches/fuzzolic-showmap.patch'
+SPDX-FileCopyrightText = 'Emilio Coppa'
+SPDX-License-Identifier = 'GPL-2.0-or-later'
+
+
+[[annotations]]
+path = 'patches/fuzzolic-timeout-solver.patch'
+SPDX-FileCopyrightText = 'Andrew Haberlandt'
+SPDX-License-Identifier = 'GPL-2.0-or-later'
+
+[[annotations]]
 # https://src.fedoraproject.org/rpms/ming/c/c6f24aedb4f66c5b3167b75bebc55b14fd6b5248
 path = 'patches/libming-parallel-make.patch'
 SPDX-FileCopyrightText = 'Dominik Mierzejewski'
 SPDX-License-Identifier = 'MIT'
+
+[[annotations]]
+# https://lists.nongnu.org/archive/html/qemu-devel/2019-09/msg05403.html
+path = 'patches/qemu-for-fuzzolic-test-opts-range-beyond.patch'
+SPDX-FileCopyrightText = 'Andrey Shinkevich'
+SPDX-License-Identifier = 'LGPL-2.1-or-later'
 
 [[annotations]]
 path = '**/README.md'

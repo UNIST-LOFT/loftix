@@ -1,0 +1,39 @@
+commit 5098598289744766508d7b390f19d61bad30f54c
+Author: Nguyễn Gia Phong <cnx@loang.net>
+Date:   2025-05-07 14:34:24 +0900
+
+    Turn fuzzolic/ into a Python package
+
+diff --git a/fuzzolic/executor.py b/fuzzolic/executor.py
+index 39c6aa6dddb9..f2639eb8da6a 100644
+--- a/fuzzolic/executor.py
++++ b/fuzzolic/executor.py
+@@ -17,8 +17,8 @@ import random
+ import ctypes
+ import resource
+ 
+-import minimizer_qsym
+-import minimizer
++from . import minimizer_qsym
++from . import minimizer
+ 
+ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+ SOLVER_SMT_BIN = SCRIPT_DIR + '/../solver/solver-smt'
+diff --git a/fuzzolic/fuzzolic.py b/fuzzolic/fuzzolic.py
+index ed6aac5cf5ab..3b692fb4b59c 100755
+--- a/fuzzolic/fuzzolic.py
++++ b/fuzzolic/fuzzolic.py
+@@ -2,11 +2,12 @@
+ 
+ import os
+ import sys
+-import executor
+ import signal
+ import argparse
+ import shutil
+ 
++from . import executor
++
+ ABORTING_COUNT = 0
+ 
+ 
