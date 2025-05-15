@@ -29,6 +29,13 @@
   #:use-module (loftix emulation)
   #:export (for-evocatio))
 
+(define-public afl++
+  (package
+    (inherit aflplusplus)
+    (name "afl++")
+    (inputs (modify-inputs (package-inputs aflplusplus)
+              (replace "qemu" qemu-for-aflplusplus)))))
+
 (define-public afl-dyninst
   (package
     (name "afl-dyninst")
