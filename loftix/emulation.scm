@@ -78,6 +78,11 @@
                               ,(string-append "--prefix=" out)
                               ,(string-append "--sysconfdir=/etc")
                               ,@configure-flags)))))
+               (add-after 'install 'install-qasan-header
+                 (lambda* (#:key outputs #:allow-other-keys)
+                   (install-file "qemuafl/qasan.h"
+                                 (string-append (assoc-ref outputs "out")
+                                                "/include"))))
                (delete 'delete-firmwares)))))))))
 
 (define-public qemu-for-fuzzolic

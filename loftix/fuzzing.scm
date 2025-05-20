@@ -33,6 +33,23 @@
   (package
     (inherit aflplusplus)
     (name "afl++")
+    (arguments
+      (substitute-keyword-arguments (package-arguments aflplusplus)
+        ((#:phases phases)
+         #~(modify-phases #$phases
+             (add-after 'build 'build-qasan
+               (lambda* (#:key make-flags #:allow-other-keys)
+                 (apply invoke
+                   "make" "-C" "qemu_mode/libqasan"
+                   make-flags)))
+             ;; afl-qemu-trace is a symbolic link to QEMU's binary.
+             ;; Substituting its source code with AFL++'s output path
+             ;; would result in a dependency cycle.
+             (add-after 'install-qemu 'wrap-qemu
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (let ((out (assoc-ref outputs "out")))
+                   (wrap-program (string-append out "/bin/afl-qemu-trace")
+                     `("AFL_PATH" = (,(string-append out "/lib/afl")))))))))))
     (inputs (modify-inputs (package-inputs aflplusplus)
               (replace "qemu" qemu-for-aflplusplus)))))
 
