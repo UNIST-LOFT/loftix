@@ -39,9 +39,7 @@
          #~(modify-phases #$phases
              (add-after 'build 'build-qasan
                (lambda* (#:key make-flags #:allow-other-keys)
-                 (apply invoke
-                   "make" "-C" "qemu_mode/libqasan"
-                   make-flags)))
+                 (apply invoke "make" "-C" "qemu_mode/libqasan" make-flags)))
              ;; afl-qemu-trace is a symbolic link to QEMU's binary.
              ;; Substituting its source code with AFL++'s output path
              ;; would result in a dependency cycle.

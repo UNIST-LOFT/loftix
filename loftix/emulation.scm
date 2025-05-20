@@ -49,11 +49,7 @@
                       ("aarch64-linux"  "aarch64-linux-user")
                       ("armhf-linux"    "arm-linux-user")
                       ("mips64el-linux" "mips64el-linux-user")
-                      ("powerpc-linux"  "ppc-linux-user")
-                      ;; Prevent errors when querying this package
-                      ;; on unsupported platforms, e.g. when running
-                      ;; "guix search"
-                      (_                "")))))
+                      ("powerpc-linux"  "ppc-linux-user")))))
           ((#:phases phases)
            #~(modify-phases #$phases
                (delete 'replace-firmwares)
@@ -136,14 +132,14 @@
                      ;; The binaries need to be linked against -lrt.
                      (setenv "LDFLAGS" "-lrt")
                      (apply invoke
-                            `("./configure"
-                              ,(string-append "--cc=" (which "gcc"))
-                              ;; Some architectures insist on using HOST_CC
-                              ,(string-append "--host-cc=" (which "gcc"))
-                              "--disable-debug-info" ; save build space
-                              ,(string-append "--prefix=" out)
-                              ,(string-append "--sysconfdir=/etc")
-                              ,@configure-flags)))))
+                       "./configure"
+                       (string-append "--cc=" (which "gcc"))
+                       ;; Some architectures insist on using HOST_CC
+                       (string-append "--host-cc=" (which "gcc"))
+                       "--disable-debug-info" ; save build space
+                       (string-append "--prefix=" out)
+                       (string-append "--sysconfdir=/etc")
+                       configure-flags))))
                (add-after 'install 'install-symbolic-header
                  (lambda* (#:key outputs #:allow-other-keys)
                    (install-file
