@@ -162,7 +162,7 @@ new file mode 100755
 index 000000000000..d22009e99b72
 --- /dev/null
 +++ b/test/regtest/regtest
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,26 @@
 +#!/bin/sh
 +fails=()
 +for exe in $*
@@ -176,6 +176,7 @@ index 000000000000..d22009e99b72
 +  then ./exec.sh ./$cmd 1>$out 2>&1
 +  else ./exec.sh ./$exe 1>$out 2>&1
 +  fi
++  sed -i 's/ (core dumped)$//' $out
 +
 +  diff -u $out $exp
 +  if test $? -ne 0
