@@ -202,7 +202,7 @@ for a given bug, as a traditional greybox fuzzer does)."))))
 
 (define-public fuzzolic
   (let* ((base-name "fuzzolic")
-         (commit "0567365dcca1a9b2e1e3a31342e9c9fb7a4f7936")
+         (commit "cf4285aa08d1751fdf6824bfaaf75895055dc495")
          (revision "master")
          (version (git-version "0" revision commit))
          (base-source
@@ -214,7 +214,7 @@ for a given bug, as a traditional greybox fuzzer does)."))))
             (file-name (git-file-name base-name version))
             (sha256
              (base32
-              "0qbpvbq9lqh07b98aingkg2w9vn8w88g4g7zglcz8i6wm8bv6k99"))))
+              "0mi1jyc2p4ynbshscnyvgyxcy6hdaa3fw77j4c8bchw049kc4w3p"))))
          (description "FUZZOLIC is a concolic executor based on QEMU.
 
 It can instrument binary programs at runtime in order to build
@@ -298,8 +298,6 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                           "patches/fuzzolic-unbundle.patch"
                           ;; https://github.com/season-lab/fuzzolic/pull/13
                           "patches/fuzzolic-timeout-solver.patch"
-                          ;; https://github.com/season-lab/fuzzolic/pull/16
-                          "patches/fuzzolic-test-driver-include-libc.patch"
                           "patches/fuzzolic-test-fix-runner.patch"
                           "patches/fuzzolic-test-skip-nondeterministic.patch"))))
       (build-system pyproject-build-system)
@@ -309,8 +307,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                       (lambda* (#:key tests? #:allow-other-keys)
                         (when tests?
                           (invoke "make" "-C" "tests")
-                          (invoke "pytest" "-v" "tests/run.py" "--fuzzy")
-                          (invoke "pytest" "-v" "tests/run.py")))))))
+                          (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
+                          (invoke "pytest" "-vv" "tests/run.py")))))))
       (native-inputs (list python-flit-core python-pytest))
       (propagated-inputs (list aflplusplus
                                fuzzolic-showmap
