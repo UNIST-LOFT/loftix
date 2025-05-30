@@ -298,6 +298,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                           "patches/fuzzolic-unbundle.patch"
                           ;; https://github.com/season-lab/fuzzolic/pull/13
                           "patches/fuzzolic-timeout-solver.patch"
+                          "patches/fuzzolic-relax-perf-test.patch"
                           "patches/fuzzolic-test-fix-runner.patch"
                           "patches/fuzzolic-test-skip-nondeterministic.patch"))))
       (build-system pyproject-build-system)

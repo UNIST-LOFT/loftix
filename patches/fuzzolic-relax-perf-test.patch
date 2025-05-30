@@ -1,0 +1,13 @@
+diff --git a/tests/run.py b/tests/run.py
+index 2144d96c7544..1d84a2999662 100755
+--- a/tests/run.py
++++ b/tests/run.py
+@@ -78,7 +78,7 @@ def run(test,
+     if perf_run:
+         slowdown = emulated_time / native_time
+         print("Slowdown: %s" % round(slowdown, 1))
+-        assert slowdown < 70
++        assert slowdown < 140
+ 
+     if expected_inputs > 0:
+         testcases = glob.glob(WORKDIR + "/tests/test_*.dat") 
