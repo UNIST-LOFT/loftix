@@ -128,7 +128,7 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = 'bugs/cve/2018/14498/*.bmp'
 SPDX-FileCopyrightText = 'Hongxu Chen'
-SPDX-License-Identifier = 'CC0-1.0'
+SPDX-License-Identifier = 'MIT'
 
 [[annotations]]
 path = 'bugs/cve/2018/19664/heap-buffer-overflow-2.jpg'
