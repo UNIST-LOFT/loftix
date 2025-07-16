@@ -65,8 +65,11 @@ path = [ 'bugs/cve/2016/8691/11.crash',
          'bugs/cve/2017/7599/outside-short.tiff',
          'bugs/cve/2017/7600/outside-unsigned-char.tiff',
          'bugs/cve/2017/7601/shift-long.tiff',
+         'bugs/cve/2017/14939/heapoverflow',
+         'bugs/cve/2017/14940/nullderef',
          'bugs/cve/2017/15020/reproducer',
          'bugs/cve/2017/15025/3899.crashes.bin',
+         'bugs/cve/2017/15938/invalidread',
          'bugs/maptools/2633/heapoverflow.tiff' ]
 SPDX-FileCopyrightText = 'Agostino Sarubbo'
 SPDX-License-Identifier = 'CC0-1.0'

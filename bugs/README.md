@@ -12,6 +12,16 @@
       guix shell binutils@2.29
       objdump -d cve/2017/14745/crash_1
 
+- CVE-2017-14939: [heap buffer overflow][sourceware-22169]
+
+      guix shell binutils-with-asan@2.29
+      nm -l cve/2017/14939/heapoverflow
+
+- CVE-2017-14940: [null pointer dereference][sourceware-22167]
+
+      guix shell binutils@2.29
+      nm -l cve/2017/14940/nullderef
+
 - CVE-2017-15020: [heap buffer overflow][sourceware-22202]
 
       guix shell binutils-with-asan@2.29
@@ -23,6 +33,11 @@
       nm -l cve/2017/15025/3899.crashes.bin
       nm -l cve/2017/15025/floatexception.elf
       objdump -S cve/2017/15025/floatexception.elf
+
+- CVE-2017-15938: [invalid memory read][sourceware-22209]
+
+      guix shell binutils-with-asan@2.29
+      nm -l cve/2017/15938/invalidread
 
 - CVE-2018-10372: [heap buffer overflow][sourceware-23064]
 
@@ -311,7 +326,10 @@
 [redhat-1319503]: https://bugzilla.redhat.com/show_bug.cgi?id=1319503
 [sourceware-21137]: https://sourceware.org/bugzilla/show_bug.cgi?id=21137
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
+[sourceware-22167]: https://sourceware.org/bugzilla/show_bug.cgi?id=22167
+[sourceware-22169]: https://sourceware.org/bugzilla/show_bug.cgi?id=22169
 [sourceware-22186]: https://sourceware.org/bugzilla/show_bug.cgi?id=22186
 [sourceware-22202]: https://sourceware.org/bugzilla/show_bug.cgi?id=22202
+[sourceware-22209]: https://sourceware.org/bugzilla/show_bug.cgi?id=22209
 [sourceware-23064]: https://sourceware.org/bugzilla/show_bug.cgi?id=23064
 [sourceware-24243]: https://sourceware.org/bugzilla/show_bug.cgi?id=24243
