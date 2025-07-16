@@ -204,12 +204,12 @@
 
 - CVE-2016-10266: [division by zero][maptools-2596]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7)'
+      guix shell libtiff@4.0.7
       tiffcp cve/2016/10266/fpe.tiff /dev/null
 
 - CVE-2016-10267: [division by zero][maptools-2611]
 
-      guix shell -e '(@@ (loftix bugs) libtiff-4.0.7)'
+      guix shell libtiff@4.0.7
       tiffmedian cve/2016/10267/fpe.tiff /dev/null
 
 - CVE-2016-10268: [heap buffer overflow][maptools-2598]
@@ -279,7 +279,7 @@
 
 - CVE-2013-7437: [possible heap overflow][redhat-955808]
 
-      guix shell -e '(@@ (loftix bugs) potrace-1.11)'
+      guix shell potrace@1.11
       potrace cve/2013/7437/1.bmp
       potrace cve/2013/7437/2.bmp
 
