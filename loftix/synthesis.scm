@@ -67,10 +67,9 @@ from values in possitive and negative examples using a PAC learning algorithm.")
                 (delete 'configure)
                 (delete 'check)
                 (add-after 'install 'wrap
-                  (lambda* (#:key inputs outputs #:allow-other-keys)
+                  (lambda* (#:key outputs #:allow-other-keys)
                     (wrap-program (search-input-file outputs "bin/taosc-synth")
-                      `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))))))
-            #:validate-runpath? #f))
+                      `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))))))))
     (native-inputs (list m4))
     (inputs (list dyninst))
     (propagated-inputs (list afl-dyninst aflplusplus
