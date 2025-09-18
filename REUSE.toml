@@ -203,6 +203,12 @@ SPDX-FileCopyrightText = 'Dominik Mierzejewski'
 SPDX-License-Identifier = 'MIT'
 
 [[annotations]]
+# https://lists.nongnu.org/archive/html/qemu-devel/2022-02/msg04587.html
+path = 'patches/qemu-for-aflplusplus-io_uring-2.2.patch'
+SPDX-FileCopyrightText = 'Haiyue Wang'
+SPDX-License-Identifier = 'LGPL-2.1-or-later'
+
+[[annotations]]
 # https://lists.nongnu.org/archive/html/qemu-devel/2019-09/msg05403.html
 path = 'patches/qemu-for-fuzzolic-test-opts-range-beyond.patch'
 SPDX-FileCopyrightText = 'Andrey Shinkevich'
