@@ -186,10 +186,15 @@ SPDX-FileCopyrightText = 'Paul Eggert'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
 [[annotations]]
+path = [ 'patches/jasper-lint.patch',
+         'patches/jasper-sanitized-bmp.patch' ]
+SPDX-FileCopyrightText = 'Michael Adams'
+SPDX-License-Identifier = 'JasPer-2.0'
+
+[[annotations]]
 path = 'patches/fuzzolic-showmap.patch'
 SPDX-FileCopyrightText = 'Emilio Coppa'
 SPDX-License-Identifier = 'GPL-2.0-or-later'
-
 
 [[annotations]]
 path = 'patches/fuzzolic-timeout-solver.patch'

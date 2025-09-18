@@ -240,12 +240,17 @@
   (with-ubsan jasper-1.900.19))
 
 (define-public jasper-1.900.5
-  (jasper-at-version "1.900.5"
-                     "1fvy4ngc6064g128q4484qpinsn05y9qw6lrccc4czhalla2w26m"))
+  (with-patches
+   (jasper-at-version "1.900.5"
+                      "1fvy4ngc6064g128q4484qpinsn05y9qw6lrccc4czhalla2w26m")
+   "patches/jasper-lint.patch"))
 
 (define-public jasper-1.900.3
-  (jasper-at-version "1.900.3"
-                     "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn"))
+  (with-patches
+   (jasper-at-version "1.900.3"
+                      "106xwiyn40k5yrnny198mzscvyd18rza9clhd2nl6xvcsz73swrn")
+   "patches/jasper-lint.patch"
+   "patches/jasper-sanitized-bmp.patch"))
 
 (define-public libarchive-3.2.0
   (package

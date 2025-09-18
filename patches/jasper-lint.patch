@@ -1,0 +1,592 @@
+commit d743f7e0ad901dc3419fc1042939a5454de96c16
+Author: Michael Adams <mdadams@ece.uvic.ca>
+Date:   2016-10-21 03:14:31 -0700
+
+    Changed the configure setup so that if GCC is used warnings and pedantic
+    errors are enabled.
+    
+    Fixed some inconsistent use of quotes and angle brackets in include directives.
+    
+    Added experimental support in the jas_image code for images with signed
+    sample values.  This code has not been tested yet, except to ensure
+    it does not crash.
+    
+    Fixed a bug in the stream code (jas_stream) that caused memory to leak
+    when an attempt to open a file failed.
+    
+    Commented out an assertion that causes a C99 pedantic build to fail, due
+    to string literal that is too long.
+    
+    In the JPC QMFB/TSFB code, there were several places in function
+    declarations/definitions where incorrect parameter types were used
+    (e.g., int* used instead of jpc_fix_t*).
+    Also, some function prototypes were missing.
+    This is now fixed.
+    
+    Some files were missing includes for jas_debug.h (resulting in missing
+    function prototypes).  This is now fixed.
+    
+    Some bugs in the MIF decoder have been fixed.
+    Also, some improved debugging support has been added for the MIF decoder.
+    
+    Numerous cosmetic changes were also made to the code.
+
+diff --git a/configure.ac b/configure.ac
+index 13751b0e9bef..7f28f3ffb4e7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -375,10 +375,11 @@ esac
+ ], [debug=no])
+ 
+ if test "$GCC" = yes; then
+-	CFLAGS="$CFLAGS"
+-	#CFLAGS="$CFLAGS -std=c99"
+-	#CFLAGS="$CFLAGS -pedantic"
+-	#CFLAGS="$CFLAGS -pedantic-errors"
++	#CFLAGS="$CFLAGS"
++	CFLAGS="$CFLAGS -std=c99"
++	CFLAGS="$CFLAGS -pedantic"
++	CFLAGS="$CFLAGS -pedantic-errors"
++	CFLAGS="$CFLAGS -Wall"
+ 	#CFLAGS="$CFLAGS -W -Wall -Wno-long-long -Wformat -Wmissing-prototypes -Wstrict-prototypes"
+ fi
+ 
+diff --git a/src/appl/jasper.c b/src/appl/jasper.c
+index d99e35668bd9..690002958c26 100644
+--- a/src/appl/jasper.c
++++ b/src/appl/jasper.c
+@@ -77,6 +77,7 @@
+ #include <time.h>
+ 
+ #include <jasper/jasper.h>
++#include <jasper/jas_debug.h>
+ 
+ /******************************************************************************\
+ *
+diff --git a/src/libjasper/base/jas_cm.c b/src/libjasper/base/jas_cm.c
+index 6c612b70f7a7..fc8417fb65ba 100644
+--- a/src/libjasper/base/jas_cm.c
++++ b/src/libjasper/base/jas_cm.c
+@@ -65,16 +65,17 @@
+  * $Id$
+  */
+ 
+-#include <jasper/jas_config.h>
+ #include <math.h>
+ #include <stdlib.h>
+ #include <assert.h>
+-#include <jasper/jas_cm.h>
+-#include <jasper/jas_icc.h>
+-#include <jasper/jas_init.h>
+-#include <jasper/jas_stream.h>
+-#include <jasper/jas_malloc.h>
+-#include <jasper/jas_math.h>
++#include "jasper/jas_config.h"
++#include "jasper/jas_cm.h"
++#include "jasper/jas_icc.h"
++#include "jasper/jas_init.h"
++#include "jasper/jas_stream.h"
++#include "jasper/jas_malloc.h"
++#include "jasper/jas_math.h"
++#include "jasper/jas_debug.h"
+ 
+ static jas_cmprof_t *jas_cmprof_create(void);
+ static void jas_cmshapmatlut_cleanup(jas_cmshapmatlut_t *);
+diff --git a/src/libjasper/base/jas_getopt.c b/src/libjasper/base/jas_getopt.c
+index 2a3dfe50addf..9c9724aebe6d 100644
+--- a/src/libjasper/base/jas_getopt.c
++++ b/src/libjasper/base/jas_getopt.c
+@@ -76,6 +76,7 @@
+ 
+ #include "jasper/jas_getopt.h"
+ #include "jasper/jas_math.h"
++#include "jasper/jas_debug.h"
+ 
+ /******************************************************************************\
+ * Global data.
+diff --git a/src/libjasper/base/jas_icc.c b/src/libjasper/base/jas_icc.c
+index 6569bd9dd524..4abee31b9602 100644
+--- a/src/libjasper/base/jas_icc.c
++++ b/src/libjasper/base/jas_icc.c
+@@ -60,14 +60,15 @@
+  */
+ 
+ #include <assert.h>
+-#include <jasper/jas_config.h>
+-#include <jasper/jas_types.h>
+-#include <jasper/jas_malloc.h>
+-#include <jasper/jas_debug.h>
+-#include <jasper/jas_icc.h>
+-#include <jasper/jas_cm.h>
+-#include <jasper/jas_stream.h>
+-#include <jasper/jas_string.h>
++
++#include "jasper/jas_config.h"
++#include "jasper/jas_types.h"
++#include "jasper/jas_malloc.h"
++#include "jasper/jas_debug.h"
++#include "jasper/jas_icc.h"
++#include "jasper/jas_cm.h"
++#include "jasper/jas_stream.h"
++#include "jasper/jas_string.h"
+ 
+ #include <stdlib.h>
+ #include <ctype.h>
+diff --git a/src/libjasper/base/jas_image.c b/src/libjasper/base/jas_image.c
+index 04adbba95a28..9d2669ad863f 100644
+--- a/src/libjasper/base/jas_image.c
++++ b/src/libjasper/base/jas_image.c
+@@ -81,6 +81,7 @@
+ #include "jasper/jas_image.h"
+ #include "jasper/jas_malloc.h"
+ #include "jasper/jas_string.h"
++#include "jasper/jas_debug.h"
+ 
+ /******************************************************************************\
+ * Types.
+@@ -1227,13 +1228,38 @@ static void jas_image_calcbbox2(jas_image_t *image, jas_image_coord_t *tlx,
+ 	*bry = tmpbry;
+ }
+ 
++static inline long decode_twos_comp(ulong c, int prec)
++{
++	long result;
++	assert(prec >= 2);
++	jas_eprintf("warning: support for signed data is untested\n");
++	// NOTE: Is this correct?
++	result = (c & ((1 << (prec - 1)) - 1)) - (c & (1 << (prec - 1)));
++	return result;
++}
+ 
++static inline ulong encode_twos_comp(long n, int prec)
++{
++	ulong result;
++	assert(prec >= 2);
++	jas_eprintf("warning: support for signed data is untested\n");
++	// NOTE: Is this correct?
++	if (n < 0) {
++		result = -n;
++		result = (result ^ 0xffffffffUL) + 1;
++		result &= (1 << prec) - 1;
++	} else {
++		result = n;
++	}
++	return result;
++}
+ 
+ static int getint(jas_stream_t *in, int sgnd, int prec, long *val)
+ {
+ 	long v;
+ 	int n;
+ 	int c;
++	assert((!sgnd && prec >= 1) || (sgnd && prec >= 2));
+ 	n = (prec + 7) / 8;
+ 	v = 0;
+ 	while (--n >= 0) {
+@@ -1243,8 +1269,7 @@ static int getint(jas_stream_t *in, int sgnd, int prec, long *val)
+ 	}
+ 	v &= ((1 << prec) - 1);
+ 	if (sgnd) {
+-		/* XXX - Do something here. */
+-		abort();
++		*val = decode_twos_comp(v, prec);
+ 	} else {
+ 		*val = v;
+ 	}
+@@ -1255,10 +1280,13 @@ static int putint(jas_stream_t *out, int sgnd, int prec, long val)
+ {
+ 	int n;
+ 	int c;
++	bool s;
++	ulong tmp;
++	assert((!sgnd && prec >= 1) || (sgnd && prec >= 2));
+ 	if (sgnd) {
+-		/* XXX - Do something here. */
+-		abort();
++		val = encode_twos_comp(val, prec);
+ 	}
++	assert(val >= 0);
+ 	val &= (1 << prec) - 1;
+ 	n = (prec + 7) / 8;
+ 	while (--n >= 0) {
+@@ -1342,16 +1370,20 @@ jas_image_dump(image, stderr);
+ 		for (i = 1; i < jas_image_numcmpts(inimage); ++i) {
+ 			hstep = jas_image_cmpthstep(inimage, i);
+ 			vstep = jas_image_cmptvstep(inimage, i);
+-			if (hstep < minhstep)
++			if (hstep < minhstep) {
+ 				minhstep = hstep;
+-			if (vstep < minvstep)
++			}
++			if (vstep < minvstep) {
+ 				minvstep = vstep;
++			}
+ 		}
+ 		n = jas_image_numcmpts(inimage);
+ 		for (i = 0; i < n; ++i) {
+ 			cmpttype = jas_image_cmpttype(inimage, i);
+-			if (jas_image_sampcmpt(inimage, i, i + 1, 0, 0, minhstep, minvstep, jas_image_cmptsgnd(inimage, i), jas_image_cmptprec(inimage, i)))
++			if (jas_image_sampcmpt(inimage, i, i + 1, 0, 0, minhstep, minvstep,
++			  jas_image_cmptsgnd(inimage, i), jas_image_cmptprec(inimage, i))) {
+ 				goto error;
++			}
+ 			jas_image_setcmpttype(inimage, i + 1, cmpttype);
+ 			jas_image_delcmpt(inimage, i);
+ 		}
+@@ -1362,8 +1394,9 @@ jas_image_dump(image, stderr);
+ 	hstep = jas_image_cmpthstep(inimage, 0);
+ 	vstep = jas_image_cmptvstep(inimage, 0);
+ 
+-	inprof = jas_image_cmprof(inimage);
+-	assert(inprof);
++	if (!(inprof = jas_image_cmprof(inimage))) {
++		abort();
++	}
+ 	numinclrchans = jas_clrspc_numchans(jas_cmprof_clrspc(inprof));
+ 	numinauxchans = jas_image_numcmpts(inimage) - numinclrchans;
+ 	numoutclrchans = jas_clrspc_numchans(jas_cmprof_clrspc(outprof));
+@@ -1371,8 +1404,9 @@ jas_image_dump(image, stderr);
+ 	numoutchans = numoutclrchans + numoutauxchans;
+ 	prec = 8;
+ 
+-	if (!(outimage = jas_image_create0()))
++	if (!(outimage = jas_image_create0())) {
+ 		goto error;
++	}
+ 
+ 	/* Create a component for each of the colorants. */
+ 	for (i = 0; i < numoutclrchans; ++i) {
+@@ -1456,11 +1490,13 @@ jas_image_dump(image, stderr);
+ 		}
+ 	}
+ 
+-	for (i = 0; i < numoutclrchans; ++i)
++	for (i = 0; i < numoutclrchans; ++i) {
+ 		jas_free(outcmptfmts[i].buf);
++	}
+ 	jas_free(outcmptfmts);
+-	for (i = 0; i < numinclrchans; ++i)
++	for (i = 0; i < numinclrchans; ++i) {
+ 		jas_free(incmptfmts[i].buf);
++	}
+ 	jas_free(incmptfmts);
+ 	jas_cmxform_destroy(xform);
+ 	jas_image_destroy(inimage);
+diff --git a/src/libjasper/base/jas_stream.c b/src/libjasper/base/jas_stream.c
+index 29e4291cb689..ac51ce25a38a 100644
+--- a/src/libjasper/base/jas_stream.c
++++ b/src/libjasper/base/jas_stream.c
+@@ -283,6 +283,9 @@ jas_stream_t *jas_stream_fopen(const char *filename, const char *mode)
+ 
+ 	/* Open the underlying file. */
+ 	if ((obj->fd = open(filename, openflags, JAS_STREAM_PERMS)) < 0) {
++		// Free the underlying file object, since it will not otherwise
++		// be freed.
++		jas_free(obj);
+ 		jas_stream_destroy(stream);
+ 		return 0;
+ 	}
+diff --git a/src/libjasper/include/jasper/jas_debug.h b/src/libjasper/include/jasper/jas_debug.h
+index 2223c6caae15..1619a5ac7684 100644
+--- a/src/libjasper/include/jasper/jas_debug.h
++++ b/src/libjasper/include/jasper/jas_debug.h
+@@ -75,8 +75,8 @@
+ #include <stdio.h>
+ 
+ #include <jasper/jas_config.h>
+-#include "jasper/jas_types.h"
+-#include "jasper/jas_debug.h"
++#include <jasper/jas_types.h>
++#include <jasper/jas_debug.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git a/src/libjasper/include/jasper/jas_fix.h b/src/libjasper/include/jasper/jas_fix.h
+index f91ce25f2100..e9164c7ac4ca 100644
+--- a/src/libjasper/include/jasper/jas_fix.h
++++ b/src/libjasper/include/jasper/jas_fix.h
+@@ -80,6 +80,7 @@
+ 
+ #include <jasper/jas_config.h>
+ #include <jasper/jas_types.h>
++#include <jasper/jas_debug.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git a/src/libjasper/jpc/jpc_bs.c b/src/libjasper/jpc/jpc_bs.c
+index c3dd466f8815..f87a40c4b07e 100644
+--- a/src/libjasper/jpc/jpc_bs.c
++++ b/src/libjasper/jpc/jpc_bs.c
+@@ -97,8 +97,7 @@ jpc_bitstream_t *jpc_bitstream_sopen(jas_stream_t *stream, char *mode)
+ 	jpc_bitstream_t *bitstream;
+ 
+ 	/* Ensure that the open mode is valid. */
+-#if 1
+-/* This causes a string literal too long error (with c99 pedantic mode). */
++#if 0 /* This causes a string literal too long error (with c99 pedantic mode).  Why is this so? */
+ 	assert(!strcmp(mode, "r") || !strcmp(mode, "w") || !strcmp(mode, "r+")
+ 	  || !strcmp(mode, "w+"));
+ #endif
+diff --git a/src/libjasper/jpc/jpc_qmfb.c b/src/libjasper/jpc/jpc_qmfb.c
+index af874b4c01b5..bc57b668b57c 100644
+--- a/src/libjasper/jpc/jpc_qmfb.c
++++ b/src/libjasper/jpc/jpc_qmfb.c
+@@ -96,7 +96,7 @@
+ 
+ int jpc_ft_analyze(jpc_fix_t *a, int xstart, int ystart, int width, int height,
+   int stride);
+-int jpc_ft_synthesize(int *a, int xstart, int ystart, int width, int height,
++int jpc_ft_synthesize(jpc_fix_t *a, int xstart, int ystart, int width, int height,
+   int stride);
+ 
+ int jpc_ns_analyze(jpc_fix_t *a, int xstart, int ystart, int width, int height,
+@@ -1528,7 +1528,7 @@ int jpc_ft_analyze(jpc_fix_t *a, int xstart, int ystart, int width, int height,
+ 
+ }
+ 
+-int jpc_ft_synthesize(int *a, int xstart, int ystart, int width, int height,
++int jpc_ft_synthesize(jpc_fix_t *a, int xstart, int ystart, int width, int height,
+   int stride)
+ {
+ 	int numrows = height;
+diff --git a/src/libjasper/jpc/jpc_qmfb.h b/src/libjasper/jpc/jpc_qmfb.h
+index 75611fe940e4..7bef848eb9bc 100644
+--- a/src/libjasper/jpc/jpc_qmfb.h
++++ b/src/libjasper/jpc/jpc_qmfb.h
+@@ -75,6 +75,7 @@
+ \******************************************************************************/
+ 
+ #include "jasper/jas_seq.h"
++#include "jpc_fix.h"
+ 
+ /******************************************************************************\
+ * Constants.
+@@ -101,8 +102,8 @@ any particular platform.  Hopefully, it is not too unreasonable, however. */
+ #endif
+ 
+ typedef struct {
+-	int (*analyze)(int *, int, int, int, int, int);
+-	int (*synthesize)(int *, int, int, int, int, int);
++	int (*analyze)(jpc_fix_t *, int, int, int, int, int);
++	int (*synthesize)(jpc_fix_t *, int, int, int, int, int);
+ 	double *lpenergywts;
+ 	double *hpenergywts;
+ } jpc_qmfb2d_t;
+diff --git a/src/libjasper/jpc/jpc_t1dec.c b/src/libjasper/jpc/jpc_t1dec.c
+index 8bbe83a5b269..b491ec3b9752 100644
+--- a/src/libjasper/jpc/jpc_t1dec.c
++++ b/src/libjasper/jpc/jpc_t1dec.c
+@@ -78,6 +78,7 @@
+ #include "jasper/jas_fix.h"
+ #include "jasper/jas_stream.h"
+ #include "jasper/jas_math.h"
++#include "jasper/jas_debug.h"
+ 
+ #include "jpc_bs.h"
+ #include "jpc_mqdec.h"
+diff --git a/src/libjasper/jpc/jpc_tsfb.c b/src/libjasper/jpc/jpc_tsfb.c
+index b51b747d6931..50f1437da0cb 100644
+--- a/src/libjasper/jpc/jpc_tsfb.c
++++ b/src/libjasper/jpc/jpc_tsfb.c
+@@ -81,6 +81,7 @@
+ #include "jpc_cs.h"
+ #include "jpc_util.h"
+ #include "jpc_math.h"
++#include "jpc_fix.h"
+ 
+ void jpc_tsfb_getbands2(jpc_tsfb_t *tsfb, int locxstart, int locystart,
+   int xstart, int ystart, int xend, int yend, jpc_tsfb_band_t **bands,
+@@ -127,7 +128,7 @@ int jpc_tsfb_analyze(jpc_tsfb_t *tsfb, jas_seq2d_t *a)
+ 	  jas_seq2d_height(a), jas_seq2d_rowstep(a), tsfb->numlvls - 1) : 0;
+ }
+ 
+-int jpc_tsfb_analyze2(jpc_tsfb_t *tsfb, int *a, int xstart, int ystart,
++int jpc_tsfb_analyze2(jpc_tsfb_t *tsfb, jpc_fix_t *a, int xstart, int ystart,
+   int width, int height, int stride, int numlvls)
+ {
+ 	if (width > 0 && height > 0) {
+@@ -155,7 +156,7 @@ int jpc_tsfb_synthesize(jpc_tsfb_t *tsfb, jas_seq2d_t *a)
+ 	  jas_seq2d_height(a), jas_seq2d_rowstep(a), tsfb->numlvls - 1) : 0;
+ }
+ 
+-int jpc_tsfb_synthesize2(jpc_tsfb_t *tsfb, int *a, int xstart, int ystart,
++int jpc_tsfb_synthesize2(jpc_tsfb_t *tsfb, jpc_fix_t *a, int xstart, int ystart,
+   int width, int height, int stride, int numlvls)
+ {
+ 	if (numlvls > 0) {
+diff --git a/src/libjasper/jpc/jpc_tsfb.h b/src/libjasper/jpc/jpc_tsfb.h
+index 1bf9736ae834..33f11f4430d1 100644
+--- a/src/libjasper/jpc/jpc_tsfb.h
++++ b/src/libjasper/jpc/jpc_tsfb.h
+@@ -130,6 +130,12 @@ int jpc_tsfb_analyze(jpc_tsfb_t *tsfb, jas_seq2d_t *x);
+ /* Perform synthesis. */
+ int jpc_tsfb_synthesize(jpc_tsfb_t *tsfb, jas_seq2d_t *x);
+ 
++int jpc_tsfb_analyze2(jpc_tsfb_t *tsfb, jpc_fix_t *a, int xstart, int ystart,
++  int width, int height, int stride, int numlvls);
++
++int jpc_tsfb_synthesize2(jpc_tsfb_t *tsfb, jpc_fix_t *a, int xstart, int ystart,
++  int width, int height, int stride, int numlvls);
++
+ /* Get band information for a TSFB. */
+ int jpc_tsfb_getbands(jpc_tsfb_t *tsfb, uint_fast32_t xstart,
+   uint_fast32_t ystart, uint_fast32_t xend, uint_fast32_t yend,
+diff --git a/src/libjasper/jpg/jpg_dummy.c b/src/libjasper/jpg/jpg_dummy.c
+index db70fca8d860..bc8b7c5182df 100644
+--- a/src/libjasper/jpg/jpg_dummy.c
++++ b/src/libjasper/jpg/jpg_dummy.c
+@@ -69,6 +69,7 @@
+ #include "jasper/jas_stream.h"
+ #include "jasper/jas_image.h"
+ #include "jasper/jas_string.h"
++#include "jasper/jas_debug.h"
+ 
+ #include "jpg_cod.h"
+ 
+diff --git a/src/libjasper/mif/mif_cod.c b/src/libjasper/mif/mif_cod.c
+index 5541a22f02d2..724df93c2f0f 100644
+--- a/src/libjasper/mif/mif_cod.c
++++ b/src/libjasper/mif/mif_cod.c
+@@ -70,6 +70,7 @@
+ #include "jasper/jas_image.h"
+ #include "jasper/jas_string.h"
+ #include "jasper/jas_malloc.h"
++#include "jasper/jas_debug.h"
+ 
+ #include "mif_cod.h"
+ 
+@@ -175,6 +176,7 @@ jas_image_t *mif_decode(jas_stream_t *in, char *optstr)
+ 		cmpt = hdr->cmpts[cmptno];
+ 		tmpstream = cmpt->data ? jas_stream_fopen(cmpt->data, "rb") : in;
+ 		if (!tmpstream) {
++			jas_eprintf("cannot open component file %s\n", cmpt->data);
+ 			goto error;
+ 		}
+ 		if (!(tmpimage = jas_image_decode(tmpstream, -1, 0))) {
+@@ -482,26 +484,38 @@ static mif_hdr_t *mif_hdr_get(jas_stream_t *in)
+ 	done = false;
+ 	do {
+ 		if (!mif_getline(in, buf, sizeof(buf))) {
++			jas_eprintf("mif_getline failed\n");
+ 			goto error;
+ 		}
+ 		if (buf[0] == '\0') {
+ 			continue;
+ 		}
++		JAS_DBGLOG(10, ("header line: len=%d; %s\n", strlen(buf), buf));
+ 		if (!(tvp = jas_tvparser_create(buf))) {
++			jas_eprintf("jas_tvparser_create failed\n");
+ 			goto error;
+ 		}
+ 		if (jas_tvparser_next(tvp)) {
++			jas_eprintf("jas_tvparser_next failed\n");
+ 			abort();
+ 		}
+-		id = jas_taginfo_nonull(jas_taginfos_lookup(mif_tags2, jas_tvparser_gettag(tvp)))->id;
++		id = jas_taginfo_nonull(jas_taginfos_lookup(mif_tags2,
++		  jas_tvparser_gettag(tvp)))->id;
+ 		jas_tvparser_destroy(tvp);
+ 		switch (id) {
+ 		case MIF_CMPT:
+-			mif_process_cmpt(hdr, buf);
++			if (mif_process_cmpt(hdr, buf)) {
++				jas_eprintf("cannot get component information\n");
++				goto error;
++			}
+ 			break;
+ 		case MIF_END:
+ 			done = 1;
+ 			break;
++		default:
++			jas_eprintf("invalid header information: %s\n", buf);
++			goto error;
++			break;
+ 		}
+ 	} while (!done);
+ 
+@@ -524,6 +538,7 @@ static int mif_process_cmpt(mif_hdr_t *hdr, char *buf)
+ 	tvp = 0;
+ 
+ 	if (!(cmpt = mif_cmpt_create())) {
++		jas_eprintf("cannot create component\n");
+ 		goto error;
+ 	}
+ 	cmpt->tlx = 0;
+@@ -537,8 +552,16 @@ static int mif_process_cmpt(mif_hdr_t *hdr, char *buf)
+ 	cmpt->data = 0;
+ 
+ 	if (!(tvp = jas_tvparser_create(buf))) {
++		jas_eprintf("cannot create parser\n");
+ 		goto error;
+ 	}
++
++	// Skip the component keyword
++	if ((id = jas_tvparser_next(tvp))) {
++		abort();
++	}
++
++	// Process the tag-value pairs.
+ 	while (!(id = jas_tvparser_next(tvp))) {
+ 		switch (jas_taginfo_nonull(jas_taginfos_lookup(mif_tags,
+ 		  jas_tvparser_gettag(tvp)))->id) {
+@@ -571,12 +594,20 @@ static int mif_process_cmpt(mif_hdr_t *hdr, char *buf)
+ 				goto error;
+ 			}
+ 			break;
++		default:
++			jas_eprintf("invalid component information: %s\n", buf);
++			goto error;
++			break;
+ 		}
+ 	}
+ 	if (!cmpt->sampperx || !cmpt->samppery) {
+ 		goto error;
+ 	}
++	if (!cmpt->width || !cmpt->height || !cmpt->prec || cmpt->sgnd < 0) {
++		goto error;
++	}
+ 	if (mif_hdr_addcmpt(hdr, hdr->numcmpts, cmpt)) {
++		jas_eprintf("cannot add component\n");
+ 		goto error;
+ 	}
+ 	jas_tvparser_destroy(tvp);
+@@ -695,15 +726,16 @@ static int mif_getc(jas_stream_t *in)
+ 	do {
+ 		switch (c = jas_stream_getc(in)) {
+ 		case EOF:
+-			done = 1;
++			done = true;
+ 			break;
+ 		case '#':
+ 			for (;;) {
+ 				if ((c = jas_stream_getc(in)) == EOF) {
+-					done = 1;
++					done = true;
+ 					break;
+ 				}	
+ 				if (c == '\n') {
++					done = true;
+ 					break;
+ 				}
+ 			}
+@@ -714,7 +746,7 @@ static int mif_getc(jas_stream_t *in)
+ 			}
+ 			break;
+ 		default:
+-			done = 1;
++			done = true;
+ 			break;
+ 		}
+ 	} while (!done);
+diff --git a/src/libjasper/pnm/pnm_dec.c b/src/libjasper/pnm/pnm_dec.c
+index f2ca26e0ac9b..9de7cb7424eb 100644
+--- a/src/libjasper/pnm/pnm_dec.c
++++ b/src/libjasper/pnm/pnm_dec.c
+@@ -79,6 +79,7 @@
+ #include "jasper/jas_types.h"
+ #include "jasper/jas_stream.h"
+ #include "jasper/jas_image.h"
++#include "jasper/jas_debug.h"
+ 
+ #include "pnm_cod.h"
+ 
