@@ -148,6 +148,7 @@
                     "tcg/symbolic/symbolic-struct.h"
                     (string-append (assoc-ref outputs "out")
                                    "/include/qemu/tcg/symbolic"))))
+               (delete 'install-plugins)
                (delete 'delete-firmwares)))))
        (native-inputs
         (modify-inputs (package-native-inputs base)
