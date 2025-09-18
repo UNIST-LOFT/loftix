@@ -35,7 +35,9 @@
                               (recursive? #t)))
           (file-name (git-file-name name version))
           (sha256
-           (base32 "1qhblmr3azmvzv15w4isxws8zm8jmxxmskmjhmwnn5899rr34p0g"))))
+           (base32 "1qhblmr3azmvzv15w4isxws8zm8jmxxmskmjhmwnn5899rr34p0g"))
+          (patches (search-patches
+                    "patches/qemu-for-aflplusplus-io_uring-2.2.patch"))))
        (arguments
         (substitute-keyword-arguments (package-arguments base)
           ((#:configure-flags _ #~'())
@@ -57,7 +59,7 @@
                (delete 'fix-optionrom-makefile)
                (delete 'disable-unusable-tests)
                (replace 'configure
-                 (lambda* (#:key inputs outputs configure-flags
+                 (lambda* (#:key outputs configure-flags
                            #:allow-other-keys)
                    ;; The `configure' script doesn't understand some of the
                    ;; GNU options.  Thus, add a new phase that's compatible.
