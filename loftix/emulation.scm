@@ -18,7 +18,7 @@
 (define-public qemu-for-aflplusplus
   (let ((base qemu-minimal)
         (base-version "5.2.50")
-        (commit "c43dd6e0369cd5d2a2458f3bd7f4f58c8de53300")
+        (commit "202a9182ef83e5ec8593b54b60eb06b53716671f")
         (revision "master"))
     (hidden-package
      (package
@@ -35,9 +35,7 @@
                               (recursive? #t)))
           (file-name (git-file-name name version))
           (sha256
-           (base32 "1qhblmr3azmvzv15w4isxws8zm8jmxxmskmjhmwnn5899rr34p0g"))
-          (patches (search-patches
-                    "patches/qemu-for-aflplusplus-io_uring-2.2.patch"))))
+           (base32 "0c6z7h35yh071l84sv3czcvsw3l4vbn50innsba1wbyqbac6j4dq"))))
        (arguments
         (substitute-keyword-arguments (package-arguments base)
           ((#:configure-flags _ #~'())
