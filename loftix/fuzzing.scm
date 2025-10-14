@@ -183,13 +183,13 @@ for a given bug, as a traditional greybox fuzzer does)."))))
 (define-public fuzzolic-showmap
   (hidden-package
    (package
-     (inherit aflplusplus)
+     (inherit afl++)
      (name "fuzzolic-showmap")
      (source (origin
-               (inherit (package-source aflplusplus))
+               (inherit (package-source afl++))
                (patches (search-patches "patches/fuzzolic-showmap.patch"))))
      (arguments
-      (substitute-keyword-arguments (package-arguments aflplusplus)
+      (substitute-keyword-arguments (package-arguments afl++)
         ((#:phases phases #~%standard-phases)
          #~(modify-phases #$phases
              (replace 'install
@@ -311,7 +311,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                           (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
                           (invoke "pytest" "-vv" "tests/run.py")))))))
       (native-inputs (list python-flit-core python-pytest))
-      (propagated-inputs (list aflplusplus
+      (propagated-inputs (list afl++
                                fuzzolic-showmap
                                qemu-for-fuzzolic
                                solver
