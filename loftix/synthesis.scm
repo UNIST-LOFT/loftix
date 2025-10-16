@@ -12,6 +12,7 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages zig)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
@@ -50,7 +51,7 @@ from values in possitive and negative examples using a PAC learning algorithm.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.2")
+    (version "0.0.3.dev0")
     (source
       (origin
         (method url-fetch)
@@ -58,24 +59,21 @@ from values in possitive and negative examples using a PAC learning algorithm.")
                "https://trong.loang.net/~cnx/taosc/snapshot/taosc-"
                version ".tar.gz"))
         (sha256
-          (base32 "1qnfvy3zp36m6lsc4csn3p371zxfp41dh77g62vc35b26m5azbfx"))))
+          (base32 "0c0lajbj6wibk5zl71n4q4qy7mdmyq27djdibwscg375ddyi8fd0"))))
     (build-system gnu-build-system)
     (arguments
-      (list #:make-flags #~(list (string-append "PREFIX=" #$output))
+      (list #:imported-modules `((guix build zig-utils)
+                                 ,@%default-gnu-imported-modules)
+            #:modules `((guix build zig-utils)
+                        ,@%default-gnu-modules)
+            #:make-flags #~(list (string-append "PREFIX=" #$output))
             #:phases
             #~(modify-phases %standard-phases
-                (delete 'configure)
-                (delete 'check)
-                (add-after 'install 'wrap
-                  (lambda* (#:key outputs #:allow-other-keys)
-                    (wrap-program (search-input-file outputs "bin/taosc-synth")
-                      `("GUIX_PYTHONPATH" = (,(getenv "GUIX_PYTHONPATH")))))))))
-    (native-inputs (list m4))
+                (replace 'configure zig-configure)
+                (delete 'check))))
+    (native-inputs (list m4 zig-0.15))
     (inputs (list dyninst))
-    (propagated-inputs (list afl-dyninst aflplusplus
-                             e9patch patchelf
-                             python python-pacfix
-                             parallel))
+    (propagated-inputs (list e9patch fuzzolic)) ; TODO: wrap
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
     (home-page "https://trong.loang.net/~cnx/taosc")
