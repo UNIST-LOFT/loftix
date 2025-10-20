@@ -106,3 +106,18 @@ index 6d0170577392..1c31df0b9f0a 100644
          with open(os.devnull, "wb") as devnull:
              proc = sp.Popen(cmd, stdin=None, stdout=devnull, stderr=devnull)
              proc.wait()
+diff --git a/fuzzolic/run_afl_fuzzolic.py b/fuzzolic/run_afl_fuzzolic.py
+index 9289cd191437..78c0e256d91f 100755
+--- a/fuzzolic/run_afl_fuzzolic.py
++++ b/fuzzolic/run_afl_fuzzolic.py
+@@ -18,8 +18,8 @@ if 'AFL_PATH' not in os.environ:
+ else:
+     AFL_PATH = os.environ['AFL_PATH']
+ 
+-AFL_BIN = AFL_PATH + '/afl-fuzz'
+-FUZZOLIC_BIN = SCRIPT_DIR + '/fuzzolic.py'
++AFL_BIN = 'afl-fuzz'
++FUZZOLIC_BIN = 'fuzzolic'
+ DEVNULL = open(os.devnull, 'w')
+ WAITING_TIME_AFTER_AFL_INSTANCE_START = 30
+ 
