@@ -30,26 +30,41 @@
   #:export (for-evocatio))
 
 (define-public afl++
-  (package
-    (inherit aflplusplus)
-    (name "afl++")
-    (arguments
-      (substitute-keyword-arguments (package-arguments aflplusplus)
-        ((#:phases phases)
-         #~(modify-phases #$phases
-             (add-after 'build 'build-qasan
-               (lambda* (#:key make-flags #:allow-other-keys)
-                 (apply invoke "make" "-C" "qemu_mode/libqasan" make-flags)))
-             ;; afl-qemu-trace is a symbolic link to QEMU's binary.
-             ;; Substituting its source code with AFL++'s output path
-             ;; would result in a dependency cycle.
-             (add-after 'install-qemu 'wrap-qemu
-               (lambda* (#:key outputs #:allow-other-keys)
-                 (let ((out (assoc-ref outputs "out")))
-                   (wrap-program (string-append out "/bin/afl-qemu-trace")
-                     `("AFL_PATH" = (,(string-append out "/lib/afl")))))))))))
-    (inputs (modify-inputs (package-inputs aflplusplus)
-              (replace "qemu" qemu-for-aflplusplus)))))
+  (let ((commit "93a6e1dbd19da92702dd7393d1cd1b405a6c29ee"))
+    (package
+      (inherit aflplusplus)
+      (name "afl++")
+      (version (git-version "4.35a" "0" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/AFLplusplus/AFLplusplus")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "16b516f9xwxv61wzwbgw4wazx3jnhai3zlb0wpw3q0gdxcb7y61q"))))
+      (arguments
+       (substitute-keyword-arguments (package-arguments aflplusplus)
+         ((#:phases phases)
+          #~(modify-phases #$phases
+              (add-after 'build 'build-qasan
+                (lambda* (#:key parallel-build? make-flags #:allow-other-keys)
+                  (apply invoke "make" "-C" "qemu_mode/libqasan"
+                         "-j" (number->string (if parallel-build?
+                                                  (parallel-job-count)
+                                                  "1"))
+                         make-flags)))
+              ;; afl-qemu-trace is a symbolic link to QEMU's binary.
+              ;; Substituting its source code with AFL++'s output path
+              ;; would result in a dependency cycle.
+              (add-after 'install-qemu 'wrap-qemu
+                (lambda _
+                  (wrap-program (string-append #$output "/bin/afl-qemu-trace")
+                    `("AFL_PATH" =
+                      (,(string-append #$output "/lib/afl"))))))))))
+      (inputs (modify-inputs (package-inputs aflplusplus)
+                (replace "qemu" qemu-for-aflplusplus))))))
 
 (define-public afl-dyninst
   (package

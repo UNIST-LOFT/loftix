@@ -170,6 +170,8 @@ path = [ 'patches/afl++-*.patch',
          'patches/fuzzolic-unbundle.patch',
          'patches/fuzzolic-utils-make.patch',
          'patches/jasper-no-define-int-types.patch',
+         'patches/qemu-for-aflplusplus-casts.patch',
+         'patches/qemu-for-aflplusplus-imported-headers.patch',
          'patches/qemu-for-fuzzolic-static-global.patch' ]
 SPDX-FileCopyrightText = 'Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
