@@ -4,11 +4,10 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix synthesis)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages debug)
-  #:use-module (gnu packages elf)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages m4)
-  #:use-module (gnu packages parallel)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-xyz)
@@ -51,7 +50,7 @@ from values in possitive and negative examples using a PAC learning algorithm.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.3.dev1")
+    (version "0.0.3.dev2")
     (source
       (origin
         (method url-fetch)
@@ -69,11 +68,10 @@ from values in possitive and negative examples using a PAC learning algorithm.")
             #:make-flags #~(list (string-append "PREFIX=" #$output))
             #:phases
             #~(modify-phases %standard-phases
-                (replace 'configure zig-configure)
-                (delete 'check))))
+                (replace 'configure zig-configure))))
     (native-inputs (list m4 zig-0.15))
     (inputs (list dyninst))
-    (propagated-inputs (list e9patch fuzzolic)) ; TODO: wrap
+    (propagated-inputs (list afl++ e9patch findutils fuzzolic)) ; TODO: wrap
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
     (home-page "https://trong.loang.net/~cnx/taosc")
