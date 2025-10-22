@@ -17,7 +17,7 @@
 
 (define-public qemu-for-aflplusplus
   (let ((base qemu-minimal)
-        (commit "3babe948e64da063861c20583bda14b402c5c07a")
+        (commit "d3e827420061a11debc2d4baca3518de42177e3d")
         (revision "0"))
     (hidden-package
      (package
@@ -32,12 +32,7 @@
                               (recursive? #t)))
           (file-name (git-file-name name version))
           (sha256
-           (base32 "0k2mhwzi7wav6r0bgba3s154lrwm3s3fc1cl2fxz8z2fmj52iq69"))
-          (patches (search-patches
-                    ;; https://github.com/AFLplusplus/qemuafl/pull/79
-                    "patches/qemu-for-aflplusplus-casts.patch"
-                    ;; https://github.com/AFLplusplus/qemuafl/pull/78
-                    "patches/qemu-for-aflplusplus-imported-headers.patch"))))
+           (base32 "1wffly2aphny0wvcmwlyvq73b6gwglgchvjx8m8gj3gkdrcgwark"))))
        (arguments
         (substitute-keyword-arguments (package-arguments base)
           ((#:configure-flags _ #~'())
