@@ -52,13 +52,12 @@ from values in possitive and negative examples using a PAC learning algorithm.")
     (name "taosc")
     (version "0.0.3.dev2")
     (source
-      (origin
-        (method url-fetch)
-        (uri (string-append
-               "https://trong.loang.net/~cnx/taosc/snapshot/taosc-"
-               version ".tar.gz"))
-        (sha256
-          (base32 "0372a542gpn46kz50nq4a8js3b1n3x3ibdg0j0j5ff9dams6cnax"))))
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://trong.loang.net/~cnx/taosc/snapshot/taosc-"
+                           version ".tar.gz"))
+       (sha256
+        (base32 "03wbwxwrky5l2l0qv9z5796q43ap1n672gn565wsn5ci084pg5gb"))))
     (build-system gnu-build-system)
     (arguments
       (list #:imported-modules `((guix build zig-utils)
