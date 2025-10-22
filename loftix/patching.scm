@@ -32,6 +32,8 @@
               (patches (search-patches
                          ;; https://github.com/GJDuck/e9patch/pull/94
                          "patches/e9patch-zydis-4.1.0.patch"
+                         ;; https://github.com/GJDuck/e9patch/pull/104
+                         "patches/e9patch-static-pie.patch"
                          ;; https://github.com/GJDuck/e9patch/pull/92
                          "patches/e9patch-check.patch"
                          ;; https://github.com/GJDuck/e9patch/pull/95
