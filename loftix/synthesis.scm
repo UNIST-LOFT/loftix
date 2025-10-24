@@ -50,14 +50,14 @@ from values in possitive and negative examples using a PAC learning algorithm.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.3.dev2")
+    (version "0.0.3")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://trong.loang.net/~cnx/taosc/snapshot/taosc-"
                            version ".tar.gz"))
        (sha256
-        (base32 "03wbwxwrky5l2l0qv9z5796q43ap1n672gn565wsn5ci084pg5gb"))))
+        (base32 "08a8gbhbm5dbbrld5q7fq1xdhyj1jn611466pn66nh8wsf5llg8v"))))
     (build-system gnu-build-system)
     (arguments
       (list #:imported-modules `((guix build zig-utils)
