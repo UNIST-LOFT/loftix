@@ -283,6 +283,56 @@
       potrace cve/2013/7437/1.bmp
       potrace cve/2013/7437/2.bmp
 
+## ZZIPlib
+
+- CVE-2017-5974: [heap buffer overflow][ago-2017-5974]
+
+      guix shell zziplib-with-asan@0.13.62
+      unzzipcat-mem cve/2017/5974/heap-overflow.zip
+
+- CVE-2017-5975: [heap buffer overflow][ago-2017-5975]
+
+      guix shell zziplib-with-asan@0.13.62
+      unzzipcat-mem cve/2017/5975/heap-overflow.zip
+
+- CVE-2017-5976: [heap buffer overflow][ago-2017-5976]
+
+      guix shell zziplib-with-asan@0.13.62
+      unzzipcat-mem cve/2017/5976/heap-overflow.zip
+
+- CVE-2017-5977: [invalid memory read][ago-2017-5977]
+
+      guix shell zziplib-with-asan@0.13.62
+      unzzipcat-mem cve/2017/5977/invalid-read.zip
+
+- CVE-2017-5978: [out-of-bound read][ago-2017-5978]
+
+      guix shell zziplib@0.13.62
+      unzzipcat-mem cve/2017/5978/oob-read.zip
+
+- CVE-2017-5979: [null pointer derefence][ago-2017-5979]
+
+      guix shell zziplib-with-asan@0.13.62
+      unzzipcat-seeko cve/2017/5979/null-deref.zip
+
+- CVE-2017-5980: [null pointer derefence][ago-2017-5980]
+
+      guix shell zziplib@0.13.62
+      unzzipcat-mem cve/2017/5980/null-deref.zip
+
+- CVE-2017-5981: [null pointer derefence][ago-2017-5981]
+
+      guix shell zziplib@0.13.62
+      unzzipcat-seeko cve/2017/5981/fail-assert.zip
+
+[ago-2017-5974]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-heap-based-buffer-overflow-in-__zzip_get32-fetch-c
+[ago-2017-5975]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-heap-based-buffer-overflow-in-__zzip_get64-fetch-c
+[ago-2017-5976]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-heap-based-buffer-overflow-in-zzip_mem_entry_extra_block-memdisk-c
+[ago-2017-5977]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-invalid-memory-read-in-zzip_mem_entry_extra_block-memdisk-c
+[ago-2017-5978]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-out-of-bounds-read-in-zzip_mem_entry_new-memdisk-c
+[ago-2017-5979]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-null-pointer-dereference-in-prescan_entry-fseeko-c/https://blogs.gentoo.org/ago/2017/02/09/zziplib-null-pointer-dereference-in-prescan_entry-fseeko-c
+[ago-2017-5980]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-null-pointer-dereference-in-zzip_mem_entry_new-memdisk-c
+[ago-2017-5981]: https://blogs.gentoo.org/ago/2017/02/09/zziplib-assertion-failure-in-seeko-c
 [chromium-40058947]: https://issues.chromium.org/issues/40058947
 [chromium-40076524]: https://issues.chromium.org/issues/40076524
 [chromium-42452152]: https://project-zero.issues.chromium.org/issues/42452152

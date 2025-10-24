@@ -2,11 +2,12 @@
 ;;;
 ;;; SPDX-FileCopyrightText: 2012, 2014-2015 Ludovic Courtès
 ;;; SPDX-FileCopyrightText: 2013 Andreas Enge
+;;; SPDX-FileCopyrightText: 2013 John Darrington
 ;;; SPDX-FileCopyrightText: 2014 Eric Bavier
 ;;; SPDX-FileCopyrightText: 2014-2015 David Thompson
 ;;; SPDX-FileCopyrightText: 2016 Efraim Flashner
 ;;; SPDX-FileCopyrightText: 2016 Tobias Geerinckx-Rice
-;;; SPDX-FileCopyrightText: 2017, 2019 Marius Bakke
+;;; SPDX-FileCopyrightText: 2017-2019 Marius Bakke
 ;;; SPDX-FileCopyrightText: 2024-2025 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -16,10 +17,13 @@
   #:use-module (gnu packages backup)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bison)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages python)
   #:use-module (gnu packages swig)
   #:use-module (gnu packages xml)
   #:use-module (guix build-system)
@@ -509,3 +513,24 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
     ;; Tests are failing on newer Ghostscript versions
     (native-inputs '())
     (arguments '(#:tests? #f))))
+
+(define-public zziplib-0.13.62
+  (package
+    (inherit zziplib)
+    (name "zziplib")
+    (version "0.13.62")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "mirror://sourceforge/zziplib/zziplib13/"
+                           version "/zziplib-" version ".tar.bz2"))
+       (sha256
+        (base32 "0nsjqxw017hiyp524p9316283jlf5piixc1091gkimhz38zh7f51"))))
+    (build-system gnu-build-system)
+    (inputs (list zlib))
+    (native-inputs (list perl pkg-config python-2.7 zip))
+    ;; Since test files are created on the fly
+    (arguments '(#:parallel-tests? #f))))
+
+(define-public zziplib-with-asan-0.13.62 (with-asan zziplib-0.13.62))
+(define-public zziplib-static-0.13.62 (static zziplib-0.13.62))
