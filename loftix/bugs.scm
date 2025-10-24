@@ -428,6 +428,8 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
   (libxml2-at-version
    (package
      (inherit libxml2)
+     (source (origin (inherit (package-source libxml2))
+                     (patches '())))
      ;; $XML_CATALOG_FILES lists 'catalog.xml' files found in under the 'xml'
      ;; sub-directory of any given package.
      (native-search-paths (list (search-path-specification
