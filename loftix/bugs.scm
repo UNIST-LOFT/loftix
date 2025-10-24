@@ -252,6 +252,32 @@
    "patches/jasper-lint.patch"
    "patches/jasper-sanitized-bmp.patch"))
 
+(define (static base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-static"))
+    (arguments
+     (case (build-system-name (package-build-system base))
+       ((cmake)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:phases phases #~%standard-phases)
+           (with-imported-modules '((loftix transform))
+             #~(modify-phases #$phases
+                 (add-before 'configure 'set-env
+                   (lambda _
+                     (use-modules (loftix transform))
+                     (append-env "LDFLAGS" "-static" #f))))))))
+       ((gnu)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                '(("LDFLAGS" "-static")))))))))))
+
+(define-public jasper-static-1.900.5 (static jasper-1.900.5))
+(define-public jasper-static-1.900.3 (static jasper-1.900.3))
+
 (define-public libarchive-3.2.0
   (package
     (inherit libarchive)
@@ -308,6 +334,9 @@
 (define-public libjpeg-turbo-with-asan-2.0.1 (with-asan libjpeg-turbo-2.0.1))
 (define-public libjpeg-turbo-with-asan-1.5.3 (with-asan libjpeg-turbo-1.5.3))
 (define-public libjpeg-turbo-with-asan-1.2.0 (with-asan libjpeg-turbo-1.2.0))
+(define-public libjpeg-turbo-static-1.5.3 (static libjpeg-turbo-1.5.3))
+(define-public libjpeg-turbo-static-1.5.2 (static libjpeg-turbo-1.5.2))
+(define-public libjpeg-turbo-static-1.2.0 (static libjpeg-turbo-1.2.0))
 
 (define-public libming-0.4.8
   (package
@@ -355,6 +384,9 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
    "0.4.7"
    "17ngz1n1mnknixzchywkhbw9s3scad8ajmk97gx14xbsw1603gd2"))
 
+(define-public libming-static-0.4.8 (static libming-0.4.8))
+(define-public libming-static-0.4.7 (static libming-0.4.7))
+
 (define-public libtiff-4.0.7
   (package
     (inherit libtiff)
@@ -391,6 +423,8 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
 (define-public libtiff-with-asan-4.0.7 (with-asan libtiff-4.0.7))
 (define-public libtiff-with-asan-4.0.6 (with-asan libtiff-4.0.6))
 (define-public libtiff-with-ubsan-4.0.7 (with-ubsan libtiff-4.0.7))
+(define-public libtiff-static-4.0.7 (static libtiff-4.0.7))
+(define-public libtiff-static-4.0.6 (static libtiff-4.0.6))
 
 (define (with-ubsan-float-cast-overflow base)
   (package
@@ -456,6 +490,9 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
 
 (define-public libxml2-with-asan-2.9.3 (with-asan libxml2-2.9.3))
 (define-public libxml2-with-asan-2.9.0 (with-asan libxml2-2.9.0))
+(define-public libxml2-static-2.9.4 (static libxml2-2.9.4))
+(define-public libxml2-static-2.9.3 (static libxml2-2.9.3))
+(define-public libxml2-static-2.9.0 (static libxml2-2.9.0))
 
 (define-public potrace-1.11
   (package
