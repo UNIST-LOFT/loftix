@@ -105,9 +105,9 @@
 - CVE-2017-15232: [null pointer dereference][mozjpeg-268]
 
       guix shell libjpeg-turbo@1.5.2
-      djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
+      djpeg -crop 1x1+16+16 -onepass -dither ordered -dct float -colors 8\
         -targa -grayscale -outfile /dev/null cve/2017/15232/1.jpg
-      djpeg -crop "1x1+16+16" -onepass -dither ordered -dct float -colors 8\
+      djpeg -crop 1x1+16+16 -onepass -dither ordered -dct float -colors 8\
         -targa -grayscale -outfile /dev/null cve/2017/15232/2.jpg
 
 - CVE-2018-14498: [heap buffer overflow][libjpeg-turbo-258]
@@ -320,7 +320,7 @@
       guix shell zziplib@0.13.62
       unzzipcat-mem cve/2017/5980/null-deref.zip
 
-- CVE-2017-5981: [null pointer derefence][ago-2017-5981]
+- CVE-2017-5981: [assertion failure][ago-2017-5981]
 
       guix shell zziplib@0.13.62
       unzzipcat-seeko cve/2017/5981/fail-assert.zip
