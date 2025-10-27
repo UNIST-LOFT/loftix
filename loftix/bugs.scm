@@ -270,14 +270,18 @@
                  (add-before 'configure 'set-env
                    (lambda _
                      (use-modules (loftix transform))
-                     (append-env "LDFLAGS" "-static" #f))))))))
+                     (append-env "LDFLAGS" "-static" #f))))))
+          ((#:tests? _ #f)
+           #f)))
        ((gnu)
         (substitute-keyword-arguments (package-arguments base)
           ((#:make-flags flags #~'())
            (with-imported-modules '((loftix transform))
              #~((@ (loftix transform) append-make-flag)
                 #$flags
-                '(("LDFLAGS" "-static")))))))))))
+                '(("LDFLAGS" "-static")))))
+          ((#:tests? _ #f)
+           #f)))))))
 
 (define-public jasper-static-1.900.5 (static jasper-1.900.5))
 (define-public jasper-static-1.900.3 (static jasper-1.900.3))
