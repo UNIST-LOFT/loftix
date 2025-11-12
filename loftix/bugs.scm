@@ -139,8 +139,6 @@
        (patches (search-patches
                  "patches/coreutils-gnulib-glibc-2.28.patch"))))))
 
-(define-public coreutils-with-asan-8.27 (with-asan coreutils-8.27))
-
 (define (coreutils-at-version base version checksum)
   (at-version
    base
@@ -169,9 +167,6 @@
                   (version "8.26-sans-4954f79"))
                 "patches/bugs/coreutils-unfix-bug-25003.patch"))
 
-(define-public coreutils-with-asan-8.26-sans-4954f79
-  (with-asan coreutils-8.26-sans-4954f79))
-
 (define-public coreutils-8.25
   (with-patches
    (coreutils-at-version
@@ -180,19 +175,17 @@
     "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii")
    "patches/coreutils-gnulib-glibc-2.25.patch"))
 
-(define-public coreutils-with-asan-8.25 (with-asan coreutils-8.25))
-
 (define-public coreutils-8.23
   (coreutils-at-version
     coreutils-8.25
     "8.23"
     "0bdq6yggyl7nkc2pbl6pxhhyx15nyqhz3ds6rfn448n6rxdwlhzc"))
 
-(define-public coreutils-with-make-prime-list-with-asan-8.23
-  (let ((base (with-asan coreutils-8.23)))
+(define-public coreutils-with-make-prime-list-8.23
+  (let ((base coreutils-8.23))
     (package
       (inherit base)
-      (name "coreutils-with-make-prime-list-with-asan")
+      (name "coreutils-with-make-prime-list")
       (arguments
         (substitute-keyword-arguments (package-arguments base)
           ((#:phases phases #~%standard-phases)
@@ -202,6 +195,47 @@
                  (install-file
                   "src/make-prime-list"
                   (string-append (assoc-ref outputs "out") "/bin")))))))))))
+
+(define-public coreutils-with-asan-8.27 (with-asan coreutils-8.27))
+(define-public coreutils-with-asan-8.26-sans-4954f79
+  (with-asan coreutils-8.26-sans-4954f79))
+(define-public coreutils-with-asan-8.25 (with-asan coreutils-8.25))
+(define-public coreutils-with-make-prime-list-with-asan-8.23
+  (with-asan coreutils-with-make-prime-list-8.23))
+
+(define (static base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-static"))
+    (arguments
+     (case (build-system-name (package-build-system base))
+       ((cmake)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:phases phases #~%standard-phases)
+           (with-imported-modules '((loftix transform))
+             #~(modify-phases #$phases
+                 (add-before 'configure 'set-env
+                   (lambda _
+                     (use-modules (loftix transform))
+                     (append-env "LDFLAGS" "-static" #f))))))
+          ((#:tests? _ #f)
+           #f)))
+       ((gnu)
+        (substitute-keyword-arguments (package-arguments base)
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                '(("LDFLAGS" "-static")))))
+          ((#:tests? _ #f)
+           #f)))))))
+
+(define-public coreutils-static-8.27 (static coreutils-8.27))
+(define-public coreutils-static-8.26-sans-4954f79
+  (static coreutils-8.26-sans-4954f79))
+(define-public coreutils-static-8.25 (static coreutils-8.25))
+(define-public coreutils-with-make-prime-list-static-8.23
+  (static coreutils-with-make-prime-list-8.23))
 
 (define (jasper-at-version version checksum)
   (package
@@ -256,33 +290,7 @@
    "patches/jasper-lint.patch"
    "patches/jasper-sanitized-bmp.patch"))
 
-(define (static base)
-  (package
-    (inherit base)
-    (name (string-append (package-name base) "-static"))
-    (arguments
-     (case (build-system-name (package-build-system base))
-       ((cmake)
-        (substitute-keyword-arguments (package-arguments base)
-          ((#:phases phases #~%standard-phases)
-           (with-imported-modules '((loftix transform))
-             #~(modify-phases #$phases
-                 (add-before 'configure 'set-env
-                   (lambda _
-                     (use-modules (loftix transform))
-                     (append-env "LDFLAGS" "-static" #f))))))
-          ((#:tests? _ #f)
-           #f)))
-       ((gnu)
-        (substitute-keyword-arguments (package-arguments base)
-          ((#:make-flags flags #~'())
-           (with-imported-modules '((loftix transform))
-             #~((@ (loftix transform) append-make-flag)
-                #$flags
-                '(("LDFLAGS" "-static")))))
-          ((#:tests? _ #f)
-           #f)))))))
-
+(define-public jasper-static-1.900.19 (static jasper-1.900.19))
 (define-public jasper-static-1.900.5 (static jasper-1.900.5))
 (define-public jasper-static-1.900.3 (static jasper-1.900.3))
 
@@ -299,8 +307,8 @@
                (base32 "11xabdpmvdmcdkidigmqh4ymhra95lr7ipcys4hdq0gzf7ylbkkv"))
               (patches '())))))
 
-(define-public libarchive-with-ubsan-3.2.0
-  (with-ubsan libarchive-3.2.0))
+(define-public libarchive-with-ubsan-3.2.0 (with-ubsan libarchive-3.2.0))
+(define-public libarchive-static-3.2.0 (static libarchive-3.2.0))
 
 (define (libjpeg-turbo-at-version base version checksum)
   (at-version
@@ -342,6 +350,7 @@
 (define-public libjpeg-turbo-with-asan-2.0.1 (with-asan libjpeg-turbo-2.0.1))
 (define-public libjpeg-turbo-with-asan-1.5.3 (with-asan libjpeg-turbo-1.5.3))
 (define-public libjpeg-turbo-with-asan-1.2.0 (with-asan libjpeg-turbo-1.2.0))
+(define-public libjpeg-turbo-static-2.0.1 (static libjpeg-turbo-2.0.1))
 (define-public libjpeg-turbo-static-1.5.3 (static libjpeg-turbo-1.5.3))
 (define-public libjpeg-turbo-static-1.5.2 (static libjpeg-turbo-1.5.2))
 (define-public libjpeg-turbo-static-1.2.0 (static libjpeg-turbo-1.2.0))
