@@ -64,7 +64,7 @@
                     `("AFL_PATH" =
                       (,(string-append #$output "/lib/afl"))))))))))
       (inputs (modify-inputs (package-inputs aflplusplus)
-                (replace "qemu" qemu-for-aflplusplus))))))
+                (replace "qemu" qemu-for-afl++))))))
 
 (define-public afl-dyninst
   (package

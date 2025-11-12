@@ -15,9 +15,9 @@
   #:use-module (guix packages)
   #:use-module (guix utils))
 
-(define-public qemu-for-aflplusplus
+(define-public qemu-for-afl++
   (let ((base qemu-minimal)
-        (commit "d3e827420061a11debc2d4baca3518de42177e3d")
+        (commit "2f316cc9b82cb347d4fbe1c6558518d504861172")
         (revision "0"))
     (hidden-package
      (package
@@ -32,7 +32,7 @@
                               (recursive? #t)))
           (file-name (git-file-name name version))
           (sha256
-           (base32 "1wffly2aphny0wvcmwlyvq73b6gwglgchvjx8m8gj3gkdrcgwark"))))
+           (base32 "1w5nn24hs7dnrq03ljdlqcbvl5z0xz1nspnjvj19lj6av540q54n"))))
        (arguments
         (substitute-keyword-arguments (package-arguments base)
           ((#:configure-flags _ #~'())
