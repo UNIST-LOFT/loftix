@@ -217,8 +217,8 @@ for a given bug, as a traditional greybox fuzzer does)."))))
 
 (define-public fuzzolic
   (let* ((base-name "fuzzolic")
-         (commit "cf4285aa08d1751fdf6824bfaaf75895055dc495")
-         (revision "master")
+         (commit "39937821d5360b139f026f09e2019f214a4929c1")
+         (revision "0")
          (version (git-version "0" revision commit))
          (base-source
           (origin
@@ -229,7 +229,7 @@ for a given bug, as a traditional greybox fuzzer does)."))))
             (file-name (git-file-name base-name version))
             (sha256
              (base32
-              "0mi1jyc2p4ynbshscnyvgyxcy6hdaa3fw77j4c8bchw049kc4w3p"))))
+              "0wh452qzia97i34hvxjj8x38wb9h6x51zsjkzdvpfpj5zbpdv495"))))
          (description "FUZZOLIC is a concolic executor based on QEMU.
 
 It can instrument binary programs at runtime in order to build
@@ -311,8 +311,6 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                 (patches (search-patches
                           "patches/fuzzolic-python-package.patch"
                           "patches/fuzzolic-unbundle.patch"
-                          ;; https://github.com/season-lab/fuzzolic/pull/13
-                          "patches/fuzzolic-timeout-solver.patch"
                           "patches/fuzzolic-relax-perf-test.patch"
                           "patches/fuzzolic-test-fix-runner.patch"
                           "patches/fuzzolic-test-skip-nondeterministic.patch"))))

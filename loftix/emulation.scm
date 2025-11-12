@@ -81,8 +81,8 @@
 (define-public qemu-for-fuzzolic
   (let ((base qemu-minimal)
         (base-version "4.1.1")
-        (commit "a07b82d618b0ed16d7bf1822653a74821cf13dbd")
-        (revision "symbolic"))
+        (commit "5dd13fc54ade8ebeedfddf10a98dd2d672467bfd")
+        (revision "0"))
     (hidden-package
      (package
        (inherit base)
@@ -104,11 +104,10 @@
                (uri (string-append home-page "/compare/v" base-version
                                    ".." commit ".diff"))
                (sha256
-                (base32 "1cqp0h0glz4pvq10lr7k9z5g9wjl6svlm51rapf3mbsvb1qy3rl1"))
+                (base32 "0z36g2qq0ssqhhcqdzd03wqf21rbpvwwkzz545il32yh8wgdznib"))
                (file-name (string-append name ".patch")))
              (search-patches
-              "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch"
-              "patches/qemu-for-fuzzolic-static-global.patch")))))
+              "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch")))))
        (arguments
         (substitute-keyword-arguments (package-arguments base)
           ((#:configure-flags _ #~'())

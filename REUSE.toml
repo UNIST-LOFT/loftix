@@ -177,8 +177,7 @@ path = [ 'patches/afl++-*.patch',
          'patches/fuzzolic-test-skip-nondeterministic.patch',
          'patches/fuzzolic-unbundle.patch',
          'patches/fuzzolic-utils-make.patch',
-         'patches/jasper-no-define-int-types.patch',
-         'patches/qemu-for-fuzzolic-static-global.patch' ]
+         'patches/jasper-no-define-int-types.patch' ]
 SPDX-FileCopyrightText = 'Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 
@@ -202,11 +201,6 @@ SPDX-License-Identifier = 'JasPer-2.0'
 [[annotations]]
 path = 'patches/fuzzolic-showmap.patch'
 SPDX-FileCopyrightText = 'Emilio Coppa'
-SPDX-License-Identifier = 'GPL-2.0-or-later'
-
-[[annotations]]
-path = 'patches/fuzzolic-timeout-solver.patch'
-SPDX-FileCopyrightText = 'Andrew Haberlandt'
 SPDX-License-Identifier = 'GPL-2.0-or-later'
 
 [[annotations]]
