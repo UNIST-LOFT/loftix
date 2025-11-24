@@ -8,6 +8,7 @@
 (define-module (loftix emulation)
   #:use-module (gnu packages)
   #:use-module (gnu packages commencement)
+  #:use-module (gnu packages debug)
   #:use-module (gnu packages virtualization)
   #:use-module (guix download)
   #:use-module (guix gexp)
@@ -16,8 +17,8 @@
   #:use-module (guix utils))
 
 (define-public qemu-for-afl++
-  (let ((base qemu-minimal)
-        (commit "2f316cc9b82cb347d4fbe1c6558518d504861172")
+  (let ((base qemu-for-aflplusplus)
+        (commit "60ebd5624c60589e276cf287516b925a9ee35b87")
         (revision "0"))
     (hidden-package
      (package
@@ -32,51 +33,8 @@
                               (recursive? #t)))
           (file-name (git-file-name name version))
           (sha256
-           (base32 "1w5nn24hs7dnrq03ljdlqcbvl5z0xz1nspnjvj19lj6av540q54n"))))
-       (arguments
-        (substitute-keyword-arguments (package-arguments base)
-          ((#:configure-flags _ #~'())
-           #~(list (string-append
-                    "--target-list="
-                    ;; AFL++ only supports using a single afl-qemu-trace,
-                    ;; so we only build qemu for the native target.
-                    (match #$(let-system system system)
-                      ("aarch64-linux"  "aarch64-linux-user")
-                      ("armhf-linux"    "arm-linux-user")
-                      ("i686-linux"     "i386-linux-user")
-                      ("mips64el-linux" "mips64el-linux-user")
-                      ("powerpc-linux"  "ppc-linux-user")
-                      ("riscv64-linux"  "riscv64-linux-user")
-                      ("x86_64-linux"   "x86_64-linux-user")))))
-          ((#:phases phases)
-           #~(modify-phases #$phases
-               (delete 'replace-firmwares)
-               (delete 'patch-embedded-shebangs)
-               (delete 'fix-optionrom-makefile)
-               (delete 'disable-unusable-tests)
-               (replace 'configure
-                 (lambda* (#:key configure-flags #:allow-other-keys)
-                   ;; The `configure' script doesn't understand some of the
-                   ;; GNU options.  Thus, add a new phase that's compatible.
-                   (setenv "SHELL" (which "bash"))
-                   ;; The binaries need to be linked against -lrt.
-                   (setenv "LDFLAGS" "-lrt")
-                   (apply invoke
-                          "./configure"
-                          (string-append "--cc=" #$(cc-for-target))
-                          ;; Some architectures insist on using HOST_CC
-                          (string-append "--host-cc=" #$(cc-for-target))
-                          "--disable-debug-info" ; save build space
-                          (string-append "--prefix=" #$output)
-                          (string-append "--sysconfdir=/etc")
-                          configure-flags)))
-               (add-after 'install 'install-qasan-header
-                 (lambda _
-                   (install-file "qemuafl/qasan.h"
-                                 (string-append #$output "/include"))))
-               (delete 'delete-firmwares)))))
-       (home-page "https://github.com/AFLplusplus/qemuafl")
-       (synopsis "QEMU for AFL++")))))
+           (base32
+            "1vz7k1ssfnlimkpc01fqin27r2k4a23cwpxj2bbmsp7d3175bjbz"))))))))
 
 (define-public qemu-for-fuzzolic
   (let ((base qemu-minimal)

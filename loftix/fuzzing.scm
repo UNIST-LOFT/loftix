@@ -26,15 +26,15 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (loftix deduction)
-  #:use-module (loftix emulation)
-  #:export (for-evocatio))
+  #:use-module (loftix emulation))
 
 (define-public afl++
-  (let ((commit "93a6e1dbd19da92702dd7393d1cd1b405a6c29ee"))
+  (let ((commit "c8f0533581d7badb4903ba11d6259fd1a2b1da3b")
+        (revision "0"))
     (package
       (inherit aflplusplus)
       (name "afl++")
-      (version (git-version "4.35a" "0" commit))
+      (version (git-version "4.35a" revision commit))
       (source
        (origin
          (method git-fetch)
@@ -43,26 +43,7 @@
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "16b516f9xwxv61wzwbgw4wazx3jnhai3zlb0wpw3q0gdxcb7y61q"))))
-      (arguments
-       (substitute-keyword-arguments (package-arguments aflplusplus)
-         ((#:phases phases)
-          #~(modify-phases #$phases
-              (add-after 'build 'build-qasan
-                (lambda* (#:key parallel-build? make-flags #:allow-other-keys)
-                  (apply invoke "make" "-C" "qemu_mode/libqasan"
-                         "-j" (number->string (if parallel-build?
-                                                  (parallel-job-count)
-                                                  "1"))
-                         make-flags)))
-              ;; afl-qemu-trace is a symbolic link to QEMU's binary.
-              ;; Substituting its source code with AFL++'s output path
-              ;; would result in a dependency cycle.
-              (add-after 'install-qemu 'wrap-qemu
-                (lambda _
-                  (wrap-program (string-append #$output "/bin/afl-qemu-trace")
-                    `("AFL_PATH" =
-                      (,(string-append #$output "/lib/afl"))))))))))
+          (base32 "13iyd3zn013n1dgfaawyqjbv6sln2ds4jwkd6xjy74qyd047r5xm"))))
       (inputs (modify-inputs (package-inputs aflplusplus)
                 (replace "qemu" qemu-for-afl++))))))
 
