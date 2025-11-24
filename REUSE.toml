@@ -165,7 +165,6 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = [ 'patches/afl++-*.patch',
          'patches/e9patch-*.patch',
-         'patches/evocatio-*.patch',
          'patches/fuzzy-sat-*.patch',
          'patches/fuzzolic-install.patch',
          'patches/fuzzolic-python-package.patch',
