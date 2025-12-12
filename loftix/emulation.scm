@@ -101,11 +101,4 @@
                     (string-append (assoc-ref outputs "out")
                                    "/include/qemu/tcg/symbolic"))))
                (delete 'install-plugins)
-               (delete 'delete-firmwares)))))
-       (native-inputs
-        (modify-inputs (package-native-inputs base)
-          ;; gcc-toolchain still defaults to version 11 unless on hurd64,
-          ;; which fails to include linux/mount.h in glibc>=2.36's sys/mount.h,
-          ;; causing compilation failure due to redefinition:
-          ;; https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91085
-          (prepend gcc-toolchain-14)))))))
+               (delete 'delete-firmwares)))))))))
