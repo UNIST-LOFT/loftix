@@ -70,7 +70,8 @@ from values in possitive and negative examples using a PAC learning algorithm.")
                 (replace 'configure zig-configure))))
     (native-inputs (list m4 zig-0.15))
     (inputs (list dyninst))
-    (propagated-inputs (list afl++ e9patch findutils fuzzolic)) ; TODO: wrap
+    ;; TODO: substitute* path
+    (propagated-inputs (list aflplusplus e9patch findutils fuzzolic))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
     (home-page "https://trong.loang.net/~cnx/taosc")
