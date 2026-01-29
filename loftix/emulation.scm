@@ -16,26 +16,6 @@
   #:use-module (guix packages)
   #:use-module (guix utils))
 
-(define-public qemu-for-afl++
-  (let ((base qemu-for-aflplusplus)
-        (commit "60ebd5624c60589e276cf287516b925a9ee35b87")
-        (revision "0"))
-    (hidden-package
-     (package
-       (inherit base)
-       (name "qemu")
-       (version (git-version "5.2.50" revision commit))
-       (source
-        (origin
-          (method git-fetch)
-          (uri (git-reference (url "https://github.com/AFLplusplus/qemuafl")
-                              (commit commit)
-                              (recursive? #t)))
-          (file-name (git-file-name name version))
-          (sha256
-           (base32
-            "1vz7k1ssfnlimkpc01fqin27r2k4a23cwpxj2bbmsp7d3175bjbz"))))))))
-
 (define-public qemu-for-fuzzolic
   (let ((base qemu-minimal)
         (base-version "4.1.1")

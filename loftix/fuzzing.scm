@@ -28,25 +28,6 @@
   #:use-module (loftix deduction)
   #:use-module (loftix emulation))
 
-(define-public afl++
-  (let ((commit "c8f0533581d7badb4903ba11d6259fd1a2b1da3b")
-        (revision "0"))
-    (package
-      (inherit aflplusplus)
-      (name "afl++")
-      (version (git-version "4.35a" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/AFLplusplus/AFLplusplus")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "13iyd3zn013n1dgfaawyqjbv6sln2ds4jwkd6xjy74qyd047r5xm"))))
-      (inputs (modify-inputs (package-inputs aflplusplus)
-                (replace "qemu" qemu-for-afl++))))))
-
 (define-public afl-dyninst
   (package
     (name "afl-dyninst")
@@ -79,13 +60,13 @@
 (define-public fuzzolic-showmap
   (hidden-package
    (package
-     (inherit afl++)
+     (inherit aflplusplus)
      (name "fuzzolic-showmap")
      (source (origin
-               (inherit (package-source afl++))
+               (inherit (package-source aflplusplus))
                (patches (search-patches "patches/fuzzolic-showmap.patch"))))
      (arguments
-      (substitute-keyword-arguments (package-arguments afl++)
+      (substitute-keyword-arguments (package-arguments aflplusplus)
         ((#:phases phases #~%standard-phases)
          #~(modify-phases #$phases
              (replace 'install
@@ -205,7 +186,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                           (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
                           (invoke "pytest" "-vv" "tests/run.py")))))))
       (native-inputs (list python-flit-core python-pytest))
-      (propagated-inputs (list afl++
+      (propagated-inputs (list aflplusplus
                                fuzzolic-showmap
                                qemu-for-fuzzolic
                                solver
