@@ -1,6 +1,6 @@
 ;;; Packages for software patching
 ;;;
-;;; SPDX-FileCopyrightText: 2024 Nguyễn Gia Phong
+;;; SPDX-FileCopyrightText: 2024-2026 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix patching)
@@ -14,44 +14,52 @@
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix packages))
+  #:use-module (guix packages)
+  #:use-module (guix utils))
 
 (define-public e9patch
-  (package
-    (name "e9patch")
-    (version "1.0.0-rc10")
-    (home-page "https://github.com/GJDuck/e9patch")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference (url home-page)
-                                  (commit (string-append "v" version))))
-              (sha256
-               (base32
-                "1l2pjxgr2mckpffvj7hf0sjvv3678138afjb0wc3f6c2zrcpspf8"))
-              (file-name (git-file-name name version))
-              (patches (search-patches
-                         ;; https://github.com/GJDuck/e9patch/pull/94
-                         "patches/e9patch-zydis-4.1.0.patch"
-                         ;; https://github.com/GJDuck/e9patch/pull/104
-                         "patches/e9patch-static-pie.patch"
-                         ;; https://github.com/GJDuck/e9patch/pull/92
-                         "patches/e9patch-check.patch"
-                         ;; https://github.com/GJDuck/e9patch/pull/95
-                         "patches/e9patch-check-intel-format.patch"
-                         ;; https://github.com/GJDuck/e9patch/pull/93
-                         "patches/e9patch-check-mov-imm.patch"
-                         ;; https://github.com/GJDuck/e9patch/pull/97
-                         "patches/e9patch-check-same_op_2.patch"))))
-    (build-system gnu-build-system)
-    (arguments (list #:phases #~(modify-phases %standard-phases
-                                  (delete 'configure))
-                     #:make-flags #~(list (string-append
-                                            "PREFIX=" #$output))))
-    (native-inputs (list markdown xxd))
-    (inputs (list elfutils zycore zydis zlib))
-    (synopsis "Static binary rewriting tool")
-    (description
-     "E9Patch is a static binary rewriting tool for x86-64 ELF binaries.
+  (let ((commit "609e1347e11a679a8bd7b04996e9e7ea0f3ac63c")
+        (revision "0"))
+    (package
+      (name "e9patch")
+      (version (git-version "1.0.0" revision commit))
+      (home-page "https://github.com/GJDuck/e9patch")
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference (url home-page)
+                             (commit commit)))
+         (sha256
+          (base32 "1hb6v8m89wkwiig9bns94ixr3vcdhlzfnmbwk146nrj5n3gr09qx"))
+         (file-name (git-file-name name version))
+         (modules '((guix build utils)))
+         ;; E9Patch is sensitive to Zydis version, including introduced bugs:
+         ;; https://github.com/GJDuck/e9patch/pull/94#issuecomment-2525069952
+         (patches (search-patches "patches/e9patch-zydis-4.1-compat.patch"))
+         (snippet
+          #~(begin
+              ;; https://github.com/GJDuck/e9patch/pull/95
+              (substitute* "test/regtest/print_intel.exp"
+                (("^(lea r..,) (.*)" all prefix suffix)
+                 (string-append prefix " qword ptr " suffix)))
+              ;; https://github.com/GJDuck/e9patch/pull/93
+              (substitute* (find-files "test/regtest" "\\.exp$")
+                (("\\$0x8877665544332211")
+                 "$-0x778899aabbccddef"))
+              (substitute* "test/regtest/not_regex.exp"
+                ((".*a.*")
+                 ""))))))
+      (build-system gnu-build-system)
+      (arguments
+       (list #:phases #~(modify-phases %standard-phases
+                          (delete 'configure))
+             #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                                  (string-append "PREFIX=" #$output))))
+      (native-inputs (list markdown xxd))
+      (inputs (list elfutils zycore zydis zlib))
+      (synopsis "Static binary rewriting tool")
+      (description
+       "E9Patch is a static binary rewriting tool for x86-64 ELF binaries.
 E9Patch is:
 @itemize
 @item Scalable: E9Patch can reliably rewrite large/complex binaries
@@ -63,5 +71,5 @@ E9Patch is:
 @item Programmable: E9Patch is designed so that it can be easily integrated
       into other projects.
 @end itemize")
-    (license (list license:expat ;src/e9patch/e9loader_*.cpp
-                   license:gpl3+)))) ;rest
+      (license (list license:expat      ;src/e9patch/e9loader_*.cpp
+                     license:gpl3+))))) ;rest

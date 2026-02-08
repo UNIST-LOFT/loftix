@@ -2,7 +2,10 @@ commit c02dd23b12fd687a041ab3b872b3f989cd1342dc
 Author: Nguyễn Gia Phong <cnx@loang.net>
 Date:   2024-11-18 15:13:17 +0900
 
-    Make compatible with Zydis 4.1.0
+    Make compatible with Zydis 4.1
+
+    The hunk adding sqrtss is due to a bug in Zydis:
+    https://github.com/zyantific/zydis/issues/542
 
 diff --git a/src/e9tool/e9x86_64.cpp b/src/e9tool/e9x86_64.cpp
 index 6a7f5cff3692..03eb3a41dd66 100644
@@ -27,3 +30,15 @@ index 6a7f5cff3692..03eb3a41dd66 100644
          if (!ZYAN_SUCCESS(result))
              error("failed to decompress instruction at address 0x%lx; "
                  "formatting failed", I->address);
+diff --git a/test/regtest/same_op_2.exp b/test/regtest/same_op_2.exp
+index f99033a..45790b8 100644
+--- a/test/regtest/same_op_2.exp
++++ b/test/regtest/same_op_2.exp
+@@ -12,6 +12,7 @@ shl $0x7, %rdi
+ sar $0x3, %rdi
+ pxor %xmm0, %xmm0
+ cvtsi2ss %rax, %xmm0
++sqrtss %xmm0, %xmm1
+ xor %esi, %esi
+ xor %eax, %eax
+ PASSED
