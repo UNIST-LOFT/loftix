@@ -1,6 +1,6 @@
 ;;; Packages for software fuzzing
 ;;;
-;;; SPDX-FileCopyrightText: 2024-2025 Nguyễn Gia Phong
+;;; SPDX-FileCopyrightText: 2024-2026 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix fuzzing)
@@ -64,6 +64,7 @@
      (name "fuzzolic-showmap")
      (source (origin
                (inherit (package-source aflplusplus))
+               (file-name (git-file-name name (package-version aflplusplus)))
                (patches (search-patches "patches/fuzzolic-showmap.patch"))))
      (arguments
       (substitute-keyword-arguments (package-arguments aflplusplus)
@@ -155,21 +156,21 @@ and negatively affect the analyzed application.")
                 (inherit base-source)
                 (snippet #~(call-with-output-file "pyproject.toml"
                              (lambda (port)
-                               (display (string-append "
+                               (simple-format port "
 [build-system]
 requires = ['flit_core >=3.2']
 build-backend = 'flit_core.buildapi'
 
 [project]
-name = '" #$base-name "'
+name = ~s
 version = '0'
-description = '''" #$description "
+description = '''~a
 '''
 
 [project.scripts]
 fuzzolic = 'fuzzolic.fuzzolic:main'
 fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
-") port))))
+" #$base-name #$description))))
                 (patches (search-patches
                           "patches/fuzzolic-python-package.patch"
                           "patches/fuzzolic-unbundle.patch"

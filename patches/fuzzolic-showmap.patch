@@ -2,7 +2,7 @@ diff --git a/src/afl-showmap.c b/src/afl-showmap.c
 index 881ca2a63ffe..a3485b881b3e 100644
 --- a/src/afl-showmap.c
 +++ b/src/afl-showmap.c
-@@ -410,15 +410,16 @@ void pre_afl_fsrv_write_to_testcase(afl_forkserver_t *fsrv, u8 *mem, u32 len) {
+@@ -431,8 +431,8 @@ void pre_afl_fsrv_write_to_testcase(afl_forkserver_t *fsrv, u8 *mem, u32 len) {
  
  /* Execute target application. */
  
@@ -13,25 +13,15 @@ index 881ca2a63ffe..a3485b881b3e 100644
  
    pre_afl_fsrv_write_to_testcase(fsrv, mem, len);
  
-   if (!quiet_mode) { SAYF("-- Program output begins --\n" cRST); }
- 
--  if (afl_fsrv_run_target(fsrv, fsrv->exec_tmout, &stop_soon) ==
--      FSRV_RUN_ERROR) {
-+  const fsrv_run_result_t result =
-+      afl_fsrv_run_target(fsrv, fsrv->exec_tmout, &stop_soon);
-+  if (result == FSRV_RUN_ERROR) {
- 
-     FATAL("Error running target");
- 
-@@ -477,6 +478,7 @@ static void showmap_run_target_forkserver(afl_forkserver_t *fsrv, u8 *mem,
+@@ -487,6 +487,7 @@ static void showmap_run_target_forkserver(afl_forkserver_t *fsrv, u8 *mem,
  
    }
  
-+  return result;
++  return run_result;
  }
  
- /* Read initial file. */
-@@ -867,7 +869,11 @@ u32 execute_testcases(u8 *dir) {
+ /* Helper to read exactly n bytes from fd */
+@@ -1027,7 +1028,11 @@ u32 execute_testcases(u8 *dir) {
  
        }
  
@@ -44,7 +34,7 @@ index 881ca2a63ffe..a3485b881b3e 100644
        ck_free(in_data);
        ++done;
  
-@@ -1422,9 +1428,19 @@ int main(int argc, char **argv_orig, char **envp) {
+@@ -1620,9 +1625,19 @@ int main(int argc, char **argv_orig, char **envp) {
  
      }
  
