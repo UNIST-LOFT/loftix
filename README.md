@@ -27,6 +27,10 @@ Then run `guix pull`.
 - [afl-dyninst]: [Dyninst] integration for [AFL++]
 - [fuzzolic]: Concolic fuzzer
 
+### Model Checking
+
+- [civl]: Concurrency Intermediate Verification Language
+
 ### Patching
 
 - [e9patch]: static binary rewriting tool
@@ -45,6 +49,7 @@ Then run `guix pull`.
 [Dyninst]: https://github.com/dyninst/dyninst
 [AFL++]: https://aflplus.plus
 [fuzzolic]: https://season-lab.github.io/fuzzolic
+[civl]: https://vsl.cis.udel.edu/civl
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
 [taosc]: https://trong.loang.net/~cnx/taosc/about
