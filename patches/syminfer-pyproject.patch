@@ -1,0 +1,40 @@
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 000000000000..1a86808c8a7a
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,16 @@
++[build-system]
++requires = ['setuptools']
++build-backend = 'setuptools.build_meta'
++
++[project]
++name = 'syminfer'
++version = '2.0.2b0'
++readme = 'README.md'
++
++[project.scripts]
++syminfer = 'dig:main'
++
++[tool.setuptools]
++package-dir = {'' = 'src'}
++packages = ['data', 'helpers', 'infer', 'java']
++py-modules = ['alg', 'analysis', 'c_instrument', 'dig', 'settings']
+diff --git a/src/dig.py b/src/dig.py
+index f16a7a9c7e0b..ca90ed06e08c 100644
+--- a/src/dig.py
++++ b/src/dig.py
+@@ -19,8 +19,8 @@ Run on traces
+ - sage -python -O dig.py ../tests/traces/CohenDiv1.csv -log 3
+ """
+     
+-if __name__ == "__main__":
+-    aparser = argparse.ArgumentParser("DIG")
++def main():
++    aparser = argparse.ArgumentParser("syminfer")
+     ag = aparser.add_argument
+     ag(
+         "inp",
+diff --git a/src/java/__init__.py b/src/java/__init__.py
+new file mode 100644
+index 000000000000..e69de29bb2d1

@@ -163,8 +163,9 @@ SPDX-FileCopyrightText = 'Pádraig Brady'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = [ 'patches/e9patch-*.patch',
-         'patches/fuzzy-sat-*.patch',
+path = [ 'patches/e9patch-zydis-4.1-compat.patch',
+         'patches/fuzzy-sat-install.patch',
+         'patches/fuzzy-sat-unbundle.patch',
          'patches/fuzzolic-install.patch',
          'patches/fuzzolic-python-package.patch',
          'patches/fuzzolic-relax-perf-test.patch',
@@ -175,7 +176,8 @@ path = [ 'patches/e9patch-*.patch',
          'patches/fuzzolic-test-skip-nondeterministic.patch',
          'patches/fuzzolic-unbundle.patch',
          'patches/fuzzolic-utils-make.patch',
-         'patches/jasper-no-define-int-types.patch' ]
+         'patches/jasper-no-define-int-types.patch',
+         'patches/syminfer-pyproject.patch' ]
 SPDX-FileCopyrightText = 'Nguyễn Gia Phong'
 SPDX-License-Identifier = 'GPL-3.0-or-later'
 

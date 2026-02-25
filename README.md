@@ -38,6 +38,7 @@ Then run `guix pull`.
 ### Synthesis
 
 - [python-pacfix]: PAC-learning-based program synthesizer
+- [syminfer]: Numerical invariant generation tool
 - [taosc]: Makeshift binary patch generator
 
 ### Theorem Proving
@@ -52,5 +53,6 @@ Then run `guix pull`.
 [civl]: https://vsl.cis.udel.edu/civl
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
+[syminfer]: https://github.com/dynaroars/dig
 [taosc]: https://trong.loang.net/~cnx/taosc/about
 [fuzzy-sat]: https://github.com/season-lab/fuzzy-sat
