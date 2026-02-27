@@ -56,24 +56,20 @@
                (delete 'patch-embedded-shebangs)
                (delete 'fix-optionrom-makefile)
                (delete 'disable-unusable-tests)
+               ;; The `configure' script doesn't understand some of the
+               ;; GNU options.  Thus, add a new phase that's compatible.
                (replace 'configure
-                 (lambda* (#:key inputs outputs (configure-flags '())
-                           #:allow-other-keys)
-                   ;; The `configure' script doesn't understand some of the
-                   ;; GNU options.  Thus, add a new phase that's compatible.
-                   (let ((out (assoc-ref outputs "out")))
-                     (setenv "SHELL" (which "bash"))
-                     ;; The binaries need to be linked against -lrt.
-                     (setenv "LDFLAGS" "-lrt")
-                     (apply invoke
-                       "./configure"
-                       (string-append "--cc=" (which "gcc"))
-                       ;; Some architectures insist on using HOST_CC
-                       (string-append "--host-cc=" (which "gcc"))
-                       "--disable-debug-info" ; save build space
-                       (string-append "--prefix=" out)
-                       (string-append "--sysconfdir=/etc")
-                       configure-flags))))
+                 (lambda* (#:key inputs configure-flags #:allow-other-keys)
+                   (setenv "LDFLAGS" "-lrt")
+                   (apply invoke
+                     "./configure"
+                     (string-append "--cc=" #$(cc-for-target))
+                     ;; Some architectures insist on using HOST_CC.
+                     (string-append "--host-cc=" #$(cc-for-target))
+                     "--disable-debug-info" ; save build space
+                     (string-append "--prefix=" #$output)
+                     (string-append "--sysconfdir=/etc")
+                     configure-flags)))
                (add-after 'install 'install-symbolic-header
                  (lambda* (#:key outputs #:allow-other-keys)
                    (install-file
