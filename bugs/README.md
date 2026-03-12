@@ -6,6 +6,20 @@
 
       guix shell binutils-with-asan@2.27
       readelf -w cve/2017/6965/bug_3
+      readelf -w cve/2017/6965/bug_4
+      readelf -w cve/2017/6965/bug_6
+      readelf -w cve/2017/6965/bug_7
+      readelf -w cve/2017/6965/bug_8
+      readelf -w cve/2017/6965/bug_12
+
+- CVE-2017-6966: [use after free][sourceware-21139]
+
+      guix shell binutils-with-asan@2.27
+      readelf -w cve/2017/6965/bug_2
+      readelf -w cve/2017/6965/bug_5
+      readelf -w cve/2017/6965/bug_9
+      readelf -w cve/2017/6965/bug_10
+      readelf -w cve/2017/6965/bug_11
 
 - CVE-2017-14745: [integer overflow][sourceware-22148]
 
@@ -375,6 +389,7 @@
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
 [redhat-1319503]: https://bugzilla.redhat.com/show_bug.cgi?id=1319503
 [sourceware-21137]: https://sourceware.org/bugzilla/show_bug.cgi?id=21137
+[sourceware-21139]: https://sourceware.org/bugzilla/show_bug.cgi?id=21139
 [sourceware-22148]: https://sourceware.org/bugzilla/show_bug.cgi?id=22148
 [sourceware-22167]: https://sourceware.org/bugzilla/show_bug.cgi?id=22167
 [sourceware-22169]: https://sourceware.org/bugzilla/show_bug.cgi?id=22169
