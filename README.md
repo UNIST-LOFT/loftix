@@ -31,10 +31,6 @@ Then run `guix pull`.
 
 - [civl]: Concurrency Intermediate Verification Language
 
-### Patching
-
-- [e9patch]: static binary rewriting tool
-
 ### Synthesis
 
 - [python-pacfix]: PAC-learning-based program synthesizer

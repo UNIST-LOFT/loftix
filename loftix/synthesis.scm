@@ -11,6 +11,7 @@
   #:use-module (gnu packages m4)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages java)
+  #:use-module (gnu packages patchutils)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
@@ -25,8 +26,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (loftix fuzzing)
-  #:use-module (loftix model-checking)
-  #:use-module (loftix patching))
+  #:use-module (loftix model-checking))
 
 (define-public python-pacfix
   (package

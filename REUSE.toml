@@ -164,8 +164,7 @@ SPDX-FileCopyrightText = 'Pádraig Brady'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = [ 'patches/e9patch-zydis-4.1-compat.patch',
-         'patches/fuzzy-sat-install.patch',
+path = [ 'patches/fuzzy-sat-install.patch',
          'patches/fuzzy-sat-unbundle.patch',
          'patches/fuzzolic-install.patch',
          'patches/fuzzolic-python-package.patch',
