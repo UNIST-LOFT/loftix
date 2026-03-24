@@ -47,7 +47,7 @@
              (search-patches
               "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch")))))
        (arguments
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:configure-flags _ #~'())
            #~'("--target-list=x86_64-linux-user"))
           ((#:phases phases)

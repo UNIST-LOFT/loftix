@@ -67,7 +67,7 @@
                (file-name (git-file-name name (package-version aflplusplus)))
                (patches (search-patches "patches/fuzzolic-showmap.patch"))))
      (arguments
-      (substitute-keyword-arguments (package-arguments aflplusplus)
+      (substitute-keyword-arguments arguments
         ((#:phases phases #~%standard-phases)
          #~(modify-phases #$phases
              (replace 'install

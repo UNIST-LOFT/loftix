@@ -93,7 +93,7 @@
     (arguments
      (case (build-system-name (package-build-system base))
        ((cmake)
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:phases phases #~%standard-phases)
            (with-imported-modules '((loftix transform))
              #~(modify-phases #$phases
@@ -106,7 +106,7 @@
           ((#:tests? _ #f)
            #f)))
        ((gnu)
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:make-flags flags #~'())
            (with-imported-modules '((loftix transform))
              #~((@ (loftix transform) append-make-flag)
@@ -187,7 +187,7 @@
       (inherit base)
       (name "coreutils-with-make-prime-list")
       (arguments
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:phases phases #~%standard-phases)
            #~(modify-phases #$phases
               (add-after 'install 'install-make-prime-list
@@ -210,7 +210,7 @@
     (arguments
      (case (build-system-name (package-build-system base))
        ((cmake)
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:phases phases #~%standard-phases)
            (with-imported-modules '((loftix transform))
              #~(modify-phases #$phases
@@ -221,7 +221,7 @@
           ((#:tests? _ #f)
            #f)))
        ((gnu)
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:make-flags flags #~'())
            (with-imported-modules '((loftix transform))
              #~((@ (loftix transform) append-make-flag)
@@ -262,7 +262,7 @@
     (arguments
      (case (build-system-name (package-build-system base))
        ((gnu)
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:make-flags flags #~'())
            (with-imported-modules '((loftix transform))
              #~((@ (loftix transform) append-make-flag)
@@ -330,7 +330,7 @@
      (inherit libjpeg-turbo)
      (build-system gnu-build-system)
      (arguments
-      (substitute-keyword-arguments (package-arguments libjpeg-turbo)
+      (substitute-keyword-arguments arguments
         ((#:configure-flags _) #~'())))) ;discard CMake flags
    "1.5.3"
    "08r5b5mywwrxv4axvq80dm31cklz81grczlzlxr2xqa6pgi90j5j"))
@@ -451,7 +451,7 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
     (arguments
      (case (build-system-name (package-build-system base))
        ((gnu)
-        (substitute-keyword-arguments (package-arguments base)
+        (substitute-keyword-arguments arguments
           ((#:make-flags flags #~'())
            (with-imported-modules '((loftix transform))
              #~((@ (loftix transform) append-make-flag)
