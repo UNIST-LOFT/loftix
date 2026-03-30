@@ -153,6 +153,27 @@ SPDX-FileCopyrightText = '陈鹏'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = [ 'bugs/cve/2023/50268/119.json',
+         'bugs/cve/2025/48060/3373.jq' ]
+SPDX-FileCopyrightText = 'itchyny'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2024/23337/3262.jq'
+SPDX-FileCopyrightText = 'Ekkosun'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2024/53427/3246.json'
+SPDX-FileCopyrightText = 'Shangzhi Xu'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2025/48060/3272.jq'
+SPDX-FileCopyrightText = 'Giacomo Priamo'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = 'bugs/gnu/19784/argv'
 SPDX-FileCopyrightText = 'Yury Usishchev'
 SPDX-License-Identifier = 'CC0-1.0'
@@ -216,6 +237,8 @@ SPDX-FileCopyrightText = 'Andrey Shinkevich'
 SPDX-License-Identifier = 'LGPL-2.1-or-later'
 
 [[annotations]]
-path = '**/README.md'
+path = [ '**/README.md',
+         'bugs/cve/2023/50246/heap-buffer-overflow.json',
+         'bugs/cve/2024/53427/3196.json' ]
 SPDX-FileCopyrightText = 'None'
 SPDX-License-Identifier = 'CC0-1.0'

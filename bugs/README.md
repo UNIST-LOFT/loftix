@@ -102,6 +102,35 @@
       guix shell jasper-with-ubsan@1.900.19
       imginfo -f cve/2016/9557/signed-int-overflow.jp2
 
+## jq
+
+- CVE-2023-50246: [heap buffer overflow][oss-fuzz-42530604]
+
+      guix shell jq-with-asan@1.7
+      jq . cve/2023/50246/heap-buffer-overflow.json
+
+- CVE-2023-50268: [signed integer overflow][jq-2968]
+
+      guix shell jq-with-ubsan@1.7
+      jq '.[0] != .[1]' cve/2023/50268/119.json
+
+- CVE-2024-23337: [signed integer overflow][jq-3262]
+
+      guix shell jq-with-ubsan@1.7.1 # or jq@1.7.1
+      jq -nf cve/2024/23337/3262.json
+
+- CVE-2024-53427: [stack buffer overflow][jq-3196]
+
+      guix shell jq-with-asan@1.7.1
+      jq '.[0] != .[1]' cve/2024/53427/3196.json
+      jq '.[0] != .[1]' cve/2024/53427/3246.json
+
+- CVE-2025-48060: [stack buffer overflow][jq-3327]
+
+      guix shell jq-with-asan@1.7.1
+      jq -nf cve/2025/48060/3272.jq
+      jq -nf cve/2025/48060/3327.jq
+
 ## libarchive
 
 - CVE-2016-5844: [signed integer overflow][libarchive-717]
@@ -358,6 +387,10 @@
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-49]: https://github.com/jasper-software/jasper/issues/49
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
+[jq-2968]: https://github.com/jqlang/jq/issues/2968
+[jq-3196]: https://github.com/jqlang/jq/issues/3196
+[jq-3262]: https://github.com/jqlang/jq/issues/3262
+[jq-3327]: https://github.com/jqlang/jq/issues/3327
 [libarchive-717]: https://github.com/libarchive/libarchive/issues/717
 [libjpeg-turbo-258]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/258
 [libjpeg-turbo-305]: https://github.com/libjpeg-turbo/libjpeg-turbo/issues/305
@@ -384,6 +417,7 @@
 [maptools-2653]: http://bugzilla.maptools.org/show_bug.cgi?id=2653
 [maptools-2656]: http://bugzilla.maptools.org/show_bug.cgi?id=2656
 [mozjpeg-268]: https://github.com/mozilla/mozjpeg/issues/268
+[oss-fuzz-42530604]: https://issues.oss-fuzz.com/issues/42530604
 [oss-sec-20161105-3]: https://www.openwall.com/lists/oss-security/2016/11/05/3
 [oss-sec-20161110-9]: https://www.openwall.com/lists/oss-security/2016/11/10/9
 [redhat-955808]: https://bugzilla.redhat.com/show_bug.cgi?id=955808
