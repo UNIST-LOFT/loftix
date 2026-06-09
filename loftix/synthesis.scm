@@ -21,6 +21,7 @@
   #:use-module (guix build-system pyproject)
   #:use-module (guix build-system python)
   #:use-module (guix download)
+  #:use-module (guix fossil-download)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
@@ -130,14 +131,15 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.4")
+    (version "0.0.6")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append "https://trong.loang.net/~cnx/taosc/snapshot/taosc-"
-                           version ".tar.gz"))
+       (method fossil-fetch)
+       (uri (fossil-reference
+             (uri "https://chim.loan/taosc")
+             (check-in version)))
        (sha256
-        (base32 "0va9sns8pfsv4md66dqxjn8s374fkby1y2yyqcmi8ac5aqs9f9vm"))))
+        (base32 "0arqqarg6qmm0n7v46y5rwz336089r2lllh6aba6wiwrkcwvlbqw"))))
     (build-system gnu-build-system)
     (arguments
       (list #:imported-modules `((guix build zig-utils)
