@@ -180,8 +180,9 @@ Reproduce BUG.
                          and their corresponding package specification
   -a, --static           use the statically-linked package variant
   -s, --sans-sans        use the package variant without sanitizers
-  -p, --procedure=PROC   instead of printing the command that reproduce
-                         the bug, run (PROC prog args poc)
+  -p, --procedure=FILE   instead of printing the command that reproduce
+                         the bug, run (proc prog args poc) with proc
+                         defined in the Scheme module FILE as a lambda
   -L, --load-path=DIR    prepend DIR to the package module search path
   -h, --help             display this help and exit
 
@@ -202,7 +203,11 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
                   (exit 0)))
         (option '(#\p "procedure") #t #f
                 (lambda (opt name arg result)
-                  (alist-cons 'procedure (read/eval arg) result)))
+                  (alist-cons 'procedure
+                              (if (string=? "-" arg)
+                                  (read/eval (current-input-port))
+                                  (call-with-input-file arg read/eval))
+                              result)))
         (option '(#\a "static") #f #f
                 (lambda (opt name arg result)
                   (alist-cons 'static? #t result)))
