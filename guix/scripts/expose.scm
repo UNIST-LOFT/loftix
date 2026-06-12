@@ -173,7 +173,7 @@
       ("unzzipcat-seeko" "~a" "cve/2017/5981/fail-assert.zip")))))
 
 (define (show-help)
-  (display "Usage: guix bux BUG
+  (display "Usage: guix expose BUG
 Reproduce BUG.
 
   -l, --list             list supported bug identifiers
@@ -184,15 +184,9 @@ Reproduce BUG.
                          the bug, run (PROC prog args poc)
   -L, --load-path=DIR    prepend DIR to the package module search path
   -h, --help             display this help and exit
-  -V, --version          display version information and exit
-  
 
 Report bugs to: <https://github.com/UNIST-LOFT/loftix>
 "))
-
-(define (show-version)
-  (display "guix bux 0")
-  (newline))
 
 (define %options
   (list (option '(#\l "list") #f #f
@@ -221,13 +215,11 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
         (option '(#\h "help") #f #f
                 (lambda _
                    (leave-on-EPIPE (show-help))
-                   (exit 0)))
-        (option '(#\V "version") #f #f
-                (lambda _
-                  (show-version-and-exit "guix bux 0")))))
+                   (exit 0)))))
 
 (define (search-bug packages identifier)
-  (cond ((null? packages) #f)
+  (cond ((or (not identifier)
+             (null? packages)) #f)
         ((find (lambda (bugs)
                  (string=? identifier (caar bugs)))
                (cdar packages))
