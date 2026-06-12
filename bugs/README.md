@@ -281,12 +281,12 @@
       guix shell libtiff@4.0.7
       tiffcp -i cve/2017/7595/fpe.tiff /dev/null
 
-- cve-2017-7599: [float cast overflow][maptools-2646]
+- CVE-2017-7599: [float cast overflow][maptools-2646]
 
       guix shell libtiff-with-ubsan-float-cast-overflow@4.0.7
       tiffcp -i cve/2017/7599/outside-short.tiff /dev/null
 
-- cve-2017-7600: [float cast overflow][maptools-2647]
+- CVE-2017-7600: [float cast overflow][maptools-2647]
 
       guix shell libtiff-with-ubsan-float-cast-overflow@4.0.7
       tiffcp -i cve/2017/7600/outside-unsigned-char.tiff /dev/null

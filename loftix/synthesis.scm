@@ -19,7 +19,6 @@
   #:use-module (gnu packages zig)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system pyproject)
-  #:use-module (guix build-system python)
   #:use-module (guix download)
   #:use-module (guix fossil-download)
   #:use-module (guix gexp)

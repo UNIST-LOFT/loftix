@@ -17,8 +17,8 @@
   #:use-module (gnu packages backup)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bison)
+  #:use-module (gnu packages compiler-tools)
   #:use-module (gnu packages compression)
-  #:use-module (gnu packages flex)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
   #:use-module (gnu packages perl)
@@ -28,6 +28,7 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages web)
   #:use-module (guix build-system)
+  #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
   #:use-module (guix gexp)
@@ -35,6 +36,25 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix utils))
+
+(define-public bux
+  (package
+    (name "bux")
+    (version "2026.06.09")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/UNIST-LOFT/loftix")
+             (commit "866f2041df3516d8b431e8c34694944c656f6b6d")))
+       (sha256
+        (base32 "01hk0q3wj9kpq90zp3cg3z519gcp1p00rjsq6xzfsdjbndrrn3qi"))))
+    (build-system copy-build-system)
+    (arguments (list #:install-plan #~'(("bugs/cve" "share/bux/cve"))))
+    (home-page "https://github.com/UNIST-LOFT/loftix")
+    (synopsis "Common bug reproducers")
+    (description synopsis)
+    (license license:gpl3+)))
 
 (define (at-version base version uri checksum)
   (package
