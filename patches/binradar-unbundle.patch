@@ -1,3 +1,16 @@
+diff --git a/fuzzolic/binradar.py b/fuzzolic/binradar.py
+index 93593a664ff0..e5bb07fd013b 100644
+--- a/fuzzolic/binradar.py
++++ b/fuzzolic/binradar.py
+@@ -33,7 +33,7 @@ import sbsv
+ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+ SOLVER_SMT_BIN = SCRIPT_DIR + "/../solver/build/solver-smt"
+ TRACER_BIN = SCRIPT_DIR + "/../tracer/build/x86_64-linux-user/qemu-x86_64"
+-FIND_MODELS_BIN = SCRIPT_DIR + "/find_models_addrs.py"
++FIND_MODELS_BIN = "fuzzolic-find-models-addrs"
+ 
+ SOLVER_WAIT_TIME_AT_STARTUP = 1 # s
+ SOLVER_TIMEOUT = 10 # s
 diff --git a/fuzzolic/executor.py b/fuzzolic/executor.py
 index 534f56d64eb4..acbaf4ae5aae 100644
 --- a/fuzzolic/executor.py

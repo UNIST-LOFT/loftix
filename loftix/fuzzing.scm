@@ -222,12 +222,12 @@ for the ease of writing and parsing.")
     (license license:expat)))
 
 (define-public binradar
-  (let ((commit "6b04d3c9ba04d9ee85b658f8cc95f458f16c936e")
+  (let ((commit "9f8f5f91206427a57eadb76bfa110879d0f50f8f")
         (revision "0"))
     (package
       (inherit fuzzolic)
       (name "binradar")
-      (version (git-version "0" revision commit))
+      (version (git-version "0.1.0" revision commit))
       (source
        (origin
          (method git-fetch)
@@ -236,7 +236,7 @@ for the ease of writing and parsing.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0wnyx3k8lawmhvsq2x0n758hf66w9083rnbpy0kr0zis9ar35xs9"))
+          (base32 "01q2aqkh7jfcnpxqc1agcvbchkg4msl8sx2ml9r1sp9xy1adapyj"))
          (patches (search-patches
                    "patches/binradar-python-package.patch"
                    "patches/binradar-unbundle.patch"))))
