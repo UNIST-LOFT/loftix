@@ -16,6 +16,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
+  #:use-module (gnu packages python-xyz)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system pyproject)
@@ -196,3 +197,60 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
       (description description)
       (home-page home-page)
       (license license:gpl2+))))
+
+;; TODO: remove when upstreamed: https://codeberg.org/guix/guix/pulls/9236
+(define-public python-sbsv
+  (package
+    (name "python-sbsv")
+    (version "0.2.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/hsh814/sbsv")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1xzx0xhikwqvmzdbhprzljfvnxznr3an3jf0v07hwkixvh80s4f5"))))
+    (build-system pyproject-build-system)
+    (native-inputs (list python-hatchling python-pytest))
+    (home-page "https://github.com/hsh814/sbsv")
+    (synopsis "Square bracket separated values")
+    (description
+     "This Python package provides a schema-driven structured log data format
+for the ease of writing and parsing.")
+    (license license:expat)))
+
+(define-public binradar
+  (let ((commit "6b04d3c9ba04d9ee85b658f8cc95f458f16c936e")
+        (revision "0"))
+    (package
+      (inherit fuzzolic)
+      (name "binradar")
+      (version (git-version "0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/UNIST-LOFT/binradar")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0wnyx3k8lawmhvsq2x0n758hf66w9083rnbpy0kr0zis9ar35xs9"))
+         (patches (search-patches
+                   "patches/binradar-python-package.patch"
+                   "patches/binradar-unbundle.patch"))))
+      (arguments
+       (substitute-keyword-arguments arguments
+         ((#:tests? _ #f) #f)))
+      (propagated-inputs
+       (modify-inputs propagated-inputs
+         (prepend python-sbsv
+                  python-sortedcontainers
+                  qemu-for-binradar)
+         (delete "qemu-for-fuzzolic")))
+      (home-page "https://github.com/UNIST-LOFT/binradar")
+      (synopsis "Binary patch verification tool")
+      (description
+       "Binradar is a binary patch verification tool
+using PoC-bounded under-constrained concolic execution."))))

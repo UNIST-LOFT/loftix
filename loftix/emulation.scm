@@ -78,3 +78,31 @@
                                    "/include/qemu/tcg/symbolic"))))
                (delete 'install-plugins)
                (delete 'delete-firmwares)))))))))
+
+(define-public qemu-for-binradar
+  (let ((base-version "4.1.1")
+        (commit "e4de58e2eccec930efd2068b0f0ceadeb0097aa7")
+        (revision "0"))
+    (package
+      (inherit qemu-for-fuzzolic)
+      (name "qemu-for-binradar")
+      (version (git-version base-version revision commit))
+      (home-page "https://github.com/UNIST-LOFT/qemu")
+      (source
+       (origin
+         (method url-fetch)
+         (uri (string-append "https://download.qemu.org/qemu-"
+                             base-version ".tar.xz"))
+         (sha256
+          (base32 "1lm1jndfpc5sydwrxyiz5sms414zkcg9jdl0zx318qbjsayxnvzd"))
+         (patches
+          (cons
+            (origin
+              (method url-fetch)
+              (uri (string-append home-page "/compare/v" base-version
+                                  ".." commit ".diff"))
+              (sha256
+               (base32 "0xqpfpj5w6zlwvarbgkr7d3j3hrq63v81gm7mjjy8l75gzqg4v86"))
+              (file-name (string-append name ".patch")))
+            (search-patches
+             "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch"))))))))

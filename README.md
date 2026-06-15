@@ -9,7 +9,7 @@ Add the [Guix channel] to `~/.config/guix/channels.scm`:
 
     (cons* (channel
             (name 'loftix)
-            (url "https://trong.loang.net/~cnx/loftix")
+            (url "https://github.com/UNIST-LOFT/loftix")
             (branch "main")
             (introduction
              (make-channel-introduction
@@ -25,6 +25,7 @@ Then run `guix pull`.
 ### Fuzzing
 
 - [afl-dyninst]: [Dyninst] integration for [AFL++]
+- [binradar]: Binary patch verification tool
 - [fuzzolic]: Concolic fuzzer
 
 ### Model Checking
@@ -45,6 +46,7 @@ Then run `guix pull`.
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [Dyninst]: https://github.com/dyninst/dyninst
 [AFL++]: https://aflplus.plus
+[binradar]: https://github.com/UNIST-LOFT/binradar
 [fuzzolic]: https://season-lab.github.io/fuzzolic
 [civl]: https://vsl.cis.udel.edu/civl
 [e9patch]: https://github.com/GJDuck/e9patch
