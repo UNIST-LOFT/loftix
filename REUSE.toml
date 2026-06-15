@@ -185,7 +185,9 @@ SPDX-FileCopyrightText = 'Pádraig Brady'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = [ 'patches/fuzzy-sat-install.patch',
+path = [ 'patches/binradar-python-package.patch',
+         'patches/binradar-unbundle.patch',
+         'patches/fuzzy-sat-install.patch',
          'patches/fuzzy-sat-unbundle.patch',
          'patches/fuzzolic-install.patch',
          'patches/fuzzolic-python-package.patch',
