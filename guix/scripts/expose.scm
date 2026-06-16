@@ -242,7 +242,7 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
 
 (define-command (guix-expose . args)
                 (category extension)
-                (synopsis "Expose common bugs")
+                (synopsis "expose common bugs")
   (let* ((opts (parse-command-line args %options `((,%default-procedure))))
          (static? (assq-ref opts 'static?))
          (san? (not (assq-ref opts 'sans-sans?)))
