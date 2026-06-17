@@ -329,23 +329,22 @@
        (modules '((guix build utils)))
        (snippet #~(delete-file-recursively "modules"))))))
 
-(define-public jq-1.7
+(define-public jq-1.7.0
   (package
     (inherit jq-1.7.1)
-    (version "1.7")
+    (version "1.7.0")
     (source
      (origin
        (inherit (package-source jq-1.7.1))
        (uri (string-append "https://github.com/jqlang/jq"
-                           "/releases/download/jq-" version
-                           "/jq-" version ".tar.gz"))
+                           "/releases/download/jq-1.7/jq-1.7.tar.gz"))
        (sha256
         (base32 "0qnv8k9x8i6i24n9vx3cxgw0yjj1411silc4wksfcinrfmlhsaj0"))))))
 
 (define-public jq-with-asan-1.7.1 (with-asan jq-1.7.1))
-(define-public jq-with-asan-1.7 (with-asan jq-1.7))
+(define-public jq-with-asan-1.7.0 (with-asan jq-1.7.0))
 (define-public jq-with-ubsan-1.7.1 (with-ubsan jq-1.7.1))
-(define-public jq-with-ubsan-1.7 (with-ubsan jq-1.7))
+(define-public jq-with-ubsan-1.7.0 (with-ubsan jq-1.7.0))
 
 (define-public libarchive-3.2.0
   (package

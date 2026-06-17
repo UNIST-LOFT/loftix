@@ -106,12 +106,12 @@
 
 - CVE-2023-50246: [heap buffer overflow][oss-fuzz-42530604]
 
-      guix shell jq-with-asan@1.7
+      guix shell jq-with-asan@1.7.0
       jq . cve/2023/50246/heap-buffer-overflow.json
 
 - CVE-2023-50268: [signed integer overflow][jq-2968]
 
-      guix shell jq-with-ubsan@1.7
+      guix shell jq-with-ubsan@1.7.0
       jq '.[0] != .[1]' cve/2023/50268/119.json
 
 - CVE-2024-23337: [signed integer overflow][jq-3262]

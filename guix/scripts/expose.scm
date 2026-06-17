@@ -57,9 +57,9 @@
      (("CVE-2016-9557" "1.900.19" "ubsan")
       ("imginfo" "-f ~a" "cve/2016/9557/signed-int-overflow.jp2")))
     ("jq"
-     (("CVE-2023-50246" "1.7" "asan")
+     (("CVE-2023-50246" "1.7.0" "asan")
       ("jq" ". ~a" "cve/2023/50246/heap-buffer-overflow.json"))
-     (("CVE-2023-50268" "1.7" "ubsan")
+     (("CVE-2023-50268" "1.7.0" "ubsan")
       ("jq" "'.[0] != .[1]' ~a" "cve/2023/50268/119.json"))
      (("CVE-2024-23337" "1.7.1")
       ("jq" "-nf ~a" "cve/2024/23337/3262.json"))
