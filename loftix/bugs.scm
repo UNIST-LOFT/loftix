@@ -502,6 +502,7 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
 (define-public libtiff-with-ubsan-4.0.7 (with-ubsan libtiff-4.0.7))
 (define-public libtiff-static-4.0.7 (static libtiff-4.0.7))
 (define-public libtiff-static-4.0.6 (static libtiff-4.0.6))
+(define-public libtiff-static-4.0.3 (static libtiff-4.0.3))
 
 (define (with-ubsan-float-cast-overflow base)
   (package
