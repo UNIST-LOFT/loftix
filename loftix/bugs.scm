@@ -402,7 +402,15 @@
 (define-public libjpeg-turbo-with-asan-2.0.1 (with-asan libjpeg-turbo-2.0.1))
 (define-public libjpeg-turbo-with-asan-1.5.3 (with-asan libjpeg-turbo-1.5.3))
 (define-public libjpeg-turbo-with-asan-1.2.0 (with-asan libjpeg-turbo-1.2.0))
-(define-public libjpeg-turbo-static-2.0.1 (static libjpeg-turbo-2.0.1))
+
+(define-public libjpeg-turbo-static-2.0.1
+  (package/inherit libjpeg-turbo-2.0.1
+    (name "libjpeg-turbo-static")
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:configure-flags flags #~'())
+        #~(cons "ENABLE_SHARED=false" #$flags))))))
+
 (define-public libjpeg-turbo-static-1.5.3 (static libjpeg-turbo-1.5.3))
 (define-public libjpeg-turbo-static-1.5.2 (static libjpeg-turbo-1.5.2))
 (define-public libjpeg-turbo-static-1.2.0 (static libjpeg-turbo-1.2.0))
