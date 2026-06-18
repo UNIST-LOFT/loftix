@@ -174,25 +174,61 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
 " #$base-name #$description))))
                 (patches (search-patches
                           "patches/fuzzolic-python-package.patch"
-                          "patches/fuzzolic-unbundle.patch"
                           "patches/fuzzolic-relax-perf-test.patch"
                           "patches/fuzzolic-test-fix-runner.patch"
                           "patches/fuzzolic-test-skip-nondeterministic.patch"))))
       (build-system pyproject-build-system)
       (arguments
-       '(#:phases (modify-phases %standard-phases
-                    (replace 'check
-                      (lambda* (#:key tests? #:allow-other-keys)
-                        (when tests?
-                          (invoke "make" "-C" "tests")
-                          (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
-                          (invoke "pytest" "-vv" "tests/run.py")))))))
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (add-after 'unpack 'patch-paths
+              (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* "fuzzolic/executor.py"
+                  (("^(SOLVER_SMT_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/solver-smt")))
+                  (("^(SOLVER_FUZZY_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/solver-fuzzy")))
+                  (("\\<SCRIPT_DIR \\+ \"/find_models_addrs\\.py\"")
+                   (simple-format #f "~s" (search-input-file inputs
+                                           "bin/fuzzolic-find-models-addrs"))))
+                (substitute* '("fuzzolic/executor.py"
+                               "fuzzolic/minimizer.py"
+                               "fuzzolic/testcase_checker.py")
+                  (("^(TRACER_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/qemu-x86_64"))))
+                (substitute* "fuzzolic/minimizer_qsym.py"
+                  (("^( +self\\.showmap = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/afl-showmap")))
+                  (("^( +self\\.showmap_fork = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/fuzzolic-showmap")))
+                  (("\\<SCRIPT_DIR \\+ '.+/merge_bitmap'")
+                   (simple-format #f "~s" (search-input-file inputs
+                                           "bin/fuzzolic-merge-bitmap"))))
+                (substitute* "fuzzolic/run_afl_fuzzolic.py"
+                  (("^(AFL_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/afl-fuzz")))
+                  (("^(FUZZOLIC_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (string-append #$output "/bin/afl-fuzz"))))))
+            (replace 'check
+              (lambda* (#:key tests? #:allow-other-keys)
+                (when tests?
+                  (invoke "make" "-C" "tests")
+                  (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
+                  (invoke "pytest" "-vv" "tests/run.py")))))))
       (native-inputs (list python-flit-core python-pytest))
-      (propagated-inputs (list aflplusplus
-                               fuzzolic-showmap
-                               qemu-for-fuzzolic
-                               solver
-                               utils))
+      (inputs (list aflplusplus
+                    fuzzolic-showmap
+                    qemu-for-fuzzolic
+                    solver
+                    utils))
       (synopsis "Concolic fuzzer")
       (description description)
       (home-page home-page)

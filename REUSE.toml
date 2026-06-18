@@ -197,7 +197,6 @@ path = [ 'patches/binradar-python-package.patch',
          'patches/fuzzolic-test-driver-include-libc.patch',
          'patches/fuzzolic-test-fix-runner.patch',
          'patches/fuzzolic-test-skip-nondeterministic.patch',
-         'patches/fuzzolic-unbundle.patch',
          'patches/fuzzolic-utils-make.patch',
          'patches/jasper-no-define-int-types.patch',
          'patches/syminfer-pyproject.patch' ]
