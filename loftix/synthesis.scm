@@ -138,7 +138,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "0k7iqkix6rjhg7a2160brlrby5xavfvxvr7nhhza1g46va79c2p8"))))
+        (base32 "000i70pa72swnigav9pwk4hwna2bvfd121l95c3i9nip0wgck8cr"))))
     (build-system gnu-build-system)
     (arguments
      (list
