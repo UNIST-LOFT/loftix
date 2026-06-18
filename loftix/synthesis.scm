@@ -130,7 +130,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.6")
+    (version "0.0.8")
     (source
      (origin
        (method fossil-fetch)
@@ -138,22 +138,34 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "0arqqarg6qmm0n7v46y5rwz336089r2lllh6aba6wiwrkcwvlbqw"))))
+        (base32 "0k7iqkix6rjhg7a2160brlrby5xavfvxvr7nhhza1g46va79c2p8"))))
     (build-system gnu-build-system)
     (arguments
-      (list #:imported-modules `((guix build zig-utils)
-                                 ,@%default-gnu-imported-modules)
-            #:modules `((guix build zig-utils)
-                        ,@%default-gnu-modules)
-            #:make-flags #~(list (string-append "PREFIX=" #$output))
-            #:phases
-            #~(modify-phases %standard-phases
-                (replace 'configure zig-configure))))
+     (list
+      #:imported-modules
+      (cons '(guix build zig-utils)
+            %default-gnu-imported-modules)
+      #:modules
+      (cons '(guix build zig-utils)
+            %default-gnu-modules)
+      #:make-flags
+      #~(list (string-append "E9TOOL=" #$(this-package-input "e9patch")
+                             "/bin/e9tool")
+              (string-append "FIND=" #$(this-package-input "findutils")
+                             "/bin/find")
+              (string-append "XARGS=" #$(this-package-input "findutils")
+                             "/bin/xargs")
+              (string-append "FUZZOLIC=" #$(this-package-input "fuzzolic")
+                             "/bin/fuzzolic")
+              (string-append "QEMU=" #$(this-package-input "aflplusplus")
+                             "/bin/afl-qemu-trace")
+              (string-append "PREFIX=" #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'configure zig-configure))))
     (native-inputs (list m4 zig-0.15))
-    (inputs (list dyninst))
-    ;; TODO: substitute* path
-    (propagated-inputs (list aflplusplus e9patch findutils fuzzolic))
+    (inputs (list aflplusplus dyninst aflplusplus e9patch findutils fuzzolic))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
-    (home-page "https://trong.loang.net/~cnx/taosc")
+    (home-page "https://chim.loan/taosc")
     (license license:agpl3+)))
