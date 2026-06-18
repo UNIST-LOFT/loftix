@@ -273,18 +273,29 @@ for the ease of writing and parsing.")
          (file-name (git-file-name name version))
          (sha256
           (base32 "01q2aqkh7jfcnpxqc1agcvbchkg4msl8sx2ml9r1sp9xy1adapyj"))
-         (patches (search-patches
-                   "patches/binradar-python-package.patch"
-                   "patches/binradar-unbundle.patch"))))
+         (patches (search-patches "patches/binradar-python-package.patch"))))
       (arguments
        (substitute-keyword-arguments arguments
-         ((#:tests? _ #f) #f)))
-      (propagated-inputs
-       (modify-inputs propagated-inputs
-         (prepend python-sbsv
-                  python-sortedcontainers
-                  qemu-for-binradar)
-         (delete "qemu-for-fuzzolic")))
+         ((#:phases phases #~%standard-phases)
+          #~(modify-phases #$phases
+              (add-after 'patch-paths 'patch-more-paths
+                (lambda* (#:key inputs #:allow-other-keys)
+                  (substitute* "fuzzolic/binradar.py"
+                    (("^(SOLVER_SMT_BIN = ).*" _ assign)
+                     (simple-format #f "~a~s\n"
+                       assign (search-input-file inputs "bin/solver-smt")))
+                    (("^(TRACER_BIN = ).*" _ assign)
+                     (simple-format #f "~a~s\n"
+                       assign (search-input-file inputs "bin/qemu-x86_64")))
+                    (("^(FIND_MODELS_BIN = ).*" _ assign)
+                     (simple-format #f "~a~s\n"
+                       assign (search-input-file
+                               inputs "bin/fuzzolic-find-models-addrs"))))))))
+         ((#:tests? _ #t)
+          #f)))
+      (inputs (modify-inputs inputs
+                (prepend python-sbsv python-sortedcontainers qemu-for-binradar)
+                (delete "qemu-for-fuzzolic")))
       (home-page "https://github.com/UNIST-LOFT/binradar")
       (synopsis "Binary patch verification tool")
       (description
