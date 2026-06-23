@@ -234,29 +234,6 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
       (home-page home-page)
       (license license:gpl2+))))
 
-;; TODO: remove when upstreamed: https://codeberg.org/guix/guix/pulls/9236
-(define-public python-sbsv
-  (package
-    (name "python-sbsv")
-    (version "0.2.3")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/hsh814/sbsv")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "1xzx0xhikwqvmzdbhprzljfvnxznr3an3jf0v07hwkixvh80s4f5"))))
-    (build-system pyproject-build-system)
-    (native-inputs (list python-hatchling python-pytest))
-    (home-page "https://github.com/hsh814/sbsv")
-    (synopsis "Square bracket separated values")
-    (description
-     "This Python package provides a schema-driven structured log data format
-for the ease of writing and parsing.")
-    (license license:expat)))
-
 (define-public binradar
   (let ((commit "9f8f5f91206427a57eadb76bfa110879d0f50f8f")
         (revision "0"))
