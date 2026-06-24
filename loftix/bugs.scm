@@ -42,13 +42,13 @@
 (define-public bux
   (package
     (name "bux")
-    (version "2026.06.09")
+    (version "2026.06.24")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/UNIST-LOFT/loftix")
-             (commit "866f2041df3516d8b431e8c34694944c656f6b6d")))
+             (commit "283f5a8c681e818c3ed0e3a4f6e86d5338f9d330")))
        (sha256
         (base32 "01hk0q3wj9kpq90zp3cg3z519gcp1p00rjsq6xzfsdjbndrrn3qi"))))
     (build-system copy-build-system)
