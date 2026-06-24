@@ -16,7 +16,38 @@
   #:export (guix-expose))
 
 (define %packages
-  `(("binutils"
+  `(("audiofile-unpatched"
+     (("CVE-2017-6827" "0.3.6")
+      ("sfinfo" "~a"
+       "cve/2017/6827/heapoverflow.wav"))
+     (("CVE-2017-6828" "0.3.6")
+      ("sfinfo" "~a"
+       "cve/2017/6828/heapoverflow.wav"))
+     (("CVE-2017-6830" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6830/heapoverflow.aiff"))
+     (("CVE-2017-6831" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6831/heapoverflow.aiff"))
+     (("CVE-2017-6833" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6833/fpe.aiff"))
+     (("CVE-2017-6834" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6834/heapoverflow.aiff"))
+     (("CVE-2017-6835" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6835/fpe.aiff"))
+     (("CVE-2017-6836" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6836/heapoverflow.aiff"))
+     (("CVE-2017-6837" "0.3.6")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6837/indexoob.aiff"))
+     (("CVE-2017-6838" "0.3.6" "ubsan")
+      ("sfconvert" "~a /dev/null"
+       "cve/2017/6838/signintoverflow.aiff")))
+    ("binutils"
      (("CVE-2017-6965" "2.27" "asan")
       ("readelf" "-w ~a"
        "cve/2017/6965/bug_3"

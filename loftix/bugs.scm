@@ -13,6 +13,7 @@
 
 (define-module (loftix bugs)
   #:use-module (gnu packages)
+  #:use-module (gnu packages audio)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages backup)
   #:use-module (gnu packages base)
@@ -35,7 +36,8 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils))
+  #:use-module (guix utils)
+  #:use-module (srfi srfi-1))
 
 (define-public bux
   (package
@@ -55,6 +57,80 @@
     (synopsis "Common bug reproducers")
     (description synopsis)
     (license license:gpl3+)))
+
+(define-public audiofile-unpatched
+  (package
+    (inherit audiofile)
+    (name "audiofile-unpatched")
+    (source
+     (origin
+       (inherit (package-source audiofile))
+       (patches (filter (lambda (patch)
+                          (let ((prefix "audiofile-fix-"))
+                            (string= (basename patch)
+                                     prefix 0 (string-length prefix))))
+                        (origin-patches (package-source audiofile))))))
+    (properties
+     (alist-delete 'lint-hidden-cve (package-properties audiofile)))))
+
+(define (with-ubsan base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-with-ubsan"))
+    (arguments
+     (case (build-system-name (package-build-system base))
+       ((gnu)
+        (substitute-keyword-arguments arguments
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                '(("CFLAGS"
+                   "-fsanitize=undefined -fno-sanitize-recover=undefined"
+                   "-O2 -g")
+                  ("LDFLAGS" "-fsanitize=undefined")))))
+          ((#:tests? _ #f)
+           #f)))))))
+
+(define-public audiofile-unpatched-with-ubsan
+  (with-ubsan audiofile-unpatched))
+
+(define (static base)
+  (package
+    (inherit base)
+    (name (string-append (package-name base) "-static"))
+    (arguments
+     (case (build-system-name (package-build-system base))
+       ((cmake)
+        (substitute-keyword-arguments arguments
+          ((#:phases phases #~%standard-phases)
+           (with-imported-modules '((loftix transform))
+             #~(modify-phases #$phases
+                 (add-before 'configure 'set-env
+                   (lambda _
+                     (use-modules (loftix transform))
+                     (append-env "LDFLAGS" "-static" #f))))))
+          ((#:tests? _ #f)
+           #f)))
+       ((gnu)
+        (substitute-keyword-arguments arguments
+          ((#:make-flags flags #~'())
+           (with-imported-modules '((loftix transform))
+             #~((@ (loftix transform) append-make-flag)
+                #$flags
+                '(("LDFLAGS" "-static")))))
+          ((#:tests? _ #f)
+           #f)))))))
+
+(define-public audiofile-unpatched-static
+  (package
+    (inherit (static audiofile-unpatched))
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-before 'configure 'set-env
+              (lambda _ (setenv "LIBS" "-lm")))))))))
 
 (define (at-version base version uri checksum)
   (package
@@ -224,33 +300,6 @@
 (define-public coreutils-with-make-prime-list-with-asan-8.23
   (with-asan coreutils-with-make-prime-list-8.23))
 
-(define (static base)
-  (package
-    (inherit base)
-    (name (string-append (package-name base) "-static"))
-    (arguments
-     (case (build-system-name (package-build-system base))
-       ((cmake)
-        (substitute-keyword-arguments arguments
-          ((#:phases phases #~%standard-phases)
-           (with-imported-modules '((loftix transform))
-             #~(modify-phases #$phases
-                 (add-before 'configure 'set-env
-                   (lambda _
-                     (use-modules (loftix transform))
-                     (append-env "LDFLAGS" "-static" #f))))))
-          ((#:tests? _ #f)
-           #f)))
-       ((gnu)
-        (substitute-keyword-arguments arguments
-          ((#:make-flags flags #~'())
-           (with-imported-modules '((loftix transform))
-             #~((@ (loftix transform) append-make-flag)
-                #$flags
-                '(("LDFLAGS" "-static")))))
-          ((#:tests? _ #f)
-           #f)))))))
-
 (define-public coreutils-static-8.27 (static coreutils-8.27))
 (define-public coreutils-static-8.26-sans-4954f79
   (static coreutils-8.26-sans-4954f79))
@@ -275,25 +324,6 @@
 (define-public jasper-1.900.19
   (jasper-at-version "1.900.19"
                      "0dm3k0wdny3s37zxm9s9riv46p69c14bnn532fv6cv5b6l1b0pwb"))
-
-(define (with-ubsan base)
-  (package
-    (inherit base)
-    (name (string-append (package-name base) "-with-ubsan"))
-    (arguments
-     (case (build-system-name (package-build-system base))
-       ((gnu)
-        (substitute-keyword-arguments arguments
-          ((#:make-flags flags #~'())
-           (with-imported-modules '((loftix transform))
-             #~((@ (loftix transform) append-make-flag)
-                #$flags
-                '(("CFLAGS"
-                   "-fsanitize=undefined -fno-sanitize-recover=undefined"
-                   "-O2 -g")
-                  ("LDFLAGS" "-fsanitize=undefined")))))
-          ((#:tests? _ #f)
-           #f)))))))
 
 (define-public jasper-with-ubsan-1.900.19
   (with-ubsan jasper-1.900.19))
