@@ -50,7 +50,7 @@
              (url "https://github.com/UNIST-LOFT/loftix")
              (commit "283f5a8c681e818c3ed0e3a4f6e86d5338f9d330")))
        (sha256
-        (base32 "01hk0q3wj9kpq90zp3cg3z519gcp1p00rjsq6xzfsdjbndrrn3qi"))))
+        (base32 "15ipcj5amfcwjp6nzhm2296ka613k9sa0h9w9alhqgzxi1mhipg7"))))
     (build-system copy-build-system)
     (arguments (list #:install-plan #~'(("bugs/cve" "share/bux/cve"))))
     (home-page "https://github.com/UNIST-LOFT/loftix")
