@@ -36,8 +36,7 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils)
-  #:use-module (srfi srfi-1))
+  #:use-module (guix utils))
 
 (define-public bux
   (package
