@@ -36,7 +36,8 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils))
+  #:use-module (guix utils)
+  #:use-module ((srfi srfi-1) #:select (alist-delete)))
 
 (define-public bux
   (package
