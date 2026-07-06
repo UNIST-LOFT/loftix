@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-FileCopyrightText: 2016 Ludovic Courtès
 ;;; SPDX-FileCopyrightText: 2019 Rutger Helling
-;;; SPDX-FileCopyrightText: 2025 Nguyễn Gia Phong
+;;; SPDX-FileCopyrightText: 2025-2026 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix emulation)
@@ -83,26 +83,49 @@
   (let ((base-version "4.1.1")
         (commit "e4de58e2eccec930efd2068b0f0ceadeb0097aa7")
         (revision "0"))
-    (package
-      (inherit qemu-for-fuzzolic)
-      (name "qemu-for-binradar")
-      (version (git-version base-version revision commit))
-      (home-page "https://github.com/UNIST-LOFT/qemu")
-      (source
-       (origin
-         (method url-fetch)
-         (uri (string-append "https://download.qemu.org/qemu-"
-                             base-version ".tar.xz"))
-         (sha256
-          (base32 "1lm1jndfpc5sydwrxyiz5sms414zkcg9jdl0zx318qbjsayxnvzd"))
-         (patches
-          (cons
-            (origin
-              (method url-fetch)
-              (uri (string-append home-page "/compare/v" base-version
-                                  ".." commit ".diff"))
-              (sha256
-               (base32 "0xqpfpj5w6zlwvarbgkr7d3j3hrq63v81gm7mjjy8l75gzqg4v86"))
-              (file-name (string-append name ".patch")))
-            (search-patches
-             "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch"))))))))
+    (hidden-package
+      (package
+        (inherit qemu-for-fuzzolic)
+        (name "qemu-for-binradar")
+        (version (git-version base-version revision commit))
+        (home-page "https://github.com/UNIST-LOFT/qemu")
+        (source
+         (origin
+           (method url-fetch)
+           (uri (string-append "https://download.qemu.org/qemu-"
+                               base-version ".tar.xz"))
+           (sha256
+            (base32 "1lm1jndfpc5sydwrxyiz5sms414zkcg9jdl0zx318qbjsayxnvzd"))
+           (patches
+            (cons
+              (origin
+                (method url-fetch)
+                (uri (string-append home-page "/compare/v" base-version
+                                    ".." commit ".diff"))
+                (sha256
+                 (base32
+                  "0xqpfpj5w6zlwvarbgkr7d3j3hrq63v81gm7mjjy8l75gzqg4v86"))
+                (file-name (string-append name ".patch")))
+              (search-patches
+               "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch")))))))))
+
+(define-public qemu-for-aflplusplus-for-binradar
+  (let ((base-version "5.2.50")
+        (commit "e704c90c437569fa79c1e69fe7df468c71078294")
+        (revision "0"))
+    (hidden-package
+      (package
+        (inherit qemu-for-aflplusplus)
+        (name "qemu-for-aflplusplus-for-binradar")
+        (version (git-version base-version revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://github.com/UNIST-LOFT/qemu")
+                 (commit commit)
+                 (recursive? #t)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32
+             "0b08p5zbjhs0sqhv6gal48bhj1i8ysn2bpxzbsqviyiagc8qk86c"))))))))

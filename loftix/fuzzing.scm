@@ -234,9 +234,18 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
       (home-page home-page)
       (license license:gpl2+))))
 
+(define-public aflplusplus-for-binradar
+  (hidden-package
+    ;; FIXME: binradar needs a target address reach detection patch:
+    ;; https://github.com/hsh814/AFLplusplus/commit/4f7fc3727b39
+    (package/inherit aflplusplus
+      (inputs (modify-inputs inputs
+                (prepend qemu-for-aflplusplus-for-binradar)
+                (delete "qemu-for-aflplusplus"))))))
+
 (define-public binradar
-  (let ((commit "9f8f5f91206427a57eadb76bfa110879d0f50f8f")
-        (revision "0"))
+  (let ((commit "3e4a50cfa015d08852cb9eac460112a82606bc4c")
+        (revision "1"))
     (package
       (inherit fuzzolic)
       (name "binradar")
@@ -249,7 +258,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "01q2aqkh7jfcnpxqc1agcvbchkg4msl8sx2ml9r1sp9xy1adapyj"))
+          (base32 "0m1ckp780qwkspn8iycvwd3drngxc13n49a61855d4myvqqyrvdv"))
          (patches (search-patches "patches/binradar-python-package.patch"))))
       (arguments
        (substitute-keyword-arguments arguments
@@ -267,11 +276,23 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                     (("^(FIND_MODELS_BIN = ).*" _ assign)
                      (simple-format #f "~a~s\n"
                        assign (search-input-file
-                               inputs "bin/fuzzolic-find-models-addrs"))))))))
+                               inputs "bin/fuzzolic-find-models-addrs"))))
+                  (substitute* "fuzzolic/binradar_fuzzer.py"
+                    (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
+                     (search-input-file inputs "afl-fuzz")))
+                  (substitute* "fuzzolic/binradar_verifier.py"
+                    (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
+                     (simple-format #f "~a~s\n"
+                       assign (search-input-file
+                               inputs "bin/afl-qemu-trace"))))))))
          ((#:tests? _ #t)
           #f)))
       (inputs (modify-inputs inputs
-                (prepend python-sbsv python-sortedcontainers qemu-for-binradar)
+                (prepend aflplusplus-for-binradar
+                         python-sbsv
+                         python-sortedcontainers
+                         qemu-for-aflplusplus-for-binradar
+                         qemu-for-binradar)
                 (delete "qemu-for-fuzzolic")))
       (home-page "https://github.com/UNIST-LOFT/binradar")
       (synopsis "Binary patch verification tool")
