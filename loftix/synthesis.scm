@@ -107,7 +107,9 @@ from values in possitive and negative examples using a PAC learning algorithm.")
                           lhs
                           (search-input-file inputs "bin/civl")
                           "-maxdepth={maxdepth}"
-                          "{file}"))))))))
+                          "{file}"))))))
+             #:tests?
+             #f))                       ;no test
       (native-inputs (list python-setuptools))
       (inputs (list civl
                     java-asm
