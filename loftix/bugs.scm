@@ -351,7 +351,7 @@
     (version "1.7.1")
     (source
      (origin
-       (inherit (package-source jq))
+       (method url-fetch)
        (uri (string-append "https://github.com/jqlang/jq"
                            "/releases/download/jq-" version
                            "/jq-" version ".tar.gz"))
