@@ -239,6 +239,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     ;; FIXME: binradar needs a target address reach detection patch:
     ;; https://github.com/hsh814/AFLplusplus/commit/4f7fc3727b39
     (package/inherit aflplusplus
+      (name "aflplusplus-for-binradar")
       (inputs (modify-inputs inputs
                 (prepend qemu-for-aflplusplus-for-binradar)
                 (delete "qemu-for-aflplusplus"))))))
@@ -279,7 +280,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                                inputs "bin/fuzzolic-find-models-addrs"))))
                   (substitute* "fuzzolic/binradar_fuzzer.py"
                     (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
-                     (search-input-file inputs "afl-fuzz")))
+                     (simple-format #f "~s"
+                       (search-input-file inputs "bin/afl-fuzz"))))
                   (substitute* "fuzzolic/binradar_verifier.py"
                     (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
                      (simple-format #f "~a~s\n"
