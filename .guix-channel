@@ -1,4 +1,4 @@
 (channel
   (version 0)
   (name loftix)
-  (url "https://trong.loang.net/~cnx/loftix"))
+  (url "https://github.com/UNIST-LOFT/loftix"))
