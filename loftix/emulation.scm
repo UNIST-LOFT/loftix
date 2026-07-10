@@ -111,7 +111,7 @@
 
 (define-public qemu-for-aflplusplus-for-binradar
   (let ((base-version "5.2.50")
-        (commit "e704c90c437569fa79c1e69fe7df468c71078294")
+        (commit "231135d2b4662549fcfa15eb6e891beb136c7640")
         (revision "0"))
     (hidden-package
       (package
@@ -127,5 +127,6 @@
                  (recursive? #t)))
            (file-name (git-file-name name version))
            (sha256
-            (base32
-             "0b08p5zbjhs0sqhv6gal48bhj1i8ysn2bpxzbsqviyiagc8qk86c"))))))))
+            (base32 "12mj53v4c2v8d40c3c67rbrijjfnypwwggwn4db1d7s1ymghjski"))
+           (patches
+            (search-patches "patches/qemu-io-uring-2.2.patch"))))))))

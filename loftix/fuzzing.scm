@@ -241,8 +241,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (package/inherit aflplusplus
       (name "aflplusplus-for-binradar")
       (inputs (modify-inputs inputs
-                (prepend qemu-for-aflplusplus-for-binradar)
-                (delete "qemu-for-aflplusplus"))))))
+                (replace "qemu" qemu-for-aflplusplus-for-binradar))))))
 
 (define-public binradar
   (let ((commit "3e4a50cfa015d08852cb9eac460112a82606bc4c")
@@ -293,7 +292,6 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                 (prepend aflplusplus-for-binradar
                          python-sbsv
                          python-sortedcontainers
-                         qemu-for-aflplusplus-for-binradar
                          qemu-for-binradar)
                 (delete "qemu-for-fuzzolic")))
       (home-page "https://github.com/UNIST-LOFT/binradar")
