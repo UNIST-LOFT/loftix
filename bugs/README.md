@@ -80,6 +80,7 @@ of the proof-of-concept input files.
       guix shell binutils-with-asan@2.32
       readelf -a cve/2019/9077/hbo2
 
+
 ## GNU Core Utilities
 
 - #19784: [heap buffer overflow][gnu-19784]
@@ -102,6 +103,7 @@ of the proof-of-concept input files.
       guix shell coreutils-with-asan@8.27
       shred -n4 -s7 /dev/null  # or: $(xargs -0 -a gnu/26545/argv)
 
+
 ## JasPer
 
 - CVE-2016-8691: [divide-by-zero][jasper-22]
@@ -119,6 +121,7 @@ of the proof-of-concept input files.
       guix shell jasper-with-ubsan@1.900.19
       imginfo -f cve/2016/9557/signed-int-overflow.jp2
 
+
 ## jq
 
 - CVE-2023-50246: [heap buffer overflow][oss-fuzz-42530604]
@@ -133,7 +136,7 @@ of the proof-of-concept input files.
 
 - CVE-2024-23337: [signed integer overflow][jq-3262]
 
-      guix shell jq-with-ubsan@1.7.1 # or jq@1.7.1
+      guix shell jq@1.7.1
       jq -nf cve/2024/23337/3262.json
 
 - CVE-2024-53427: [stack buffer overflow][jq-3196]
@@ -148,12 +151,14 @@ of the proof-of-concept input files.
       jq -nf cve/2025/48060/3272.jq
       jq -nf cve/2025/48060/3327.jq
 
+
 ## libarchive
 
 - CVE-2016-5844: [signed integer overflow][libarchive-717]
 
       guix shell libarchive-with-ubsan@3.2.0
       bsdtar -tf cve/2016/5844/libarchive-signed-int-overflow.iso
+
 
 ## libjpeg-turbo
 
@@ -184,6 +189,7 @@ of the proof-of-concept input files.
       guix shell libjpeg-turbo-with-asan@2.0.1
       djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
 
+
 ## libming
 
 - CVE-2016-9265: [division by zero][oss-sec-20161110-9]
@@ -201,6 +207,7 @@ of the proof-of-concept input files.
 
       guix shell libming-with-asan@0.4.8
       swftophp cve/2018/8964/heap-use-after-free.swf
+
 
 ## libtiff
 
@@ -313,6 +320,7 @@ of the proof-of-concept input files.
       guix shell libtiff-with-ubsan@4.0.7
       tiffcp -i cve/2017/7601/shift-long.tiff /dev/null
 
+
 ## libxml2
 
 - CVE-2012-5134: [heap buffer overflow][chromium-40076524]
@@ -335,6 +343,7 @@ of the proof-of-concept input files.
       guix shell libxml2@2.9.4
       xmllint --recover cve/2017/5969/crash-libxml2-recover.xml
 
+
 ## potrace
 
 - CVE-2013-7437: [possible heap overflow][redhat-955808]
@@ -342,6 +351,7 @@ of the proof-of-concept input files.
       guix shell potrace@1.11
       potrace cve/2013/7437/1.bmp
       potrace cve/2013/7437/2.bmp
+
 
 ## ZZIPlib
 
