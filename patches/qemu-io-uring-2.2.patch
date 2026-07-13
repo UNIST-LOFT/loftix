@@ -1,0 +1,64 @@
+From 3053111e1c8e81bb7c52b8da6e2980143afec558 Mon Sep 17 00:00:00 2001
+From: Haiyue Wang <haiyue.wang@intel.com>
+Date: Tue, 22 Feb 2022 00:24:01 +0800
+Subject: [PATCH] aio-posix: fix build failure io_uring 2.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The io_uring fixed "Don't truncate addr fields to 32-bit on 32-bit":
+https://git.kernel.dk/cgit/liburing/commit/?id=d84c29b19ed0b130000619cff40141bb1fc3615b
+
+This leads to build failure:
+../util/fdmon-io_uring.c: In function ‘add_poll_remove_sqe’:
+../util/fdmon-io_uring.c:182:36: error: passing argument 2 of ‘io_uring_prep_poll_remove’ makes integer from pointer without a cast [-Werror=int-conversion]
+  182 |     io_uring_prep_poll_remove(sqe, node);
+      |                                    ^~~~
+      |                                    |
+      |                                    AioHandler *
+In file included from /root/io/qemu/include/block/aio.h:18,
+                 from ../util/aio-posix.h:20,
+                 from ../util/fdmon-io_uring.c:49:
+/usr/include/liburing.h:415:17: note: expected ‘__u64’ {aka ‘long long unsigned int’} but argument is of type ‘AioHandler *’
+  415 |           __u64 user_data)
+      |           ~~~~~~^~~~~~~~~
+cc1: all warnings being treated as errors
+
+Use LIBURING_HAVE_DATA64 to check whether the io_uring supports 64-bit
+variants of the get/set userdata, to convert the parameter to the right
+data type.
+
+uintptr_t, or unsigned long which is equivalent on Linux I32LP64 systems,
+is an unsigned type and there is no need to further cast to __u64 which is
+another unsigned integer type; widening casts from unsigned integers
+zero-extend the value.
+
+Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+Message-Id: <20220221162401.45415-1-haiyue.wang@intel.com>
+Signed-off-by: Stefan Hajnoczi <stefanha@redhat.com>
+References: https://lists.nongnu.org/archive/html/qemu-devel/2022-02/msg04587.html
+References: 8a947c7a586e ("aio-posix: fix build failure io_uring 2.2")
+Co-authored-by: Paolo Bonzini <pbonzini@redhat.com>
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+References: https://lists.nongnu.org/archive/html/qemu-devel/2024-01/msg03580.html
+References: 592d0bc0302f ("remove unnecessary casts from uintptr_t")
+---
+ util/fdmon-io_uring.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/util/fdmon-io_uring.c b/util/fdmon-io_uring.c
+index 1461dfa40743b..ea5c9d2dc07e8 100644
+--- a/util/fdmon-io_uring.c
++++ b/util/fdmon-io_uring.c
+@@ -179,7 +179,11 @@ static void add_poll_remove_sqe(AioContext *ctx, AioHandler *node)
+ {
+     struct io_uring_sqe *sqe = get_sqe(ctx);
+ 
++#ifdef LIBURING_HAVE_DATA64
++    io_uring_prep_poll_remove(sqe, (uintptr_t)node);
++#else
+     io_uring_prep_poll_remove(sqe, node);
++#endif
+ }
+ 
+ /* Add a timeout that self-cancels when another cqe becomes ready */
