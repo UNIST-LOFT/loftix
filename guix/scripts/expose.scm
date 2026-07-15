@@ -4,6 +4,7 @@
 
 (define-module (guix scripts expose)
   #:use-module (gnu packages)
+  #:use-module (guix derivations)
   #:use-module (guix packages)
   #:use-module (guix scripts)
   #:use-module ((guix scripts build)
@@ -284,7 +285,7 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
     (unless bug (leave (G_ "'~a' is not a supported bug~%")
                        id))
     (with-store store
-      (let* ((bux (package-output store (specification->package "bux")))
+      (let* ((bux (specification->package "bux"))
              (name (cond (static? (string-append (caar bug) "-static"))
                          (san? (string-join (cons (caar bug)
                                                   (cddar bug))
@@ -292,13 +293,22 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
                          (else (caar bug))))
              (version (cadar bug))
              (spec (simple-format #f "~a@~a" name version))
-             (out (package-output store (specification->package spec))))
-        (build-things store (list bux out))
+             (out (specification->package spec)))
+        (build-things store
+          (map (lambda (pkg)
+                 (derivation-file-name (package-derivation store pkg)))
+               (list bux out)))
         (for-each (lambda (cmd)
-                    (let ((prog (string-append out "/bin/" (car cmd)))
+                    (let ((prog (string-append
+                                 (package-output store out)
+                                 "/bin/"
+                                 (car cmd)))
                           (rest (cadr cmd)))
                       (for-each (lambda (poc)
                                   (proc prog rest
-                                        (string-append bux "/share/bux/" poc)))
+                                        (string-append
+                                         (package-output store bux)
+                                         "/share/bux/"
+                                         poc)))
                                 (cddr cmd))))
                 (cdr bug))))))
