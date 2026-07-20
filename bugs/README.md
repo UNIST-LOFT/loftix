@@ -152,6 +152,11 @@ of the proof-of-concept input files.
       jq -nf cve/2025/48060/3327.jq
 
 
+## LAME
+
+- [CVE-2015-9101](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=777161)
+
+
 ## libarchive
 
 - CVE-2016-5844: [signed integer overflow][libarchive-717]
@@ -188,11 +193,6 @@ of the proof-of-concept input files.
 
       guix shell libjpeg-turbo-with-asan@2.0.1
       djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
-
-
-## LAME
-
-- [CVE-2015-9101](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=777161)
 
 
 ## libming
