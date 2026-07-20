@@ -79,22 +79,37 @@
                    (mkdir-p dir)
                    (copy-file "afl-showmap" file)))))))))))
 
-(define-public fuzzolic
-  (let* ((base-name "fuzzolic")
-         (commit "39937821d5360b139f026f09e2019f214a4929c1")
-         (revision "0")
-         (version (git-version "0" revision commit))
-         (base-source
-          (origin
-            (method git-fetch)
-            (uri (git-reference
-                  (url "https://github.com/season-lab/fuzzolic")
-                  (commit commit)))
-            (file-name (git-file-name base-name version))
-            (sha256
-             (base32
-              "0wh452qzia97i34hvxjj8x38wb9h6x51zsjkzdvpfpj5zbpdv495"))))
-         (description "FUZZOLIC is a concolic executor based on QEMU.
+(define-public fuzzolic-solver
+  (let ((commit "39937821d5360b139f026f09e2019f214a4929c1")
+        (revision "0"))
+    (package
+      (name "fuzzolic-solver")
+      (version (git-version "0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/season-lab/fuzzolic")
+               (commit commit)))
+         (file-name (git-file-name "fuzzolic" version))
+         (sha256
+          (base32
+           "0wh452qzia97i34hvxjj8x38wb9h6x51zsjkzdvpfpj5zbpdv495"))
+         (patches (search-patches
+                   "patches/fuzzolic-solver-unbundle.patch"
+                   "patches/fuzzolic-solver-install.patch"))))
+      (build-system cmake-build-system)
+      (arguments '(#:configure-flags '("-S" "../source/solver")
+                   #:tests? #f))
+      (native-inputs (list pkg-config))
+      (inputs (list fuzzy-sat
+                    glib
+                    qemu-for-fuzzolic
+                    xxhash
+                    z3-for-fuzzolic))
+      (home-page "https://season-lab.github.io/fuzzolic")
+      (synopsis "Fuzzy constraint solver for FUZZOLIC")
+      (description "FUZZOLIC is a concolic executor based on QEMU.
 
 It can instrument binary programs at runtime in order to build
 symbolic expressions and queries.  To reduce the runtime overhead
@@ -107,63 +122,40 @@ FUZZOLIC runs the solver component, which reasons over the symbolic queries
 generated when analyzing a program, inside another process to reduce
 execution interferences that may be caused by the solver
 and negatively affect the analyzed application.")
-         (home-page "https://season-lab.github.io/fuzzolic")
-         (solver
-          (package
-            (name (string-append base-name "-solver"))
-            (version version)
-            (source (origin
-                      (inherit base-source)
-                      (patches (search-patches
-                                "patches/fuzzolic-solver-unbundle.patch"
-                                "patches/fuzzolic-solver-install.patch"))))
-            (build-system cmake-build-system)
-            (arguments '(#:configure-flags '("-S" "../source/solver")
-                         #:tests? #f))
-            (native-inputs (list pkg-config))
-            (inputs (list fuzzy-sat
-                          glib
-                          qemu-for-fuzzolic
-                          xxhash
-                          z3-for-fuzzolic))
-            (synopsis "Fuzzy constraint solver for FUZZOLIC")
-            (description description)
-            (home-page home-page)
-            (license license:gpl2+)))
-         (utils
-          (package
-            (name (string-append base-name "-utils"))
-            (version version)
-            (source (origin
-                      (inherit base-source)
-                      (patches (search-patches
-                                "patches/fuzzolic-utils-make.patch"))))
-            (build-system gnu-build-system)
-            (arguments
-             (list #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
-                                        (string-append "PREFIX=" #$output))
-                   #:phases #~(modify-phases %standard-phases
-                                (delete 'configure)
-                                (delete 'check))))
-            (inputs (list python))
-            (synopsis "Fuzzy constraint solver for FUZZOLIC")
-            (description description)
-            (home-page home-page)
-            (license license:gpl2+))))
-    (package
-      (name base-name)
-      (version version)
-      (source (origin
-                (inherit base-source)
-                (snippet #~(call-with-output-file "pyproject.toml"
-                             (lambda (port)
-                               (simple-format port "
+      (license license:gpl2+))))
+
+(define-public fuzzolic-utils
+  (package/inherit fuzzolic-solver
+    (name "fuzzolic-utils")
+    (source
+     (origin
+       (inherit (package-source fuzzolic-solver))
+       (patches (search-patches "patches/fuzzolic-utils-make.patch"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
+                                (string-append "PREFIX=" #$output))
+           #:phases #~(modify-phases %standard-phases
+                        (delete 'configure)
+                        (delete 'check))))
+    (inputs (list python))
+    (synopsis "Fuzzy constraint solver for FUZZOLIC")))
+
+(define-public fuzzolic
+  (package/inherit fuzzolic-solver
+    (name "fuzzolic")
+    (source
+     (origin
+       (inherit (package-source fuzzolic-solver))
+       (snippet #~(call-with-output-file "pyproject.toml"
+                    (lambda (port)
+                      (simple-format port "
 [build-system]
 requires = ['flit_core >=3.2']
 build-backend = 'flit_core.buildapi'
 
 [project]
-name = ~s
+name = 'fuzzolic'
 version = '0'
 description = '''~a
 '''
@@ -171,68 +163,65 @@ description = '''~a
 [project.scripts]
 fuzzolic = 'fuzzolic.fuzzolic:main'
 fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
-" #$base-name #$description))))
-                (patches (search-patches
-                          "patches/fuzzolic-python-package.patch"
-                          "patches/fuzzolic-relax-perf-test.patch"
-                          "patches/fuzzolic-test-fix-runner.patch"
-                          "patches/fuzzolic-test-skip-nondeterministic.patch"))))
-      (build-system pyproject-build-system)
-      (arguments
-       (list
-        #:phases
-        #~(modify-phases %standard-phases
-            (add-after 'unpack 'patch-paths
-              (lambda* (#:key inputs #:allow-other-keys)
-                (substitute* "fuzzolic/executor.py"
-                  (("^(SOLVER_SMT_BIN = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/solver-smt")))
-                  (("^(SOLVER_FUZZY_BIN = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/solver-fuzzy")))
-                  (("\\<SCRIPT_DIR \\+ \"/find_models_addrs\\.py\"")
-                   (simple-format #f "~s" (search-input-file inputs
-                                           "bin/fuzzolic-find-models-addrs"))))
-                (substitute* '("fuzzolic/executor.py"
-                               "fuzzolic/minimizer.py"
-                               "fuzzolic/testcase_checker.py")
-                  (("^(TRACER_BIN = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/qemu-x86_64"))))
-                (substitute* "fuzzolic/minimizer_qsym.py"
-                  (("^( +self\\.showmap = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/afl-showmap")))
-                  (("^( +self\\.showmap_fork = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/fuzzolic-showmap")))
-                  (("\\<SCRIPT_DIR \\+ '.+/merge_bitmap'")
-                   (simple-format #f "~s" (search-input-file inputs
-                                           "bin/fuzzolic-merge-bitmap"))))
-                (substitute* "fuzzolic/run_afl_fuzzolic.py"
-                  (("^(AFL_BIN = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/afl-fuzz")))
-                  (("^(FUZZOLIC_BIN = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (string-append #$output "/bin/afl-fuzz"))))))
-            (replace 'check
-              (lambda* (#:key tests? #:allow-other-keys)
-                (when tests?
-                  (invoke "make" "-C" "tests")
-                  (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
-                  (invoke "pytest" "-vv" "tests/run.py")))))))
-      (native-inputs (list python-flit-core python-pytest))
-      (inputs (list aflplusplus
-                    fuzzolic-showmap
-                    qemu-for-fuzzolic
-                    solver
-                    utils))
-      (synopsis "Concolic fuzzer")
-      (description description)
-      (home-page home-page)
-      (license license:gpl2+))))
+" #$(package-description fuzzolic-solver)))))
+       (patches (search-patches
+                 "patches/fuzzolic-python-package.patch"
+                 "patches/fuzzolic-relax-perf-test.patch"
+                 "patches/fuzzolic-test-fix-runner.patch"
+                 "patches/fuzzolic-test-skip-nondeterministic.patch"))))
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'patch-paths
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "fuzzolic/executor.py"
+                (("^(SOLVER_SMT_BIN = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (search-input-file inputs "bin/solver-smt")))
+                (("^(SOLVER_FUZZY_BIN = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (search-input-file inputs "bin/solver-fuzzy")))
+                (("\\<SCRIPT_DIR \\+ \"/find_models_addrs\\.py\"")
+                 (simple-format #f "~s" (search-input-file inputs
+                                         "bin/fuzzolic-find-models-addrs"))))
+              (substitute* '("fuzzolic/executor.py"
+                             "fuzzolic/minimizer.py"
+                             "fuzzolic/testcase_checker.py")
+                (("^(TRACER_BIN = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (search-input-file inputs "bin/qemu-x86_64"))))
+              (substitute* "fuzzolic/minimizer_qsym.py"
+                (("^( +self\\.showmap = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (search-input-file inputs "bin/afl-showmap")))
+                (("^( +self\\.showmap_fork = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (search-input-file inputs "bin/fuzzolic-showmap")))
+                (("\\<SCRIPT_DIR \\+ '.+/merge_bitmap'")
+                 (simple-format #f "~s" (search-input-file inputs
+                                         "bin/fuzzolic-merge-bitmap"))))
+              (substitute* "fuzzolic/run_afl_fuzzolic.py"
+                (("^(AFL_BIN = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (search-input-file inputs "bin/afl-fuzz")))
+                (("^(FUZZOLIC_BIN = ).*" _ assign)
+                 (simple-format #f "~a~s\n"
+                   assign (string-append #$output "/bin/afl-fuzz"))))))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "make" "-C" "tests")
+                (invoke "pytest" "-vv" "tests/run.py" "--fuzzy")
+                (invoke "pytest" "-vv" "tests/run.py")))))))
+    (native-inputs (list python-flit-core python-pytest))
+    (inputs (list aflplusplus
+                  fuzzolic-showmap
+                  fuzzolic-solver
+                  fuzzolic-utils
+                  qemu-for-fuzzolic))
+    (synopsis "Concolic fuzzer")))
 
 (define-public aflplusplus-for-binradar
   (hidden-package
