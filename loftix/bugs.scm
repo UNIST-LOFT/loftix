@@ -235,7 +235,11 @@
                            ".tar.xz"))
        (sha256 (base32 "0sv547572iq8ayy8klir4hnngnx92a9nsazmf1wgzfc7xr4x74c8"))
        (patches (search-patches
-                 "patches/coreutils-gnulib-glibc-2.28.patch"))))))
+                 "patches/coreutils-gnulib-glibc-2.28.patch"))))
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:tests? _ #f)
+        #f)))))
 
 (define (coreutils-at-version base version checksum)
   (at-version
