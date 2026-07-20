@@ -101,6 +101,12 @@
        "cve/2024/53427/3246.json"))
      (("CVE-2025-48060" "1.7.1" "asan")
       ("jq" "-nf ~a" "cve/2025/48060/3272.jq" "cve/2025/48060/3327.jq")))
+    ("lame"
+     (("CVE-2015-9101" "3.99.5")
+      ("lame" "~a /dev/null"
+       "cve/2015/9101/crash.wav"
+       "cve/2015/9101/test09.wav"
+       "cve/2015/9101/test11.wav")))
     ("libarchive"
      (("CVE-2016-5844" "3.2.0" "ubsan")
       ("bsdtar" "-tf ~a" "cve/2016/5844/libarchive-signed-int-overflow.iso")))

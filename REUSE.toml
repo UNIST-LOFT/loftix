@@ -31,6 +31,17 @@ SPDX-FileCopyrightText = 'William Robinet'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2015/9101/crash.wav'
+SPDX-FileCopyrightText = 'Jakub Wilk'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = [ 'bugs/cve/2015/9101/test09.wav',
+         'bugs/cve/2015/9101/test11.wav' ]
+SPDX-FileCopyrightText = 'Brian Carpenter'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = [ 'bugs/cve/2016/1838/attachment_316158',
          'bugs/cve/2016/1839/asan_heap-oob' ]
 SPDX-FileCopyrightText = 'Mateusz Jurczyk'

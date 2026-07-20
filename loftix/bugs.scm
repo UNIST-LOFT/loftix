@@ -22,6 +22,7 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages mp3)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
@@ -375,6 +376,19 @@
 (define-public jq-with-asan-1.7.0 (with-asan jq-1.7.0))
 (define-public jq-with-ubsan-1.7.1 (with-ubsan jq-1.7.1))
 (define-public jq-with-ubsan-1.7.0 (with-ubsan jq-1.7.0))
+
+(define-public lame-3.99.5
+  (package
+    (inherit lame)
+    (version "3.99.5")
+    (source
+     (origin
+       (method url-fetch)
+       (uri "mirror://sourceforge/lame/lame/3.99/lame-3.99.5.tar.gz")
+       (sha256
+        (base32 "1zr3kadv35ii6liia0bpfgxpag27xcivp571ybckpbz4b10nnd14"))))))
+
+(define-public lame-static-3.99.5 (static lame-3.99.5))
 
 (define-public libarchive-3.2.0
   (package
