@@ -190,6 +190,11 @@ of the proof-of-concept input files.
       djpeg -colors 256 -bmp cve/2018/19664/heap-buffer-overflow-2.jpg
 
 
+## LAME
+
+- [CVE-2015-9101](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=777161)
+
+
 ## libming
 
 - CVE-2016-9265: [division by zero][oss-sec-20161110-9]
