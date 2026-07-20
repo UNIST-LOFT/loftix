@@ -208,6 +208,7 @@ SPDX-License-Identifier = 'CC0-1.0'
 [[annotations]]
 path = [ 'patches/binradar-python-package.patch',
          'patches/binradar-solver-unbundle.patch',
+         'patches/binradar-utils-make.patch',
          'patches/fuzzy-sat-install.patch',
          'patches/fuzzy-sat-unbundle.patch',
          'patches/fuzzolic-install.patch',

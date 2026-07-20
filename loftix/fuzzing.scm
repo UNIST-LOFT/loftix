@@ -140,7 +140,7 @@ and negatively affect the analyzed application.")
                         (delete 'configure)
                         (delete 'check))))
     (inputs (list python))
-    (synopsis "Fuzzy constraint solver for FUZZOLIC")))
+    (synopsis "CLI utilities for FUZZOLIC")))
 
 (define-public fuzzolic
   (package/inherit fuzzolic-solver
@@ -252,63 +252,69 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
                           "patches/fuzzolic-solver-install.patch"))))
-      (inputs (modify-inputs inputs (prepend c-sbsv))))))
+      (inputs (modify-inputs inputs (prepend c-sbsv)))
+      (synopsis "Fuzzy constraint solver for BinRadar"))))
+
+(define-public binradar-utils
+  (package
+    (inherit fuzzolic-utils)
+    (name "binradar-utils")
+    (version (package-version binradar-solver))
+    (source
+     (origin
+       (inherit (package-source binradar-solver))
+       (patches (search-patches "patches/binradar-utils-make.patch"))))
+    (synopsis "CLI utilities for BinRadar")))
 
 (define-public binradar
-  (let ((commit "3e4a50cfa015d08852cb9eac460112a82606bc4c")
-        (revision "1"))
-    (package
-      (inherit fuzzolic)
-      (name "binradar")
-      (version (git-version "0.1.0" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/UNIST-LOFT/binradar")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (sha256
-          (base32 "0m1ckp780qwkspn8iycvwd3drngxc13n49a61855d4myvqqyrvdv"))
-         (patches (search-patches "patches/binradar-python-package.patch"))))
-      (arguments
-       (substitute-keyword-arguments arguments
-         ((#:phases phases #~%standard-phases)
-          #~(modify-phases #$phases
-              (add-after 'patch-paths 'patch-more-paths
-                (lambda* (#:key inputs #:allow-other-keys)
-                  (substitute* "fuzzolic/binradar.py"
-                    (("^(SOLVER_SMT_BIN = ).*" _ assign)
-                     (simple-format #f "~a~s\n"
-                       assign (search-input-file inputs "bin/solver-smt")))
-                    (("^(TRACER_BIN = ).*" _ assign)
-                     (simple-format #f "~a~s\n"
-                       assign (search-input-file inputs "bin/qemu-x86_64")))
-                    (("^(FIND_MODELS_BIN = ).*" _ assign)
-                     (simple-format #f "~a~s\n"
-                       assign (search-input-file
-                               inputs "bin/fuzzolic-find-models-addrs"))))
-                  (substitute* "fuzzolic/binradar_fuzzer.py"
-                    (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
-                     (simple-format #f "~s"
-                       (search-input-file inputs "bin/afl-fuzz"))))
-                  (substitute* "fuzzolic/binradar_verifier.py"
-                    (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
-                     (simple-format #f "~a~s\n"
-                       assign (search-input-file
-                               inputs "bin/afl-qemu-trace"))))))))
-         ((#:tests? _ #t)
-          #f)))
-      (inputs (modify-inputs inputs
-                (prepend aflplusplus-for-binradar
-                         binradar-solver
-                         python-sbsv
-                         python-sortedcontainers
-                         qemu-for-binradar)
-                (delete "fuzzolic-solver"
-                        "qemu-for-fuzzolic")))
-      (home-page "https://github.com/UNIST-LOFT/binradar")
-      (synopsis "Binary patch verification tool")
-      (description
-       "Binradar is a binary patch verification tool
-using PoC-bounded under-constrained concolic execution."))))
+  (package
+    (inherit fuzzolic)
+    (name "binradar")
+    (version (package-version binradar-solver))
+    (source
+     (origin
+       (inherit (package-source binradar-solver))
+       (patches (search-patches "patches/binradar-python-package.patch"))))
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-after 'patch-paths 'patch-more-paths
+              (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* "fuzzolic/binradar.py"
+                  (("^(SOLVER_SMT_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/solver-smt")))
+                  (("^(TRACER_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/qemu-x86_64")))
+                  (("^(FIND_MODELS_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file
+                             inputs "bin/fuzzolic-find-models-addrs"))))
+                (substitute* "fuzzolic/binradar_fuzzer.py"
+                  (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
+                   (simple-format #f "~s"
+                     (search-input-file inputs "bin/afl-fuzz"))))
+                (substitute* "fuzzolic/binradar_verifier.py"
+                  (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file
+                             inputs "bin/afl-qemu-trace"))))))))
+       ((#:tests? _ #t)
+        #f)))
+    (inputs (modify-inputs inputs
+              (prepend aflplusplus-for-binradar
+                       binradar-solver
+                       binradar-utils
+                       python-sbsv
+                       python-sortedcontainers
+                       qemu-for-binradar)
+              (delete "fuzzolic-solver"
+                      "fuzzolic-utils"
+                      "qemu-for-fuzzolic")))
+    (home-page "https://github.com/UNIST-LOFT/binradar")
+    (synopsis "Binary patch verification tool")
+    (description
+     "Binradar is a binary patch verification tool
+using PoC-bounded under-constrained concolic execution.")))
