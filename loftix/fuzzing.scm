@@ -252,7 +252,11 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
                           "patches/fuzzolic-solver-install.patch"))))
-      (inputs (modify-inputs inputs (prepend c-sbsv)))
+      (inputs
+       (modify-inputs inputs
+         (prepend c-sbsv
+                  qemu-for-binradar)
+         (delete "qemu-for-fuzzolic")))
       (synopsis "Fuzzy constraint solver for BinRadar"))))
 
 (define-public binradar-utils

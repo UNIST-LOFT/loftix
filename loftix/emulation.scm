@@ -81,8 +81,8 @@
 
 (define-public qemu-for-binradar
   (let ((base-version "4.1.1")
-        (commit "e4de58e2eccec930efd2068b0f0ceadeb0097aa7")
-        (revision "0"))
+        (commit "a63b8d60cb7fe3e592ebcc125bb2cbb3fdf4b330")
+        (revision "1"))
     (hidden-package
       (package
         (inherit qemu-for-fuzzolic)
@@ -97,17 +97,15 @@
            (sha256
             (base32 "1lm1jndfpc5sydwrxyiz5sms414zkcg9jdl0zx318qbjsayxnvzd"))
            (patches
-            (cons
-              (origin
-                (method url-fetch)
-                (uri (string-append home-page "/compare/v" base-version
-                                    ".." commit ".diff"))
-                (sha256
-                 (base32
-                  "0xqpfpj5w6zlwvarbgkr7d3j3hrq63v81gm7mjjy8l75gzqg4v86"))
-                (file-name (string-append name ".patch")))
-              (search-patches
-               "patches/qemu-for-fuzzolic-test-opts-range-beyond.patch")))))))))
+            (list
+             (origin
+               (method url-fetch)
+               (uri (string-append home-page "/compare/v" base-version
+                                   ".." commit ".diff"))
+               (sha256
+                (base32
+                 "1w7g56jz5pll63fgg85avknbrva8wg9f7hixgd12jwflzgz1y3dm"))
+               (file-name (string-append name ".patch")))))))))))
 
 (define-public qemu-for-aflplusplus-for-binradar
   (let ((base-version "5.2.50")
