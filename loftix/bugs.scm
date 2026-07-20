@@ -43,15 +43,15 @@
 (define-public bux
   (package
     (name "bux")
-    (version "2026.07.20")
+    (version "2026.07.21")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/UNIST-LOFT/loftix")
-             (commit "fbdd814fb1f2602712956647453ce4346cd7de00")))
+             (commit "d3f38b809a35203b4841d5cfc89810303a548d84")))
        (sha256
-        (base32 "0n1h5n0ydlzwv6xp08lqa7vxx858dz5fsyyqsmrzcv7m7dlny2l2"))))
+        (base32 "1sbswapy98fmmy38nxxdmmr8x14zlh8ypz8cjsivrfkhqbll7j78"))))
     (build-system copy-build-system)
     (arguments (list #:install-plan #~'(("bugs/cve" "share/bux/cve"))))
     (home-page "https://github.com/UNIST-LOFT/loftix")
