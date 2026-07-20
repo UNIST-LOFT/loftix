@@ -191,7 +191,9 @@
        ("xmllint" "--recover ~a" "cve/2017/5969/crash-libxml2-recover.xml")))
     ("potrace"
      (("CVE-2013-7437" "1.11")
-      ("potrace" "~a" "cve/2013/7437/1.bmp" "cve/2013/7437/2.bmp")))
+      ("potrace" "-o /dev/null ~a"
+       "cve/2013/7437/1.bmp"
+       "cve/2013/7437/2.bmp")))
     ("zziplib"
      (("CVE-2017-5974" "0.13.62" "asan")
       ("unzzipcat-mem" "~a" "cve/2017/5974/heap-overflow.zip"))
