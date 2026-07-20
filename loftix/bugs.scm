@@ -263,7 +263,7 @@
        (patches (append (origin-patches (package-source base))
                         (map search-patch patches)))))))
 
-(define coreutils-8.26-sans-4954f79
+(define-public coreutils-8.26-sans-4954f79
   (with-patches (package
                   (inherit coreutils-8.26)
                   (version "8.26-sans-4954f79"))
