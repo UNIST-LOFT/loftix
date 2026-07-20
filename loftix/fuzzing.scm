@@ -5,6 +5,7 @@
 
 (define-module (loftix fuzzing)
   #:use-module (gnu packages)
+  #:use-module (gnu packages c)
   #:use-module (gnu packages check)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages debug)
@@ -232,6 +233,27 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
       (inputs (modify-inputs inputs
                 (replace "qemu" qemu-for-aflplusplus-for-binradar))))))
 
+(define-public binradar-solver
+  (let ((commit "3e4a50cfa015d08852cb9eac460112a82606bc4c")
+        (revision "1"))
+    (package
+      (inherit fuzzolic-solver)
+      (name "binradar-solver")
+      (version (git-version "0.1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/UNIST-LOFT/binradar")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "0m1ckp780qwkspn8iycvwd3drngxc13n49a61855d4myvqqyrvdv"))
+         (patches
+          (search-patches "patches/binradar-solver-unbundle.patch"
+                          "patches/fuzzolic-solver-install.patch"))))
+      (inputs (modify-inputs inputs (prepend c-sbsv))))))
+
 (define-public binradar
   (let ((commit "3e4a50cfa015d08852cb9eac460112a82606bc4c")
         (revision "1"))
@@ -279,10 +301,12 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
           #f)))
       (inputs (modify-inputs inputs
                 (prepend aflplusplus-for-binradar
+                         binradar-solver
                          python-sbsv
                          python-sortedcontainers
                          qemu-for-binradar)
-                (delete "qemu-for-fuzzolic")))
+                (delete "fuzzolic-solver"
+                        "qemu-for-fuzzolic")))
       (home-page "https://github.com/UNIST-LOFT/binradar")
       (synopsis "Binary patch verification tool")
       (description
