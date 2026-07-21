@@ -121,6 +121,11 @@ of the proof-of-concept input files.
       guix shell jasper-with-ubsan@1.900.19
       imginfo -f cve/2016/9557/signed-int-overflow.jp2
 
+- CVE-2016-9560: [stack overflow][jasper-85]
+
+      guix shell jasper@1.900.19
+      imginfo -f cve/2016/9560/stackoverflow.jp2
+
 
 ## jq
 
@@ -419,6 +424,7 @@ of the proof-of-concept input files.
 [jasper-22]: https://github.com/jasper-software/jasper/issues/22
 [jasper-49]: https://github.com/jasper-software/jasper/issues/49
 [jasper-67]: https://github.com/jasper-software/jasper/issues/67
+[jasper-85]: https://github.com/jasper-software/jasper/issues/85
 [jq-2968]: https://github.com/jqlang/jq/issues/2968
 [jq-3196]: https://github.com/jqlang/jq/issues/3196
 [jq-3262]: https://github.com/jqlang/jq/issues/3262

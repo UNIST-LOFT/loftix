@@ -87,7 +87,9 @@
      (("CVE-2016-9387" "1.900.5")
       ("imginfo" "-f ~a" "cve/2016/9387/jas_matrix.jp2"))
      (("CVE-2016-9557" "1.900.19" "ubsan")
-      ("imginfo" "-f ~a" "cve/2016/9557/signed-int-overflow.jp2")))
+      ("imginfo" "-f ~a" "cve/2016/9557/signed-int-overflow.jp2"))
+     (("CVE-2016-9560" "1.900.19")
+      ("imginfo" "-f ~a" "cve/2016/9560/stackoverflow.jp2")))
     ("jq"
      (("CVE-2023-50246" "1.7.0" "asan")
       ("jq" ". ~a" "cve/2023/50246/heap-buffer-overflow.json"))
