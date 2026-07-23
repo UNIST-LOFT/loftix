@@ -32,6 +32,10 @@ Then run `guix pull`.
 
 - [civl]: Concurrency Intermediate Verification Language
 
+### Static Analysis
+
+- [svf]: Static Value-Flow
+
 ### Synthesis
 
 - [python-pacfix]: PAC-learning-based program synthesizer
@@ -49,6 +53,7 @@ Then run `guix pull`.
 [binradar]: https://github.com/UNIST-LOFT/binradar
 [fuzzolic]: https://season-lab.github.io/fuzzolic
 [civl]: https://vsl.cis.udel.edu/civl
+[svf]: https://SVF-tools.github.io/SVF
 [e9patch]: https://github.com/GJDuck/e9patch
 [python-pacfix]: https://github.com/hsh814/pacfix-python
 [syminfer]: https://github.com/dynaroars/dig
