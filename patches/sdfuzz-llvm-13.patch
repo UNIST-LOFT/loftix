@@ -1,0 +1,31 @@
+Fix LLVM 13 API changes in afl-llvm-pass.so.cc
+
+--- a/llvm_mode/afl-llvm-pass.so.cc
++++ b/llvm_mode/afl-llvm-pass.so.cc
+@@ -476,7 +476,7 @@
+       //debug << "module: " << M.getSourceFileName() << "\n";
+ 
+       bool has_BBs = false;
+-      std::string funcName = F.getName();
++      std::string funcName = F.getName().str();
+ 
+       /* Black list of function names */
+       if (isBlacklisted(&F)) {
+@@ -547,7 +547,7 @@
+             Twine t(newname);
+             SmallString<256> NameData;
+             StringRef NameRef = t.toStringRef(NameData);
+-            BB.setValueName(ValueName::Create(NameRef));
++            BB.setName(NameRef);
+           }
+ 
+           bbnames << BB.getName().str() << "\n";
+@@ -573,7 +573,7 @@
+         /* Print CFG */
+         std::string cfgFileName = dotfiles + "/cfg." + funcName + ".dot";
+         std::error_code EC;
+-        raw_fd_ostream cfgFile(cfgFileName, EC, sys::fs::F_None);
++        raw_fd_ostream cfgFile(cfgFileName, EC, sys::fs::OF_None);
+         if (!EC) {
+           WriteGraph(cfgFile, &F, true);
+         }
