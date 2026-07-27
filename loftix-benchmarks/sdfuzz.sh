@@ -324,12 +324,16 @@ resolve_missing_libs() {
 
     for lib in $missing; do
         local found
-        # Search in the ASan build tree first (project-internal libs).
-        # Use -type f -o -type l to catch both regular files and symlinks;
-        # libtool installs the real library as a versioned file (e.g.
-        # libjasper.so.1.0.0) and the SONAME as a symlink (libjasper.so.1).
-        found="$(find "$work_dir/build-asan" -name "$lib" \
-            \( -type f -o -type l \) -print -quit 2>/dev/null || true)"
+        # Search in the pass build directories first (project-internal libs
+        # compiled without ASan), then the ASan build directory.  This
+        # avoids picking up ASan-compiled shared libraries that have ASan
+        # runtime dependencies (e.g. __asan_option_detect_stack_use_after_return)
+        # which the distance-instrumented (non-ASan) binary can't resolve.
+        for bd in "$work_dir/build-pass2" "$work_dir/build-pass1" "$work_dir/build-asan"; do
+            found="$(find "$bd" -name "$lib" \
+                \( -type f -o -type l \) -print -quit 2>/dev/null || true)"
+            [[ -n "$found" ]] && break
+        done
         if [[ -z "$found" ]]; then
             # Fall back to all build dirs (excluding extracted source tree).
             found="$(find "$work_dir" -name "$lib" \
@@ -515,13 +519,23 @@ second_pass() {
         exit 1
     }
     cp "$built_binary" "$work_dir/$BINARY"
+    # Resolve shared library dependencies for the distance-instrumented
+    # binary (e.g. libjasper.so.1 for imginfo) so they can be found at
+    # fuzz time via runtime_library_path.
+    resolve_missing_libs "$work_dir/$BINARY"
     printf '[+] Distance-instrumented target written to %s\n' "$work_dir/$BINARY" >&2
 }
 
 run_fuzzer() {
     require_tools
     local -a test_args
-    [[ -x "$work_dir/$BINARY" ]] || second_pass
+    if [[ -x "$work_dir/$BINARY" ]]; then
+        # require_tools resets runtime_library_path, so re-discover
+        # shared library dependencies before running the fuzzer.
+        resolve_missing_libs "$work_dir/$BINARY"
+    else
+        second_pass
+    fi
     mkdir -p "$work_dir/in" "$work_dir/out"
     cp "$poc_path" "$work_dir/in/seed"
     read -r -a test_args <<< "$TEST_CMD"
