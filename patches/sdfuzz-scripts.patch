@@ -31,11 +31,18 @@ Use packaged tools and LLVM 13's legacy pass manager in genDistance.sh.
 -    ~/sdfuzz/temporal-specialization/SVF/Release-build/bin/wpa -print-fp -ander -dump-callgraph $fuzzer.0.0.preopt.bc
 -    mv ./indirect.txt $TMPDIR/
 +    rm -f ./indirect.txt
-+    if [ -n "${SDFUZZ_WPA:-}" ]; then
++    SDFUZZ_WPA="${SDFUZZ_WPA:-wpa}"
++    if command -v "$SDFUZZ_WPA" >/dev/null 2>&1; then
++      echo "($STEP) Running WPA pointer analysis ($SDFUZZ_WPA) for indirect-call resolution..."
 +      "$SDFUZZ_WPA" -print-fp -ander -dump-callgraph $fuzzer.0.0.preopt.bc
-+      mv ./indirect.txt $TMPDIR/
++      if [ -f ./indirect.txt ]; then
++        mv ./indirect.txt $TMPDIR/
++        echo "[+] WPA produced indirect.txt with resolved indirect calls."
++      else
++        echo "[!] WPA did not produce indirect.txt."
++      fi
 +    else
-+      echo "[!] SDFUZZ_WPA is unset; skipping indirect-call analysis."
++      echo "[!] SDFUZZ_WPA=$SDFUZZ_WPA not found; skipping indirect-call analysis."
 +    fi
 @@ -95 +110 @@
 -    while ! opt -dot-callgraph $fuzzer.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
