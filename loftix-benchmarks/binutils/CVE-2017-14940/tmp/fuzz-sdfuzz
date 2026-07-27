@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+# SDFuzz directed fuzzing for CVE-2017-14940
+# Two-pass workflow: extract BB info → compute distances → build with distance
+set -eo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${SCRIPT_DIR}/config-sdfuzz.env"
+
+GUIX_DIR="/home/shhan/code/loftix"
+SDFUZZ="$(guix build -L "${GUIX_DIR}" sdfuzz 2>/dev/null | tr -d '[:space:]')"
+BINUTILS_SRC="$(guix build -L "${GUIX_DIR}" binutils@${VERSION} --source 2>/dev/null | tr -d '[:space:]')"
+
+export PATH="/gnu/store/pk4jn55jbvbb8jf94dzwp64y5iyfya1s-clang-13.0.1/bin:/gnu/store/8vxs3ajx9rnp6bzakrnyj5lkc402x8a3-llvm-13.0.1/bin:${PATH}"
+
+export AFL_NO_X86=1
+export AFLGO="${SDFUZZ}"
+
+WORK_DIR="${SCRIPT_DIR}/work-sdfuzz"
+SRC_DIR="${WORK_DIR}/src"
+BUILD_DIR="${WORK_DIR}/build"
+DIST_DIR="${WORK_DIR}/distance"
+IN_DIR="${WORK_DIR}/in"
+OUT_DIR="${WORK_DIR}/out"
+FUZZ_BIN="${WORK_DIR}/${BINARY}"
+WRAPPER_DIR="${WORK_DIR}/wrappers"
+
+LINUX_HEADERS="/gnu/store/svghsdn1x3fyili8ij791nn25zba9bpf-linux-libre-headers-5.15.49"
+GLIBC="/gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41"
+
+REAL_CC="${SDFUZZ}/bin/afl-clang-fast"
+REAL_CXX="${SDFUZZ}/bin/afl-clang-fast++"
+CLANG_BIN="/gnu/store/pk4jn55jbvbb8jf94dzwp64y5iyfya1s-clang-13.0.1/bin"
+LLVM_BIN="/gnu/store/8vxs3ajx9rnp6bzakrnyj5lkc402x8a3-llvm-13.0.1/bin"
+export PATH="${CLANG_BIN}:${LLVM_BIN}:${PATH}"
+
+BASE_CFLAGS="-I${LINUX_HEADERS}/include"
+BASE_LDFLAGS="-L${GLIBC}/lib -Wl,--dynamic-linker=${GLIBC}/lib/ld-linux-x86-64.so.2"
+
+echo "[*] SDFuzz: ${SDFUZZ}"
+echo "[*] Source: ${BINUTILS_SRC}"
+
+# Create compiler wrappers that inject SDFuzz flags exactly once.
+# This avoids Makefile CFLAGS duplication (binutils ld/Makefile embeds
+# $(CFLAGS) inside AM_CPPFLAGS, causing double expansion).
+create_wrappers() {
+    local extra_flags="$1"
+    mkdir -p "${WRAPPER_DIR}"
+    # CC wrapper
+    cat > "${WRAPPER_DIR}/aflgo-cc" <<WRAPPER
+#!/bin/bash
+exec "${REAL_CC}" ${extra_flags} "\$@"
+WRAPPER
+    chmod +x "${WRAPPER_DIR}/aflgo-cc"
+    # CXX wrapper
+    cat > "${WRAPPER_DIR}/aflgo-cxx" <<WRAPPER
+#!/bin/bash
+exec "${REAL_CXX}" ${extra_flags} "\$@"
+WRAPPER
+    chmod +x "${WRAPPER_DIR}/aflgo-cxx"
+    echo "[*] Created wrappers with flags: ${extra_flags}"
+}
+
+fetch_source() {
+    if [ ! -d "${SRC_DIR}/binutils-${VERSION}" ]; then
+        echo "[*] Extracting source..."
+        mkdir -p "${SRC_DIR}"
+        tar xf "${BINUTILS_SRC}" -C "${SRC_DIR}"
+    fi
+}
+
+configure_build() {
+    echo "[*] Configuring..."
+    cd "${BUILD_DIR}"
+    "${REAL_CC}" --version 2>&1 | head -1
+    "${SRC_DIR}/binutils-${VERSION}/configure" \
+        --prefix="${WORK_DIR}/install" \
+        --disable-nls --disable-werror
+}
+
+pass1_extract_bb() {
+    echo "=== Pass 1: Extract BB info ==="
+    rm -rf "${BUILD_DIR}"
+    mkdir -p "${BUILD_DIR}" "${DIST_DIR}"
+
+    echo "${BB_TARGETS}" > "${DIST_DIR}/BBtargets.txt"
+
+    # Wrappers inject -targets/-outdir exactly once per compiler invocation
+    create_wrappers "-targets=${DIST_DIR}/BBtargets.txt -outdir=${DIST_DIR}"
+
+    cd "${BUILD_DIR}"
+    export CC="${WRAPPER_DIR}/aflgo-cc" CXX="${WRAPPER_DIR}/aflgo-cxx"
+    export CFLAGS="${BASE_CFLAGS}"
+    export LDFLAGS="${BASE_LDFLAGS}"
+
+    configure_build
+
+    echo "[*] Building with BB extraction..."
+    make -j"$(nproc)" all 2>&1 | tail -5
+
+    echo "[*] Pass 1 output files:"
+    for f in BBtargets.txt BBnames.txt BBcalls.txt Ftargets.txt Fnames.txt IIcalls.txt; do
+        if [ -f "${DIST_DIR}/${f}" ]; then
+            wc -l < "${DIST_DIR}/${f}" | tr -d ' ' | xargs -I{} echo "  ${f}: {} lines"
+        else
+            echo "  ${f}: MISSING"
+        fi
+    done
+}
+
+compute_distances() {
+    echo "=== Computing distances ==="
+
+    if [ ! -f "${DIST_DIR}/BBnames.txt" ] || [ ! -f "${DIST_DIR}/BBcalls.txt" ]; then
+        echo "[!] Missing BB extraction files, skipping distance computation"
+        return 1
+    fi
+
+    cat "${DIST_DIR}/BBnames.txt" | rev | cut -d: -f2- | rev | sort | uniq > "${DIST_DIR}/BBnames2.txt"
+
+    echo "[*] Running BBmapping.py..."
+    python3 "${GUIX_DIR}/sdfuzz/scripts/BBmapping.py" \
+        "${DIST_DIR}/BBtargets.txt" \
+        "${DIST_DIR}/BBnames2.txt" \
+        "${DIST_DIR}/real.txt" 2>&1 || true
+
+    echo "[*] real.txt:"
+    cat "${DIST_DIR}/real.txt" 2>/dev/null || echo "  (empty)"
+
+    echo "[*] Running compute_distances.py..."
+    python3 "${SCRIPT_DIR}/compute_distances.py" \
+        "${DIST_DIR}" \
+        "${DIST_DIR}/distance.cfg.txt"
+
+    echo "[*] distance.cfg.txt stats:"
+    wc -l < "${DIST_DIR}/distance.cfg.txt" | tr -d ' ' | xargs -I{} echo "  {} entries"
+    head -5 "${DIST_DIR}/distance.cfg.txt" | sed 's/^/  /'
+
+    # Generate ctrl-data.dot (whitelist of reachable BBs for selective instrumentation)
+    awk -F',' '$2 != 9999 { print $1 }' "${DIST_DIR}/distance.cfg.txt" \
+        > "${DIST_DIR}/ctrl-data.dot"
+    echo "[*] ctrl-data.dot: $(wc -l < "${DIST_DIR}/ctrl-data.dot") reachable BBs"
+    echo "  ..."
+}
+
+pass2_distance_instrument() {
+    echo "=== Pass 2: Build with distance instrumentation ==="
+    rm -rf "${BUILD_DIR}"
+    mkdir -p "${BUILD_DIR}"
+
+    # Pass 2 only needs -distance (not -targets which triggers preprocessing)
+    create_wrappers "-distance=${DIST_DIR}/distance.cfg.txt"
+
+    cd "${BUILD_DIR}"
+    export CC="${WRAPPER_DIR}/aflgo-cc" CXX="${WRAPPER_DIR}/aflgo-cxx"
+    export CFLAGS="${BASE_CFLAGS}"
+    export LDFLAGS="${BASE_LDFLAGS}"
+
+    configure_build
+
+    echo "[*] Building with distance instrumentation..."
+    make -j"$(nproc)" all 2>&1 | tail -5
+
+    NM_PATH="$(find . -name 'nm-new' -type f -executable | head -1)"
+    echo "[*] Found: ${NM_PATH}"
+
+    cp "${NM_PATH}" "${FUZZ_BIN}"
+    chmod +x "${FUZZ_BIN}"
+
+    if strings "${FUZZ_BIN}" | grep -q __afl; then
+        echo "[+] Instrumentation verified"
+    else
+        echo "[!] Warning: no AFL symbols found"
+    fi
+}
+
+prepare_seed() {
+    echo "[*] Preparing seed..."
+    mkdir -p "${IN_DIR}"
+    echo "int main(){}" | gcc -x c - -o "${IN_DIR}/seed" -static -s 2>/dev/null
+    if [ ! -s "${IN_DIR}/seed" ]; then
+        echo " " > "${IN_DIR}/seed"
+    fi
+}
+
+run_fuzzer() {
+    echo "[*] Running SDFuzz directed fuzzer..."
+    cd "${WORK_DIR}"
+
+    "${SDFUZZ}/bin/afl-fuzz" \
+        -m "${MEMORY_LIMIT}" -z "${EXPSCHEDULE}" -c "${CYCLE_LIMIT}" \
+        -i "${IN_DIR}" -o "${OUT_DIR}" -d \
+        -- "./${BINARY}" ${TEST_ARGS}
+
+    echo "[+] Fuzzing complete"
+}
+
+case "${1:-all}" in
+    fetch)      fetch_source ;;
+    pass1)      fetch_source; pass1_extract_bb ;;
+    distances)  compute_distances ;;
+    pass2)      pass2_distance_instrument ;;
+    fuzz)       prepare_seed; run_fuzzer ;;
+    all)        fetch_source; pass1_extract_bb; compute_distances; pass2_distance_instrument; prepare_seed; run_fuzzer ;;
+esac

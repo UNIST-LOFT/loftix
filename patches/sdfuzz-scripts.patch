@@ -1,0 +1,50 @@
+Use packaged tools and LLVM 13's legacy pass manager in genDistance.sh.
+
+--- a/scripts/genDistance.sh
++++ b/scripts/genDistance.sh
+@@ -9,0 +10,4 @@
++SDFUZZ_PREFIX="${SDFUZZ_PREFIX:-$(cd "$AFLGO/../../.." && pwd)}"
++SDFUZZ_FUZZOPT="${SDFUZZ_FUZZOPT:-$SDFUZZ_PREFIX/lib/afl/fuzzopt.so}"
++LLVM_OPT="${LLVM_OPT:-opt}"
++PYTHON="${PYTHON:-python3}"
+@@ -30,0 +35,6 @@
++if ! [ -r "$SDFUZZ_FUZZOPT" ]; then
++  echo "Couldn't find fuzzopt plug-in ($SDFUZZ_FUZZOPT)."; exit 1
++fi
++if ! command -v "$LLVM_OPT" >/dev/null; then
++  echo "Couldn't find opt ($LLVM_OPT)."; exit 1
++fi
+@@ -33 +44 @@
+-if [ -z $(which python) ] && [ -z $(which python3) ]; then echo "Please install Python"; exit 1; fi
++if ! command -v "$PYTHON" >/dev/null; then echo "Please install Python"; exit 1; fi
+@@ -68 +79 @@
+-      while ! opt -dot-callgraph $binary.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
++      while ! "$LLVM_OPT" -enable-new-pm=0 -dot-callgraph $binary.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
+@@ -71 +82 @@
+-      opt -load /root/sdfuzz/fuzzopt.so -FuzzOpt $binary.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
++      "$LLVM_OPT" -enable-new-pm=0 -load "$SDFUZZ_FUZZOPT" -FuzzOpt $binary.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
+@@ -77 +88 @@
+-    $AFLGO/merge_callgraphs.py -o callgraph.dot $(ls callgraph.*)
++    "$PYTHON" "$AFLGO/merge_callgraphs.py" -o callgraph.dot $(ls callgraph.*)
+@@ -87,3 +98,7 @@
+-    rm ./indirect.txt
+-    ~/sdfuzz/temporal-specialization/SVF/Release-build/bin/wpa -print-fp -ander -dump-callgraph $fuzzer.0.0.preopt.bc
+-    mv ./indirect.txt $TMPDIR/
++    rm -f ./indirect.txt
++    if [ -n "${SDFUZZ_WPA:-}" ]; then
++      "$SDFUZZ_WPA" -print-fp -ander -dump-callgraph $fuzzer.0.0.preopt.bc
++      mv ./indirect.txt $TMPDIR/
++    else
++      echo "[!] SDFUZZ_WPA is unset; skipping indirect-call analysis."
++    fi
+@@ -95 +110 @@
+-    while ! opt -dot-callgraph $fuzzer.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
++    while ! "$LLVM_OPT" -enable-new-pm=0 -dot-callgraph $fuzzer.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
+@@ -99 +114 @@
+-    opt -load /root/sdfuzz/fuzzopt.so -FuzzOpt $fuzzer.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
++    "$LLVM_OPT" -enable-new-pm=0 -load "$SDFUZZ_FUZZOPT" -FuzzOpt $fuzzer.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
+@@ -115,2 +130,2 @@
+-echo "CC=\"$AFLGO/../afl-clang-fast\""
+-echo "CXX=\"$AFLGO/../afl-clang-fast++\""
++echo "CC=\"$SDFUZZ_PREFIX/bin/afl-clang-fast\""
++echo "CXX=\"$SDFUZZ_PREFIX/bin/afl-clang-fast++\""
