@@ -339,7 +339,8 @@ using PoC-bounded under-constrained concolic execution.")))
                (commit commit)))
           (patches (search-patches "patches/sdfuzz-llvm-13.patch"
                                   "patches/sdfuzz-scripts.patch"
-                                  "patches/sdfuzz-crash-seeds.patch"))
+                                  "patches/sdfuzz-crash-seeds.patch"
+                                  "patches/sdfuzz-stackparser.patch"))
          (file-name (git-file-name name version))
          (sha256
           (base32
