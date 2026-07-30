@@ -132,7 +132,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.13")
+    (version "0.0.14")
     (source
      (origin
        (method fossil-fetch)
@@ -140,7 +140,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "1r431z5ipiwmjnsga5jkd06f340rv35h9d9lq86mxnpm8zqrqh2p"))))
+        (base32 "00izfp1ahwxjmrm8yvqci58yirbjp7prszrp612i5sd9fs8a58w3"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -165,7 +165,7 @@ and congruence relations.")
       #:phases
       #~(modify-phases %standard-phases
           (replace 'configure zig-configure))))
-    (native-inputs (list m4 zig-0.15))
+    (native-inputs (list m4 zig-0.16))
     (inputs (list aflplusplus dyninst aflplusplus e9patch findutils fuzzolic))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
