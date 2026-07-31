@@ -11,5 +11,8 @@ patch_source := source_directory() + "/brpatch.c"
 # default:
 #     just --list
 
-# build:
-#     guix build --no-substitutes {{guix_spec}}
+build-sdfuzz:
+    bash sdfuzz.sh all
+
+run-sdfuzz:
+    bash sdfuzz.sh fuzz

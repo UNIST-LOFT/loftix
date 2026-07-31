@@ -29,14 +29,32 @@ fi
 # and MAKE_BINARY_SUBDIR (empty = binary is in the build root).
 # BINARY_BASENAME: actual binary filename in build tree (e.g. nm-new, readelf)
 binary_basename="${BINARY_BASENAME:-$BINARY}"
-# CONFIGURE_FLAGS: extra flags for ./configure (defaults to binutils-style)
-configure_flags="${CONFIGURE_FLAGS---disable-nls --disable-werror}"
+# BUILD_SYSTEM: configure (autotools; the default) or cmake.  Leave unset
+# for the traditional ./configure + make flow used by existing subjects.
+build_system="${BUILD_SYSTEM:-configure}"
+# CONFIGURE_FLAGS: extra flags for ./configure or cmake.  The default is
+# binutils-style for autotools and empty for cmake, so that a cmake
+# subject which omits CONFIGURE_FLAGS never receives autotools flags.
+if [[ "$build_system" == "cmake" ]]; then
+    configure_flags="${CONFIGURE_FLAGS-}"
+else
+    configure_flags="${CONFIGURE_FLAGS---disable-nls --disable-werror}"
+fi
 # MAKE_BUILD_TARGET: target for full build (e.g. all-binutils, all)
-make_build_target="${MAKE_BUILD_TARGET:-all-binutils}"
 # MAKE_BINARY_TARGET: target for the specific binary (e.g. nm-new; empty = none)
-make_binary_target="${MAKE_BINARY_TARGET-$binary_basename}"
 # MAKE_BINARY_SUBDIR: subdirectory for binary target (e.g. binutils; empty = root)
-make_binary_subdir="${MAKE_BINARY_SUBDIR-binutils}"
+# The defaults are autotools-specific; for CMake subjects the conventional
+# targets differ ("all" for the full build, binaries in the build root), so
+# mirror the CONFIGURE_FLAGS treatment and use build-system-aware defaults.
+if [[ "$build_system" == "cmake" ]]; then
+    make_build_target="${MAKE_BUILD_TARGET-all}"
+    make_binary_target="${MAKE_BINARY_TARGET-}"
+    make_binary_subdir="${MAKE_BINARY_SUBDIR-}"
+else
+    make_build_target="${MAKE_BUILD_TARGET:-all-binutils}"
+    make_binary_target="${MAKE_BINARY_TARGET-$binary_basename}"
+    make_binary_subdir="${MAKE_BINARY_SUBDIR-binutils}"
+fi
 # SANITIZER_FLAGS: extra flags for ASan build (default catches memory errors).
 # For bugs like signed integer overflow, add -fsanitize=undefined.
 sanitizer_flags="${SANITIZER_FLAGS:--fsanitize=address}"
@@ -57,6 +75,7 @@ runtime_library_path=""
 linux_headers=""
 clang_prefix=""
 llvm_prefix=""
+cmake_bin=""
 
 # Resolved source directory (after extracting the tarball, the actual
 # directory name may differ from $source_name when GUIX_SPEC includes
@@ -66,6 +85,26 @@ resolved_src_dir=""
 # Global for ASan binary path (avoids command-substitution subshell which
 # would discard side effects like runtime_library_path modifications).
 _asan_binary_path=""
+
+# ---- Helper: run the project's configure step ----
+# Supports both autotools (./configure) and CMake (out-of-source cmake)
+# build systems, selected via the BUILD_SYSTEM config.env field.
+run_configure() {
+    local source_dir="$1"
+    if [[ "$build_system" == "cmake" ]]; then
+        [[ -n "$cmake_bin" ]] || {
+            echo "run_configure: cmake_bin unset; require_tools must run first." >&2
+            exit 1
+        }
+        # -DCMAKE_POLICY_VERSION_MINIMUM=3.5 keeps old CMakeLists.txt files
+        # (e.g. libjpeg-turbo 2.0.1's cmake_minimum_required 2.8.12)
+        # configurable with the modern CMake that Guix resolves.
+        "$cmake_bin" "$source_dir" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 $configure_flags
+    else
+        "$source_dir/configure" $configure_flags
+    fi
+}
 
 # ---- Helper: run make for the configured binary target ----
 # When MAKE_BINARY_TARGET is empty, the full build (make all) already
@@ -102,6 +141,25 @@ require_tools() {
         exit 1
     }
 
+    # For CMake subjects, resolve cmake from the Guix store rather than the
+    # host system: the build runs with a Guix LD_LIBRARY_PATH (libgcc/asan
+    # runtime), and the system cmake breaks on the Guix libstdc++ (GLIBC
+    # version mismatch).  guix build cmake returns multiple outputs
+    # (cmake-<v>-doc, main), so drop the -doc output (no bin/cmake there).
+    if [[ "$build_system" == "cmake" ]]; then
+        local cmake_prefix
+        cmake_prefix="$(guix build -L "$channel_dir" cmake --no-grafts \
+            2>/dev/null | grep -v -- '-doc$' | head -1 || true)"
+        # Guard against an empty prefix: without it, "$cmake_prefix/bin/cmake"
+        # would silently become "/bin/cmake" (system cmake), reintroducing
+        # the GLIBC mismatch this Guix resolution is meant to avoid.
+        cmake_bin="$cmake_prefix/bin/cmake"
+        [[ -n "$cmake_prefix" && -x "$cmake_bin" ]] || {
+            echo "BUILD_SYSTEM=cmake but Guix cmake could not be resolved." >&2
+            exit 1
+        }
+    fi
+
     sdfuzz="$(guix build -L "$channel_dir" sdfuzz --no-grafts)"
     [[ -x "$sdfuzz/bin/afl-clang-fast" && -x "$sdfuzz/bin/sdfuzz-ld.lld" ]] || {
         echo "Guix SDFuzz compiler or LLVM 13 linker is unavailable: $sdfuzz" >&2
@@ -110,7 +168,11 @@ require_tools() {
     clang_prefix="$(guix build -e '(@ (gnu packages llvm) clang-13)' --no-grafts)"
     # guix build llvm-13 returns multiple outputs (opt-viewer, main).
     # Filter to get only the main output (contains bin/llvm-symbolizer).
-    llvm_prefix="$(guix build -e '(@ (gnu packages llvm) llvm-13)' --no-grafts 2>/dev/null | grep -v opt-viewer | head -1)"
+    llvm_prefix="$(guix build -e '(@ (gnu packages llvm) llvm-13)' --no-grafts 2>/dev/null | grep -v opt-viewer | head -1 || true)"
+    [[ -n "$llvm_prefix" ]] || {
+        echo "Could not resolve Guix LLVM 13 (needed for llvm-ar and symbolizer)." >&2
+        exit 1
+    }
     export PATH="$clang_prefix/bin:$llvm_prefix/bin:$PATH"
 
     local libgcc asan_runtime
@@ -153,10 +215,16 @@ prepare_source() {
         tar -xf "$source_tarball" -C "$src_dir"
         # The extracted directory may have a different name when GUIX_SPEC
         # includes a package transformation suffix like -static, -with-asan.
-        # Search for the actual configure script to discover the real dir.
+        # Search for the actual build-system entry point to discover the
+        # real dir (configure for autotools, CMakeLists.txt for CMake).
         local found
-        found="$(find "$src_dir" -maxdepth 2 -name configure -type f \
-            -not -path '*/config.*' -print -quit 2>/dev/null || true)"
+        if [[ "$build_system" == "cmake" ]]; then
+            found="$(find "$src_dir" -maxdepth 2 -name CMakeLists.txt -type f \
+                -print -quit 2>/dev/null || true)"
+        else
+            found="$(find "$src_dir" -maxdepth 2 -name configure -type f \
+                -not -path '*/config.*' -print -quit 2>/dev/null || true)"
+        fi
         if [[ -n "$found" ]]; then
             resolved_src_dir="$(dirname "$found")"
             source_dir="$resolved_src_dir"
@@ -165,10 +233,17 @@ prepare_source() {
         resolved_src_dir="$source_dir"
     fi
 
-    [[ -x "$source_dir/configure" ]] || {
-        echo "Unexpected source layout; configure is missing from $source_dir" >&2
-        exit 1
-    }
+    if [[ "$build_system" == "cmake" ]]; then
+        [[ -f "$source_dir/CMakeLists.txt" ]] || {
+            echo "Unexpected source layout; CMakeLists.txt is missing from $source_dir" >&2
+            exit 1
+        }
+    else
+        [[ -x "$source_dir/configure" ]] || {
+            echo "Unexpected source layout; configure is missing from $source_dir" >&2
+            exit 1
+        }
+    fi
 
     printf '[+] Source prepared in %s\n' "$source_dir" >&2
 }
@@ -292,7 +367,7 @@ build_asan_binary() {
                 CFLAGS="-g -O0 $linux_inc $sanitizer_flags" \
                 CXXFLAGS="-g -O0 $linux_inc $sanitizer_flags" \
                 LDFLAGS="$sanitizer_flags" \
-                "$source_dir/configure" $configure_flags &&
+                run_configure "$source_dir" &&
             make -j"$jobs" "$make_build_target" &&
             run_make_binary
         ) >"$log_file" 2>&1 || {
@@ -319,7 +394,10 @@ build_asan_binary() {
 resolve_missing_libs() {
     local binary="$1"
     local missing new_paths=""
-    missing="$(ldd "$binary" 2>/dev/null | grep 'not found' | awk '{print $1}')"
+    # Guard the pipeline: grep finds nothing for fully-static binaries
+    # (e.g. djpeg-static) and would otherwise trip set -euo pipefail.
+    missing="$(ldd "$binary" 2>/dev/null | grep 'not found' | awk '{print $1}' \
+        || true)"
     [[ -z "$missing" ]] && return 0
 
     for lib in $missing; do
@@ -361,17 +439,24 @@ resolve_missing_libs() {
 
 create_wrappers() {
     local pass="$1"
-    local cc_flags cxx_flags
+    local cc_flags cxx_flags trailing_flags
 
     mkdir -p "$wrapper_dir"
     case "$pass" in
         first)
             cc_flags="-isystem $linux_headers/include -g -O0 -flto -fuse-ld=$sdfuzz/bin/sdfuzz-ld.lld -Wl,--save-temps -rdynamic -targets=$dist_dir/BBtargets.txt -outdir=$dist_dir"
             cxx_flags="$cc_flags"
+            trailing_flags=""
             ;;
         second)
             cc_flags="-isystem $linux_headers/include -g -O0 -distance=$dist_dir/distance.cfg.txt -targets=$dist_dir/BBtargets.txt"
             cxx_flags="$cc_flags"
+            # Some projects (e.g. libjpeg-turbo 1.5.3) force -O3 -funroll-loops
+            # in their Makefile, which lands after our -O0 on the command line
+            # and crashes LLVM 13 codegen (Machine Copy Propagation) on the
+            # distance-instrumented target functions.  Force the flags back
+            # after "$@" so they take precedence over the project's.
+            trailing_flags="-O0 -fno-unroll-loops"
             ;;
         *)
             echo "Unknown build pass: $pass" >&2
@@ -382,11 +467,11 @@ create_wrappers() {
     rm -f "$wrapper_dir/cc" "$wrapper_dir/cxx"
     cat >"$wrapper_dir/cc" <<EOF
 #!/bin/sh
-exec "$sdfuzz/bin/afl-clang-fast" $cc_flags "\$@"
+exec "$sdfuzz/bin/afl-clang-fast" $cc_flags "\$@" $trailing_flags
 EOF
     cat >"$wrapper_dir/cxx" <<EOF
 #!/bin/sh
-exec "$sdfuzz/bin/afl-clang-fast++" $cc_flags "\$@"
+exec "$sdfuzz/bin/afl-clang-fast++" $cc_flags "\$@" $trailing_flags
 EOF
     chmod 555 "$wrapper_dir/cc" "$wrapper_dir/cxx"
 }
@@ -408,8 +493,17 @@ build_pass_binary() {
         cd "$build_dir"
         export LD_LIBRARY_PATH="$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         export CPPFLAGS="-isystem $linux_headers/include${CPPFLAGS:+ $CPPFLAGS}"
+        # LTO passes compile to LLVM bitcode, which host GNU binutils
+        # ar/ranlib cannot index (broken archive symbol table -> "undefined
+        # symbol: jpeg_*" at link time).  Use the LLVM archive tools that the
+        # Guix llvm-13 package provides, as documented in
+        # sdfuzz/temporal-specialization/COMPILE.md.  Scoped to the LTO passes
+        # only so the non-LTO ASan build keeps using the host tools.
+        export AR="$llvm_prefix/bin/llvm-ar"
+        export RANLIB="$llvm_prefix/bin/llvm-ranlib"
+        export NM="$llvm_prefix/bin/llvm-nm"
         CC="$wrapper_dir/cc" CXX="$wrapper_dir/cxx" \
-            "$source_dir/configure" $configure_flags &&
+            run_configure "$source_dir" &&
         make -j"$jobs" "$make_build_target" &&
         run_make_binary
     ) >"$log_file" 2>&1 || {

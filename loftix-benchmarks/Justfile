@@ -24,8 +24,8 @@ run-all cmd:
 @_run-all name command jobs:
     #!/usr/bin/env bash
     mkdir -p logs
-    find . -maxdepth 3 -name config.env -exec dirname {} \; \
-    | parallel --tag --joblog logs/{{name}}.joblog --results logs/{{name}}-results -j {{jobs}} '
+    find . -maxdepth 3 -name sdfuzz.sh -exec dirname {} \; \
+    | parallel --tag --joblog logs/{{name}}.tsv --results logs/{{name}}-results -j {{jobs}} '
       cd "{}" && {{command}}
     '
 
@@ -62,3 +62,6 @@ success command out="success.list":
       > {{out}}
     echo "Successes ({{out}}): $(wc -l < {{out}})"
 
+
+run command jobs:
+    just _run-all {{command}} "just {{command}}" {{jobs}}
