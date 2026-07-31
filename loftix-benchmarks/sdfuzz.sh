@@ -58,6 +58,10 @@ fi
 # SANITIZER_FLAGS: extra flags for ASan build (default catches memory errors).
 # For bugs like signed integer overflow, add -fsanitize=undefined.
 sanitizer_flags="${SANITIZER_FLAGS:--fsanitize=address}"
+# EXTRA_CFLAGS: additional compiler flags applied to all build passes
+# (ASan, first-pass LTO, and second-pass distance-instrumented).
+# Use for project-specific codegen flags (e.g. -fcommon for libming).
+extra_cflags="${EXTRA_CFLAGS-}"
 
 version="${GUIX_SPEC##*@}"
 source_name="${GUIX_SPEC%%@*}-${version}"
@@ -76,6 +80,11 @@ linux_headers=""
 clang_prefix=""
 llvm_prefix=""
 cmake_bin=""
+# BUILD_INPUTS: space-separated Guix package names for build dependencies.
+# Resolved in require_tools(); their include (-isystem) and library (-L)
+# paths are added to CFLAGS and LDFLAGS in all build passes.
+build_inputs_cflags=""
+build_inputs_ldflags=""
 
 # Resolved source directory (after extracting the tarball, the actual
 # directory name may differ from $source_name when GUIX_SPEC includes
@@ -191,6 +200,34 @@ require_tools() {
         exit 1
     }
 
+    # Resolve BUILD_INPUTS from Guix and collect include / library paths.
+    if [[ -n "${BUILD_INPUTS:-}" ]]; then
+        printf '[+] Resolving build inputs: %s\n' "${BUILD_INPUTS}" >&2
+        local resolved_paths=""
+        for dep in $BUILD_INPUTS; do
+            local p
+            # For multi-output packages (e.g. giflib has bin + out),
+            # pick the first output that contains include/ files.
+            p="$(guix build "$dep" --no-grafts 2>/dev/null | \
+                while read -r candidate; do
+                    [[ -d "$candidate/include" ]] && { echo "$candidate"; break; }
+                done || true)"
+            [[ -n "$p" ]] || {
+                echo "Failed to resolve build input: $dep" >&2
+                exit 1
+            }
+            [[ -d "$p/include" ]] && build_inputs_cflags="$build_inputs_cflags -isystem $p/include"
+            [[ -d "$p/lib" ]] && build_inputs_ldflags="$build_inputs_ldflags -L$p/lib"
+            resolved_paths="$resolved_paths $p"
+        done
+        # Also add Guix lib dirs to runtime_library_path so shared libraries
+        # (e.g. libpng, libz) can be found when running the instrumented binary.
+        for p in $resolved_paths; do
+            [[ -d "$p/lib" ]] && \
+                runtime_library_path="$runtime_library_path:$p/lib"
+        done
+    fi
+
     # Build SVF (pointer analysis) and set SDFUZZ_WPA for indirect-call resolution
     printf '[+] Building SVF for WPA pointer analysis...\n' >&2
     local svf_prefix wpa_path
@@ -212,25 +249,70 @@ prepare_source() {
     source_dir="$src_dir/$source_name"
 
     if [[ ! -d "$source_dir" ]]; then
-        tar -xf "$source_tarball" -C "$src_dir"
+        if [[ -d "$source_tarball" ]]; then
+            # Git-fetch checkout: Guix --source returns a read-only
+            # directory.  Copy it into the work tree so we can run
+            # autoreconf and write build artifacts.
+            printf '[+] Copying git checkout to %s\n' "$source_dir" >&2
+            cp -r "$source_tarball" "$source_dir"
+            chmod -R u+w "$source_dir"
+            resolved_src_dir="$source_dir"
+        else
+            tar -xf "$source_tarball" -C "$src_dir"
+        fi
+
         # The extracted directory may have a different name when GUIX_SPEC
         # includes a package transformation suffix like -static, -with-asan.
         # Search for the actual build-system entry point to discover the
         # real dir (configure for autotools, CMakeLists.txt for CMake).
-        local found
-        if [[ "$build_system" == "cmake" ]]; then
-            found="$(find "$src_dir" -maxdepth 2 -name CMakeLists.txt -type f \
-                -print -quit 2>/dev/null || true)"
-        else
-            found="$(find "$src_dir" -maxdepth 2 -name configure -type f \
-                -not -path '*/config.*' -print -quit 2>/dev/null || true)"
-        fi
-        if [[ -n "$found" ]]; then
-            resolved_src_dir="$(dirname "$found")"
-            source_dir="$resolved_src_dir"
+        # Skip this when we already resolved via git checkout copy.
+        if [[ -z "$resolved_src_dir" ]]; then
+            local found
+            if [[ "$build_system" == "cmake" ]]; then
+                found="$(find "$src_dir" -maxdepth 2 -name CMakeLists.txt -type f \
+                    -print -quit 2>/dev/null || true)"
+            else
+                found="$(find "$src_dir" -maxdepth 2 -name configure -type f \
+                    -not -path '*/config.*' -print -quit 2>/dev/null || true)"
+            fi
+            if [[ -n "$found" ]]; then
+                resolved_src_dir="$(dirname "$found")"
+                source_dir="$resolved_src_dir"
+            fi
         fi
     else
         resolved_src_dir="$source_dir"
+    fi
+    source_dir="$resolved_src_dir"
+
+    # Git-fetch checkouts may lack a generated configure script.
+    # Auto-detect configure.in / configure.ac and run autoreconf.
+    if [[ "$build_system" == "configure" && ! -x "$source_dir/configure" ]]; then
+        if [[ -f "$source_dir/configure.in" || -f "$source_dir/configure.ac" ]]; then
+            printf '[+] Running autoreconf for %s\n' "$source_dir" >&2
+            local autotools old_path="$PATH" old_aclocal="${ACLOCAL_PATH:-}"
+            # Resolve autotools from the Guix store on demand.
+            autotools="$(guix build autoconf automake libtool pkg-config m4 --no-grafts 2>/dev/null || true)"
+            if [[ -z "$autotools" ]]; then
+                echo "Could not resolve autotools from Guix store." >&2
+                exit 1
+            fi
+            for t in $autotools; do
+                [[ -d "$t/bin" ]] && export PATH="$t/bin:$PATH"
+                [[ -d "$t/share/aclocal" ]] && export ACLOCAL_PATH="$t/share/aclocal${ACLOCAL_PATH:+:$ACLOCAL_PATH}"
+            done
+            if command -v autoreconf &>/dev/null; then
+                (cd "$source_dir" && autoreconf -fi) || {
+                    echo "autoreconf failed; see output above." >&2
+                    exit 1
+                }
+            else
+                echo "autoreconf not found in PATH; cannot bootstrap $source_dir" >&2
+                exit 1
+            fi
+            export PATH="$old_path"
+            export ACLOCAL_PATH="$old_aclocal"
+        fi
     fi
 
     if [[ "$build_system" == "cmake" ]]; then
@@ -291,8 +373,8 @@ build_target_stack() {
     printf '[DBG] Running: %s\n' "$asan_bin" >&2
     printf '[DBG] LD_LIBRARY_PATH=%s\n' "${glibc_lib:+$glibc_lib:}$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >&2
     LD_LIBRARY_PATH="${glibc_lib:+$glibc_lib:}$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-        ASAN_OPTIONS='detect_leaks=0:abort_on_error=1:symbolize=1' \
-        UBSAN_OPTIONS='print_stacktrace=1:halt_on_error=1:symbolize=1' \
+        ASAN_OPTIONS='detect_leaks=0:abort_on_error=1:symbolize=1'"${ASAN_OPTIONS:+:$ASAN_OPTIONS}" \
+        UBSAN_OPTIONS='print_stacktrace=1:halt_on_error=1:symbolize=1'"${UBSAN_OPTIONS:+:$UBSAN_OPTIONS}" \
         ASAN_SYMBOLIZER_PATH="$llvm_prefix/bin/llvm-symbolizer" \
         "$asan_bin" "${test_args[@]}" >"$crash_log" 2>&1
     status=$?
@@ -361,12 +443,12 @@ build_asan_binary() {
             # Build-time tools (e.g. bfd/doc/chew) are also compiled with ASan
             # and may leak; suppress leak detection to avoid build failures.
             export ASAN_OPTIONS="detect_leaks=0${ASAN_OPTIONS:+:$ASAN_OPTIONS}"
-            local linux_inc="-isystem $linux_headers/include"
+            local linux_inc="-isystem $linux_headers/include $build_inputs_cflags"
             CC="${CC_ASAN:-$clang_prefix/bin/clang}" \
                 CXX="${CXX_ASAN:-$clang_prefix/bin/clang++}" \
-                CFLAGS="-g -O0 $linux_inc $sanitizer_flags" \
-                CXXFLAGS="-g -O0 $linux_inc $sanitizer_flags" \
-                LDFLAGS="$sanitizer_flags" \
+                CFLAGS="-g -O0 $linux_inc $sanitizer_flags $extra_cflags" \
+                CXXFLAGS="-g -O0 $linux_inc $sanitizer_flags $extra_cflags" \
+                LDFLAGS="$sanitizer_flags $build_inputs_ldflags" \
                 run_configure "$source_dir" &&
             make -j"$jobs" "$make_build_target" &&
             run_make_binary
@@ -444,12 +526,12 @@ create_wrappers() {
     mkdir -p "$wrapper_dir"
     case "$pass" in
         first)
-            cc_flags="-isystem $linux_headers/include -g -O0 -flto -fuse-ld=$sdfuzz/bin/sdfuzz-ld.lld -Wl,--save-temps -rdynamic -targets=$dist_dir/BBtargets.txt -outdir=$dist_dir"
+            cc_flags="-isystem $linux_headers/include $build_inputs_cflags -g -O0 -flto -fuse-ld=$sdfuzz/bin/sdfuzz-ld.lld -Wl,--save-temps -rdynamic -targets=$dist_dir/BBtargets.txt -outdir=$dist_dir"
             cxx_flags="$cc_flags"
             trailing_flags=""
             ;;
         second)
-            cc_flags="-isystem $linux_headers/include -g -O0 -distance=$dist_dir/distance.cfg.txt -targets=$dist_dir/BBtargets.txt"
+            cc_flags="-isystem $linux_headers/include $build_inputs_cflags -g -O0 -distance=$dist_dir/distance.cfg.txt -targets=$dist_dir/BBtargets.txt"
             cxx_flags="$cc_flags"
             # Some projects (e.g. libjpeg-turbo 1.5.3) force -O3 -funroll-loops
             # in their Makefile, which lands after our -O0 on the command line
@@ -467,11 +549,11 @@ create_wrappers() {
     rm -f "$wrapper_dir/cc" "$wrapper_dir/cxx"
     cat >"$wrapper_dir/cc" <<EOF
 #!/bin/sh
-exec "$sdfuzz/bin/afl-clang-fast" $cc_flags "\$@" $trailing_flags
+exec "$sdfuzz/bin/afl-clang-fast" $cc_flags $extra_cflags "\$@" $trailing_flags
 EOF
     cat >"$wrapper_dir/cxx" <<EOF
 #!/bin/sh
-exec "$sdfuzz/bin/afl-clang-fast++" $cc_flags "\$@" $trailing_flags
+exec "$sdfuzz/bin/afl-clang-fast++" $cc_flags $extra_cflags "\$@" $trailing_flags
 EOF
     chmod 555 "$wrapper_dir/cc" "$wrapper_dir/cxx"
 }
@@ -492,7 +574,8 @@ build_pass_binary() {
     (
         cd "$build_dir"
         export LD_LIBRARY_PATH="$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-        export CPPFLAGS="-isystem $linux_headers/include${CPPFLAGS:+ $CPPFLAGS}"
+        export CPPFLAGS="-isystem $linux_headers/include $build_inputs_cflags${CPPFLAGS:+ $CPPFLAGS}"
+        export LDFLAGS="$build_inputs_ldflags${LDFLAGS:+ $LDFLAGS}"
         # LTO passes compile to LLVM bitcode, which host GNU binutils
         # ar/ranlib cannot index (broken archive symbol table -> "undefined
         # symbol: jpeg_*" at link time).  Use the LLVM archive tools that the
