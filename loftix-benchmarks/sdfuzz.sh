@@ -473,14 +473,53 @@ build_asan_binary() {
 # After building the ASan binary, check ldd for "not found" libraries and
 # search for them in the build tree or Guix store, adding their paths to
 # the global runtime_library_path.
+#
+# Also proactively:
+# 1. Check whether the binary's own .libs/ directory contains .so files
+#    matching its NEEDED entries (handles libtool projects like libxml2).
+# 2. Extract successfully-resolved library directories from host ldd and
+#    add them to runtime_library_path.  The Guix glibc ld.so may not search
+#    system paths (e.g. /lib/x86_64-linux-gnu) when LD_LIBRARY_PATH is set,
+#    causing libraries like libz.so.1 to be missed even though the host has
+#    them installed.
 resolve_missing_libs() {
     local binary="$1"
-    local missing new_paths=""
+    local missing new_paths="" binary_dir
     # Guard the pipeline: grep finds nothing for fully-static binaries
     # (e.g. djpeg-static) and would otherwise trip set -euo pipefail.
     missing="$(ldd "$binary" 2>/dev/null | grep 'not found' | awk '{print $1}' \
         || true)"
-    [[ -z "$missing" ]] && return 0
+
+    # Proactively add the binary's own directory if it contains .so files
+    # matching NEEDED entries (covers libtool projects like libxml2 where
+    # the host system already provides the same library).
+    binary_dir="$(dirname "$binary")"
+    if [[ "$binary_dir" == */.libs && -n "$(ls "$binary_dir"/*.so 2>/dev/null)" ]]; then
+        local needed
+        needed="$(readelf -d "$binary" 2>/dev/null | grep '(NEEDED)' | \
+            sed 's/.*\[\([^]]*\)\]/\1/' || true)"
+        for lib in $needed; do
+            if [[ -f "$binary_dir/$lib" || -L "$binary_dir/$lib" ]]; then
+                if [[ ":$runtime_library_path:" != *":$binary_dir:"* ]]; then
+                    new_paths="$new_paths:$binary_dir"
+                    break
+                fi
+            fi
+        done
+    fi
+
+    # Extract directories of all successfully-resolved libraries from host
+    # ldd.  The Guix glibc ld.so may not search system paths (e.g.
+    # /lib/x86_64-linux-gnu) when LD_LIBRARY_PATH is set; proactively adding
+    # these ensures system libraries like libz.so.1 are found at runtime.
+    local sys_paths
+    sys_paths="$(ldd "$binary" 2>/dev/null | \
+        awk '/=> \// {print $3}' | xargs -r dirname | sort -u || true)"
+    for dir in $sys_paths; do
+        if [[ ":$runtime_library_path:" != *":$dir:"* ]]; then
+            new_paths="$new_paths:$dir"
+        fi
+    done
 
     for lib in $missing; do
         local found
@@ -626,6 +665,35 @@ analyze_distances() {
 
     "$sdfuzz/bin/BBmapping.py" "$dist_dir/BBtargets.txt" \
         "$dist_dir/BBnames.txt" "$dist_dir/real.txt"
+    if [[ ! -s "$dist_dir/real.txt" ]]; then
+        # Fuzzy fallback: LTO instrumentation may shift line numbers
+        # slightly (a basic block at line 1181 in the source may appear
+        # at line 1183 in BBnames).  Try nearby lines (+/- 5).
+        printf '[!] Exact BB mapping failed; trying fuzzy matching (+/-5 lines)...\n' >&2
+        : > "$dist_dir/real.txt"
+        local target file line candidate best
+        while read -r target; do
+            [[ -z "$target" ]] && continue
+            file="${target%%:*}"
+            line="${target##*:}"
+            [[ "$line" =~ ^[0-9]+$ ]] || continue
+            best=""
+            for ((offset = 1; offset <= 5; offset++)); do
+                for candidate in "$((line - offset))" "$((line + offset))"; do
+                    if grep -qxF "${file}:${candidate}" "$dist_dir/BBnames.txt" 2>/dev/null; then
+                        best="${file}:${candidate}"
+                        break 2
+                    fi
+                done
+            done
+            if [[ -n "$best" ]]; then
+                printf '%s\n' "$best" >> "$dist_dir/real.txt"
+                printf '[+] Fuzzy match: %s -> %s\n' "$target" "$best" >&2
+            else
+                printf '[!] No fuzzy match for %s\n' "$target" >&2
+            fi
+        done < "$dist_dir/BBtargets.txt"
+    fi
     [[ -s "$dist_dir/real.txt" ]] || {
         echo "No target locations mapped to first-pass basic blocks." >&2
         exit 1
