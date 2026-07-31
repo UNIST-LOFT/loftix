@@ -63,7 +63,6 @@ of the proof-of-concept input files.
       guix shell binutils@2.29
       nm -l cve/2017/15025/3899.crashes.bin
       nm -l cve/2017/15025/floatexception.elf
-      objdump -S cve/2017/15025/floatexception.elf
 
 - CVE-2017-15938: [invalid memory read][sourceware-22209]
 

@@ -73,8 +73,9 @@
      (("CVE-2017-15020" "2.29" "asan")
       ("nm" "-l ~a" "cve/2017/15020/reproducer"))
      (("CVE-2017-15025" "2.29")
-      ("nm" "-l ~a" "cve/2017/15025/3899.crashes.bin")
-      ("objdump" "-S ~a" "cve/2017/15025/floatexception.elf"))
+      ("nm" "-l ~a"
+       "cve/2017/15025/3899.crashes.bin"
+       "cve/2017/15025/floatexception.elf"))
      (("CVE-2017-15938" "2.29" "asan")
       ("nm" "-l ~a" "cve/2017/15938/invalidread"))
      (("CVE-2018-10372" "2.30" "asan")
