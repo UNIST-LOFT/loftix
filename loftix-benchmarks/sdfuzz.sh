@@ -784,9 +784,22 @@ run_fuzzer() {
     mkdir -p "$work_dir/in" "$work_dir/out"
     cp "$poc_path" "$work_dir/in/seed"
     read -r -a test_args <<< "$TEST_CMD"
+
+    # LD_LIBRARY_PATH below contains host library directories added by
+    # resolve_missing_libs (e.g. /lib/x86_64-linux-gnu), which would take
+    # precedence over RUNPATH/default paths and make the Guix-built binaries
+    # load the host system's older glibc, failing with "version `GLIBC_2.38'
+    # not found".  Prepend the Guix glibc directory (from the ELF
+    # interpreter) to LD_LIBRARY_PATH, mirroring build_target_stack, so the
+    # correct libc is loaded.
+    local glibc_lib
+    glibc_lib="$(readelf -l "$work_dir/$BINARY" 2>/dev/null | \
+        sed -n 's/.*\[Requesting program interpreter: \(.*\)\]/\1/p' | \
+        xargs dirname 2>/dev/null || true)"
+
     (
         cd "$work_dir"
-        export LD_LIBRARY_PATH="$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export LD_LIBRARY_PATH="${glibc_lib:+$glibc_lib:}$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         "$sdfuzz/bin/afl-fuzz" -m "${SDFUZZ_MEMORY_LIMIT:-none}" \
             -z "${SDFUZZ_EXPSCHEDULE:-exp}" -c "${SDFUZZ_CYCLE_LIMIT:-45m}" \
             -i in -o out -d -- "./$BINARY" "${test_args[@]}"

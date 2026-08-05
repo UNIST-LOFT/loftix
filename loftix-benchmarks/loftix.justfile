@@ -15,4 +15,4 @@ build-sdfuzz:
     bash sdfuzz.sh all
 
 run-sdfuzz:
-    bash sdfuzz.sh fuzz
+    timeout 24h bash sdfuzz.sh fuzz
