@@ -818,7 +818,7 @@ run_fuzzer() {
         cd "$work_dir"
         export LD_LIBRARY_PATH="${glibc_lib:+$glibc_lib:}$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         "$sdfuzz/bin/afl-fuzz" -m "${SDFUZZ_MEMORY_LIMIT:-none}" \
-            -z "${SDFUZZ_EXPSCHEDULE:-exp}" -c "${SDFUZZ_CYCLE_LIMIT:-45m}" \
+            -z "${SDFUZZ_EXPSCHEDULE:-exp}" -t 3000 \
             -i in -o out -d -- "./$BINARY" "${test_args[@]}"
     )
 }
