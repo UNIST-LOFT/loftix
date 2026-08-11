@@ -24,23 +24,25 @@ run-all cmd:
 @_run-all name command jobs:
     #!/usr/bin/env bash
     mkdir -p logs
-    find . -maxdepth 3 -name sdfuzz.sh -exec dirname {} \; \
+    # Exclude the root sdfuzz.sh so the repository root is not run as a
+    # subject (it has no build-sdfuzz recipe and would fail instantly).
+    find . -maxdepth 3 -name sdfuzz.sh -not -path './sdfuzz.sh' -exec dirname {} \; \
     | parallel --tag --joblog logs/{{name}}.tsv --results logs/{{name}}-results -j {{jobs}} '
       cd "{}" && {{command}}
     '
 
-@_run-from-file command argfile jobs prefix workdir:
+@_run-from-file command argfile jobs prefix:
     #!/usr/bin/env bash
     mkdir -p logs/{{command}}-results
     parallel --tag --joblog "logs/{{command}}.joblog" --results logs/{{command}}-results -j {{jobs}} \
-      'cd "{}" && just {{command}} {{workdir}}' \
+      'cd "{}" && just {{command}}' \
       :::: "{{argfile}}"
 
-@_resume-from-file command argfile jobs prefix workdir:
+@_resume-from-file command argfile jobs prefix:
     #!/usr/bin/env bash
     mkdir -p logs/{{command}}-results
     parallel --resume --tag --joblog "logs/{{command}}.joblog" --results logs/{{command}}-results -j {{jobs}} \
-      'cd "{}" && just {{command}} {{workdir}}' \
+      'cd "{}" && just {{command}}' \
       :::: "{{argfile}}"
 
 list out="exp.list":
@@ -64,4 +66,4 @@ success command out="success.list":
 
 
 run command jobs:
-    just _run-all {{command}} "just {{command}}" {{jobs}}
+    just _run-from-file {{command}} "exp.list" {{jobs}} {{command}}

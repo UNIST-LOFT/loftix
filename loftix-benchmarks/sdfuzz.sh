@@ -258,6 +258,23 @@ prepare_source() {
             chmod -R u+w "$source_dir"
             resolved_src_dir="$source_dir"
         else
+            # Guix re-packs origins with patches using zstd compression
+            # (e.g. jasper), which host GNU tar cannot decompress without
+            # the zstd binary on PATH.  Resolve it from the Guix store.
+            if [[ "$source_tarball" == *.tar.zst ]]; then
+                # zstd has multiple outputs (-lib, main, -static); pick the
+                # one that actually provides bin/zstd.
+                local zstd_prefix
+                zstd_prefix="$(guix build -L "$channel_dir" zstd --no-grafts \
+                    2>/dev/null | while read -r candidate; do
+                        [[ -x "$candidate/bin/zstd" ]] && { echo "$candidate"; break; }
+                    done || true)"
+                [[ -n "$zstd_prefix" && -x "$zstd_prefix/bin/zstd" ]] || {
+                    echo "Could not resolve zstd to extract $source_tarball" >&2
+                    exit 1
+                }
+                export PATH="$zstd_prefix/bin:$PATH"
+            fi
             tar -xf "$source_tarball" -C "$src_dir"
         fi
 
