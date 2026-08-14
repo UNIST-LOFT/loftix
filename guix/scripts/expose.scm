@@ -146,8 +146,7 @@
      (("CVE-2016-3186" "4.0.6")
       ("gif2tiff" "~a -" "cve/2016/3186/crash.gif"))
      (("CVE-2016-3623" "4.0.6")
-      ("rgb2ycbcr" "-v 0 ~a /dev/null"
-       "tiff-4.0.6/test/images/logluv-3c-16b.tiff"))
+      ("rgb2ycbcr" "-v 0 ~a /dev/null" "cve/2016/3623/logluv-3c-16b.tiff"))
      (("CVE-2016-5314" "4.0.6" "asan")
       ("rgb2ycbcr" "~a /dev/null" "cve/2016/5314/oobw.tiff"))
      (("CVE-2016-5321" "4.0.6")

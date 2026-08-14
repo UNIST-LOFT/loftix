@@ -53,6 +53,11 @@ SPDX-FileCopyrightText = 'Aladdin Mubaied'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = 'bugs/cve/2016/3623/logluv-3c-16b.tiff'
+SPDX-FileCopyrightText = 'Frank Warmerdam'
+SPDX-License-Identifier = 'libtiff'
+
+[[annotations]]
 path = 'bugs/cve/2016/5844/libarchive-signed-int-overflow.iso'
 SPDX-FileCopyrightText = 'Hanno Böck'
 SPDX-License-Identifier = 'CC0-1.0'
