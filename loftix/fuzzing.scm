@@ -4,13 +4,16 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (loftix fuzzing)
+  #:use-module (srfi srfi-1)
   #:use-module (gnu packages)
   #:use-module (gnu packages c)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages cmake)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages debug)
   #:use-module (gnu packages digest)
   #:use-module (gnu packages glib)
+  #:use-module (gnu packages boost)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages man)
@@ -18,6 +21,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
+  #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
@@ -463,4 +467,231 @@ using PoC-bounded under-constrained concolic execution.")))
        "SDFuzz is a directed fuzzing tool driven by target states.
 It leverages selective instrumentation and early termination,
 combined with distance metrics to optimize fuzzing efficiency.")
+      (license license:asl2.0))))
+
+;; Transitive propagated Python inputs of python-openai (the OpenAI SDK
+;; imports pydantic/httpx/typing-extensions/... at runtime) plus the
+;; distance-script dependencies, for the trigfuzz wrapper PYTHONPATH.
+(define (trigfuzz-python-deps)
+  (delete-duplicates
+   (append
+    (map (lambda (input) (cadr input))
+         (package-transitive-propagated-inputs python-openai))
+    (list python-openai python-networkx python-pydot))))
+
+(define python-site-suffix
+  (string-append "/lib/python"
+                 (version-major+minor (package-version python))
+                 "/site-packages"))
+
+(define trigfuzz-pypath
+  #~(string-join
+     (list #$@(map (lambda (dep)
+                     (file-append dep python-site-suffix))
+                   (trigfuzz-python-deps)))
+     ":"))
+
+(define-public trigfuzz
+  (let ((commit "45f5a5175ff100a19c0582860b3cce97c9068794")
+        (revision "0"))
+    (package
+      (name "trigfuzz")
+      (version (git-version "2.57b" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/vul337/TrigFuzz.git")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1nz3x58b6drj1sn198spkq2bd09incqml1aaadwlvd9gqmpdixa9"))
+         (patches (search-patches "patches/trigfuzz-crash-seeds.patch"
+                                  "patches/trigfuzz-llvm-13.patch"
+                                  "patches/trigfuzz-scripts.patch"
+                                  "patches/trigfuzz-instrument-include.patch"))
+         ;; Only the AFLGo engine + shared tooling are built; drop the
+         ;; heavyweight bundled AFL++ tree to avoid unpacking it.
+         (modules '((guix build utils)))
+         (snippet
+          #~(delete-file-recursively "engines/aflplusplus-selective"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list #:make-flags
+             #~(list (string-append "CC=" #$(cc-for-target))
+                     (string-append "PREFIX=" #$output)
+                     "AFL_NO_X86=1")
+             #:tests? #f
+             #:phases
+             #~(modify-phases %standard-phases
+                 (delete 'configure)
+                 ;; Build inside the AFLGo engine subtree.
+                 (add-before 'build 'chdir-engine
+                   (lambda _ (chdir "engines/aflgo-trigfuzz/afl-2.57b")))
+                 (add-after 'build 'build-llvm-components
+                   (lambda* (#:key inputs outputs #:allow-other-keys)
+                     (let* ((llvm-dir (string-append
+                                       (assoc-ref inputs "llvm") "/bin"))
+                            (clang-dir (string-append
+                                        (assoc-ref inputs "clang") "/bin"))
+                            (llvm-config (string-append
+                                          (assoc-ref inputs "llvm")
+                                          "/bin/llvm-config"))
+                            (cc (string-append
+                                 (assoc-ref inputs "clang") "/bin/clang"))
+                            (cxx (string-append
+                                  (assoc-ref inputs "clang") "/bin/clang++")))
+                       (setenv "PATH" (string-append llvm-dir ":" clang-dir ":"
+                                                     (getenv "PATH")))
+                       ;; llvm_mode + instrument: same Makefile `which`-fix
+                       ;; as sdfuzz.
+                       (substitute* '("llvm_mode/Makefile"
+                                      "../instrument/Makefile")
+                         (("which \\$\\(LLVM_CONFIG\\)") "test -x $(LLVM_CONFIG)")
+                         (("which \\$\\(CC\\)") "test -x $(CC)")
+                         (("which \\$\\(CXX\\)") "test -x $(CXX)"))
+                       (invoke "make" "-C" "llvm_mode"
+                               (string-append "LLVM_CONFIG=" llvm-config)
+                               (string-append "CC=" cc)
+                               (string-append "CXX=" cxx)
+                               (string-append "PREFIX=" #$output)
+                               "clean" "all")
+                       ;; instrument/: aflgo-clang + aflgo-pass.so + runtime.
+                       (invoke "make" "-C" "../instrument"
+                               (string-append "LLVM_CONFIG=" llvm-config)
+                               (string-append "CC=" cc)
+                               (string-append "CXX=" cxx)
+                               (string-append "PREFIX=" #$output)
+                               "clean" "all")
+                       ;; distance_calculator binary (distance.bin).
+                       (invoke "cmake" "-S" "../distance/distance_calculator"
+                               "-B" "../distance/distance_calculator/build"
+                               "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
+                       (invoke "cmake" "--build"
+                               "../distance/distance_calculator/build")
+                       (invoke "make" "-C" "libdislocator" "CC=gcc" "all")
+                       (invoke "make" "-C" "libtokencap" "CC=gcc" "all"))))
+                 (replace 'install
+                   (lambda* (#:key inputs outputs #:allow-other-keys)
+                     (let* ((out (assoc-ref outputs "out"))
+                            (bin (string-append out "/bin"))
+                            (lib (string-append out "/lib/afl"))
+                            (doc (string-append out "/share/doc/afl"))
+                            (eng (string-append out "/share/trigfuzz/engine"))
+                            (scripts (string-append out "/share/trigfuzz/scripts"))
+                            (pyroot (string-append out "/share/trigfuzz/python"))
+                            (python-bin (search-input-file inputs "bin/python3"))
+                            (shell (search-input-file inputs "bin/sh"))
+                            (pypath #$trigfuzz-pypath))
+                       ;; AFL core binaries (afl-fuzz, afl-gcc, afl-showmap, ...).
+                       (install-file "afl-fuzz" bin)
+                       (install-file "afl-gcc" bin)
+                       (install-file "afl-showmap" bin)
+                       (install-file "afl-tmin" bin)
+                       (install-file "afl-analyze" bin)
+                       (install-file "afl-as" bin)
+                       ;; afl-gcc locates its assembler wrapper as
+                       ;; $AFL_PATH/as (or $dir/afl-as); provide both names.
+                       (symlink "afl-as" (string-append bin "/as"))
+                       (for-each (lambda (s) (install-file s bin))
+                                 '("afl-g++" "afl-clang" "afl-clang++"))
+                       ;; LLVM fast compiler + pass + runtime objects.
+                       (install-file "afl-clang-fast" bin)
+                       (symlink "afl-clang-fast" (string-append bin "/afl-clang-fast++"))
+                       ;; afl-clang-fast locates its pass/runtime via AFL_PATH
+                       ;; or its own binary dir; make both resolve.
+                       (symlink "../lib/afl/afl-llvm-pass.so" (string-append bin "/afl-llvm-pass.so"))
+                       (symlink "../lib/afl/afl-llvm-rt.o" (string-append bin "/afl-llvm-rt.o"))
+                       (symlink "../lib/afl/afl-llvm-rt-64.o" (string-append bin "/afl-llvm-rt-64.o"))
+                       (install-file "afl-llvm-pass.so" lib)
+                       (install-file "afl-llvm-rt.o" lib)
+                       (install-file "afl-llvm-rt-64.o" lib)
+                       ;; AFLGo instrument pass + runtime.
+                       (install-file "../instrument/aflgo-clang" bin)
+                       (symlink "aflgo-clang" (string-append bin "/aflgo-clang++"))
+                       (install-file "../instrument/aflgo-pass.so" lib)
+                       (install-file "../instrument/aflgo-runtime.o" lib)
+                       (install-file "../instrument/aflgo-runtime-64.o" lib)
+                       ;; Dislocator/tokencap preload libs.
+                       (install-file "libdislocator/libdislocator.so" lib)
+                       (install-file "libtokencap/libtokencap.so" lib)
+                       (install-file "libdislocator/README.dislocator" doc)
+                       (install-file "libtokencap/README.tokencap" doc)
+                       ;; distance calculator + scripts.
+                       (install-file
+                        "../distance/distance_calculator/build/distance.bin"
+                        (string-append scripts "/distance.bin"))
+                       (copy-recursively "../distance" scripts)
+                       ;; Runtime header so targets can #include "distance.h".
+                       (install-file "../../../distance.h" eng)
+                       (install-file "config.h" eng)
+                       ;; AFLGO=.../engine layout for aflgo-clang: it locates
+                       ;; its pass/runtime via $AFLGO/instrument/.
+                       (mkdir-p (string-append eng "/instrument"))
+                       (install-file "../instrument/aflgo-pass.so"
+                                     (string-append eng "/instrument"))
+                       (install-file "../instrument/aflgo-runtime.o"
+                                     (string-append eng "/instrument"))
+                       (install-file "../instrument/aflgo-runtime-64.o"
+                                     (string-append eng "/instrument"))
+                       ;; Python tooling (trigfuzz package).
+                       (copy-recursively "../../../trigfuzz"
+                                         (string-append pyroot "/trigfuzz"))
+                       ;; The driver resolves REPO_ROOT as parents[1] of the
+                       ;; package dir (= pyroot) and compiles with -I REPO_ROOT
+                       ;; for distance.h; install it there.
+                       (install-file "../../../distance.h" pyroot)
+                       (install-file "../../../distance.h"
+                                     (string-append pyroot "/../include"))
+                       ;; Wrappers: distance scripts + tcgen/driver, mirroring
+                       ;; the sdfuzz wrapper pattern (PYTHONPATH, prefix env).
+                       (for-each
+                        (lambda (spec)
+                          (let* ((name (car spec))
+                                 (interp (cdr spec))
+                                 (real (string-append scripts "/" name))
+                                 (wrapper (string-append bin "/" name)))
+                            (with-output-to-file wrapper
+                              (lambda _
+                                (format #t
+                                        "#!~a~%export PYTHONPATH=~a${PYTHONPATH:+:$PYTHONPATH}~%export TRIGFUZZ_PREFIX=~s~%export LLVM_OPT=~s~%exec ~s ~s \"$@\"~%"
+                                        shell pypath out
+                                        (search-input-file inputs "bin/opt")
+                                        interp real)))
+                            (chmod wrapper #o555)))
+                        `(("gen_distance_orig.sh" . ,shell)
+                          ("gen_distance_fast.py" . ,python-bin)))
+                       ;; Python module entry-point wrappers.
+                       (for-each
+                        (lambda (spec)
+                          (let* ((mod (car spec))
+                                 (wrapper (string-append bin "/" (cdr spec))))
+                            (with-output-to-file wrapper
+                              (lambda _
+                                (format #t
+                                        "#!~a~%export PYTHONPATH=~a:~a${PYTHONPATH:+:$PYTHONPATH}~%export OPENAI_API_KEY=\"${OPENAI_API_KEY:-}\"~%export OPENAI_MODEL=\"${OPENAI_MODEL:-}\"~%export OPENAI_API_BASE_URL=\"${OPENAI_API_BASE_URL:-}\"~%exec ~s -B -m ~s \"$@\"~%"
+                                        shell pypath pyroot python-bin mod)))
+                            (chmod wrapper #o555)))
+                        '(("trigfuzz.tcgen" . "trigfuzz-tcgen")
+                          ("trigfuzz.driver" . "trigfuzz-driver")))
+                       ;; ld.lld wrapper (LLVM 13 gold/LTO linker).
+                       (let ((lld-wrapper (string-append bin "/trigfuzz-ld.lld")))
+                         (with-output-to-file lld-wrapper
+                           (lambda _
+                             (format #t "#!~a~%exec ~s \"$@\"~%"
+                                     shell (search-input-file inputs "bin/ld.lld"))))
+                         (chmod lld-wrapper #o555))))))))
+      (native-inputs (list cmake))
+      (inputs (list clang-13 llvm-13 lld-13 boost python
+                    python-networkx python-pydot python-openai))
+      (home-page "https://github.com/vul337/TrigFuzz")
+      (synopsis "Triggering-conditions guided directed fuzzer")
+      (description
+       "TrigFuzz is a directed fuzzing tool that leverages LLMs to extract
+vulnerability triggering conditions for PoC generation.  It is built on
+AFLGo and adds triggering-distance feedback scheduling and optional
+byte-aware mutation.  This package provides the AFLGo-based engine, the
+LLM-driven triggering-condition generator, and the distance-computation
+scripts.")
       (license license:asl2.0))))

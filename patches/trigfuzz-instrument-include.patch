@@ -1,0 +1,26 @@
+Insert distance.h after existing includes so projects that require their
+config.h before any system header (e.g. binutils) still compile.
+
+diff --git a/trigfuzz/instrument.py b/trigfuzz/instrument.py
+index 7b1e00f..96bad91 100644
+--- a/trigfuzz/instrument.py
++++ b/trigfuzz/instrument.py
+@@ -71,9 +71,16 @@ def instrument_v1(tcus: list[TCU], source_root: pathlib.Path) -> None:
+             stitched = "".join(indent + c + "\n" for c in calls)
+             lines.insert(lineno - 1, stitched)
+ 
+-        # Inject the #include once at the top if missing.
++        # Inject the #include after the existing includes.  Some projects
++        # (e.g. binutils) require their config.h before any system header,
++        # and distance.h pulls in system headers, so line 0 insertion would
++        # break them.
+         if '#include "distance.h"' not in "".join(lines[:20]):
+-            lines.insert(0, '#include "distance.h"\n')
++            idx = 0
++            for i, ln in enumerate(lines):
++                if ln.lstrip().startswith("#include"):
++                    idx = i + 1
++            lines.insert(idx, '#include "distance.h"\n')
+ 
+         path.write_text("".join(lines))
+ 
