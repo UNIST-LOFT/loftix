@@ -3,5 +3,8 @@ test
 out
 logs
 
+/.env
+
 *.list
 work-sdfuzz
+work-trigfuzz

@@ -16,3 +16,9 @@ build-sdfuzz:
 
 run-sdfuzz:
     timeout 12h bash sdfuzz.sh fuzz
+
+build-trigfuzz:
+    bash trigfuzz.sh all
+
+run-trigfuzz:
+    timeout 12h bash trigfuzz.sh fuzz
