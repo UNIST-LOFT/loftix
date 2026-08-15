@@ -508,6 +508,27 @@ run_stack() {
 }
 
 # ---- Step: LLM-generate triggering-condition candidates ----
+# Inner retry loop for tcgen, factored out so it can run inside a
+# flock-guarded subshell.  Returns 0 on success, 1 on exhaustion.
+_tcgen_attempt_loop() {
+    local k="$1" attempts="$2"
+    shift 2
+    local -a src_args=("$@")
+    local attempt
+    for ((attempt = 1; attempt <= attempts; attempt++)); do
+        if "$trigfuzz/bin/trigfuzz-tcgen" "$target_dir" --k "$k" \
+            "${src_args[@]}"; then
+            return 0
+        fi
+        if [[ $attempt -lt $attempts ]]; then
+            printf '[!] TC generation attempt %s/%s failed; retrying...\n' \
+                "$attempt" "$attempts" >&2
+            sleep 5
+        fi
+    done
+    return 1
+}
+
 run_tcgen() {
     require_tools
     [[ -d "$target_dir/source" ]] || build_target_dir
@@ -527,16 +548,48 @@ run_tcgen() {
     # reasoning; the default 4096-token cap leaves no room for the final
     # tuple text.  Raise it (the model supports 64k output tokens).
     export OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-65536}"
-    local attempt
-    for ((attempt = 1; attempt <= attempts; attempt++)); do
-        if "$trigfuzz/bin/trigfuzz-tcgen" "$target_dir" --k "$k" \
-            "${src_args[@]}"; then
+
+    # OPENAI_MAX_CONCURRENT_REQUESTS limits how many tcgen processes run
+    # concurrently across subjects (the Ollama cloud has a per-key
+    # concurrent-request cap).  Implemented as a directory of N lock
+    # files: each acquirer tries each file with flock -n; if none is
+    # free it blocks on the first file until it frees up.  The lock is
+    # held by the subshell wrapping the whole attempt loop, so it
+    # survives across retries and releases when the subshell exits.
+    if ! command -v flock &>/dev/null; then
+        echo "[!] flock not found; skipping tcgen concurrency limit" >&2
+        _tcgen_attempt_loop "$k" "$attempts" "${src_args[@]}"
+        return $?
+    fi
+    local max="${OPENAI_MAX_CONCURRENT_REQUESTS:-2}"
+    if [[ "$max" -le 0 ]]; then
+        _tcgen_attempt_loop "$k" "$attempts" "${src_args[@]}"
+        return $?
+    fi
+
+    local lock_dir="$channel_dir/loftix-benchmarks/.trigfuzz-locks"
+    mkdir -p "$lock_dir"
+    local i
+    for ((i = 1; i <= max; i++)); do
+        [[ -e "$lock_dir/slot.$i" ]] || touch "$lock_dir/slot.$i"
+    done
+    # Acquire a slot: try each non-blocking, then block on the first.
+    for ((i = 1; i <= max; i++)); do
+        if (
+            flock -n 9 || exit 1
+            _tcgen_attempt_loop "$k" "$attempts" "${src_args[@]}"
+        ) 9>"$lock_dir/slot.$i"; then
             return 0
         fi
-        if [[ $attempt -lt $attempts ]]; then
-            printf '[!] TC generation attempt %s/%s failed; retrying...\n' \
-                "$attempt" "$attempts" >&2
-            sleep 5
+    done
+    # All slots were busy on the non-blocking pass; block on each in
+    # turn until one frees up.
+    for ((i = 1; i <= max; i++)); do
+        if (
+            flock 9
+            _tcgen_attempt_loop "$k" "$attempts" "${src_args[@]}"
+        ) 9>"$lock_dir/slot.$i"; then
+            return 0
         fi
     done
     echo "TC generation failed after $attempts attempts." >&2

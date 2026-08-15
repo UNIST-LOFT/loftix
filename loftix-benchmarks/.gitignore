@@ -8,3 +8,4 @@ logs
 *.list
 work-sdfuzz
 work-trigfuzz
+.trigfuzz-locks
