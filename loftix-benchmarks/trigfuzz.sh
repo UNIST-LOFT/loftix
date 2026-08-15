@@ -80,6 +80,29 @@ build_inputs_ldflags=""
 resolved_src_dir=""
 python_bin=""
 
+# ---- Helper: split TEST_CMD into argv honoring single/double quotes ----
+# config.env may quote a filter argument (e.g. jq's "'.[0] != .[1]' @@");
+# a plain read -a keeps the quotes in the token, which breaks the program.
+split_test_cmd() {
+    local s="$1" token="" q=""
+    test_args=()
+    local i ch
+    for ((i = 0; i < ${#s}; i++)); do
+        ch="${s:i:1}"
+        if [[ -n "$q" ]]; then
+            if [[ "$ch" == "$q" ]]; then q=""
+            else token+="$ch"; fi
+        elif [[ "$ch" == "'" || "$ch" == '"' ]]; then
+            q="$ch"
+        elif [[ "$ch" == ' ' || "$ch" == $'\t' ]]; then
+            [[ -n "$token" ]] && { test_args+=("$token"); token=""; }
+        else
+            token+="$ch"
+        fi
+    done
+    [[ -n "$token" ]] && test_args+=("$token")
+}
+
 # ---- Helper: run the project's configure step ----
 run_configure() {
     local source_dir="$1"
@@ -143,6 +166,35 @@ resolve_missing_libs() {
     local sys_paths
     sys_paths="$(ldd "$binary" 2>/dev/null | \
         awk '/=> \// {print $3}' | xargs -r dirname | sort -u || true)"
+
+    # Prefer the build directory that produced the binary: the ASan build's
+    # shared libraries carry sanitizer instrumentation (e.g. libtiff's
+    # UBSan float-cast-overflow, jasper's ASan runtime) that host system
+    # copies of the same soname do not.  ldd resolves those libs, so they
+    # are not "missing"; prepend the build dirs so they shadow the host.
+    local search_root
+    case "$binary" in
+        "$asan_dir"/*) search_root="$asan_dir" ;;
+        "$v1_dir"/*|"$work_dir/$BINARY") search_root="$v1_dir" ;;
+        *) search_root="" ;;
+    esac
+    if [[ -n "$search_root" ]]; then
+        local needed
+        needed="$(readelf -d "$binary" 2>/dev/null | grep '(NEEDED)' | \
+            sed 's/.*\[\([^]]*\)\]/\1/' || true)"
+        for lib in $needed; do
+            local found
+            found="$(find "$search_root" -name "$lib" \
+                \( -type f -o -type l \) -print -quit 2>/dev/null || true)"
+            if [[ -n "$found" ]]; then
+                local dir="$(dirname "$found")"
+                if [[ ":$runtime_library_path:" != *":$dir:"* ]]; then
+                    new_paths="$new_paths:$dir"
+                fi
+            fi
+        done
+    fi
+
     for dir in $sys_paths; do
         if [[ ":$runtime_library_path:" != *":$dir:"* ]]; then
             new_paths="$new_paths:$dir"
@@ -151,11 +203,6 @@ resolve_missing_libs() {
 
     for lib in $missing; do
         local found
-        # Prefer the build directory that produced the binary: the ASan
-        # build's shared libraries carry ASan runtime dependencies (e.g.
-        # __asan_option_detect_stack_use_after_return) that the
-        # distance-instrumented (non-ASan) binary cannot resolve, so the
-        # v1 binary must pick up the v1 build's libs (e.g. libjasper.so.1).
         local search_root
         case "$binary" in
             "$asan_dir"/*) search_root="$asan_dir" ;;
@@ -459,7 +506,7 @@ run_stack() {
     mkdir -p "$work_dir"
     crash_log="$work_dir/crash.log"
     local -a test_args
-    read -r -a test_args <<< "$TEST_CMD"
+    split_test_cmd "$TEST_CMD"
     for i in "${!test_args[@]}"; do
         [[ "${test_args[$i]}" == '@@' ]] && test_args[$i]="$poc_path"
     done
@@ -540,6 +587,25 @@ run_tcgen() {
             src_args+=(--source "${cp%%:*}")
         done < "$crash_points_file"
     fi
+    # Also seed every source file on the crash stack (crash.log): a
+    # crash site can be a library leaf function whose trigger depends
+    # on caller state (e.g. zziplib's __zzip_get32 at fetch.c:32 reads
+    # a caller-supplied buffer).  Without the callers in the prompt the
+    # LLM hallucinates variable names (buffer_size, buf_len, ...).
+    if [[ -s "$work_dir/crash.log" ]]; then
+        local frame rel
+        # resolved_src_dir is only set when prepare_source ran in this
+        # process; fall back to the derived extraction path.
+        local src_root="${resolved_src_dir:-$src_dir/$source_name}"
+        while read -r frame; do
+            local f="${frame%:*}"
+            [[ "$f" == "$src_root"/* ]] || continue
+            rel="${f#"$src_root"/}"
+            [[ " ${src_args[*]} " == *" --source $rel "* ]] && continue
+            src_args+=(--source "$rel")
+        done < <(grep -oP '/[^ :]+\.(?:c|cpp|cxx|cc|c\+\+|h|hpp|hh|hxx):\d+' \
+            "$work_dir/crash.log" 2>/dev/null | sort -u)
+    fi
     local k="${TRIGFUZZ_K:-3}"
     local attempts="${TRIGFUZZ_TCGEN_ATTEMPTS:-3}"
     printf '[+] Generating TC candidates (k=%s) with model %s...\n' \
@@ -606,17 +672,20 @@ import sys
 from trigfuzz.instrument import _parse_loc, instrument_v1
 from trigfuzz.tcu import from_json
 
-tcus_path, src_root, meta_path = sys.argv[1], pathlib.Path(sys.argv[2]), sys.argv[3]
+tcus_path, src_root, meta_path, set_idx = sys.argv[1], pathlib.Path(sys.argv[2]), sys.argv[3], int(sys.argv[4])
 data = json.loads(pathlib.Path(tcus_path).read_text())
 if not data:
     sys.exit("tcus.json is empty")
-# Use the first non-empty candidate set: later sets may contain
-# hallucinated expressions (e.g. out-of-scope identifiers) that break
-# the build, and empty sets carry nothing.
+# Candidate sets are ordered by the generator; each is a full TCU
+# proposal.  Try them in order: a set may contain hallucinated
+# expressions (e.g. out-of-scope identifiers) that break the build,
+# so build_target retries with later sets.
 cands = [from_json(data)] if isinstance(data[0], dict) else [from_json(c) for c in data]
-union = next((s for s in cands if s), [])
-if not union:
-    sys.exit("tcus.json contains no non-empty candidate set")
+if set_idx >= len(cands) or not cands[set_idx]:
+    if set_idx == 0:
+        sys.exit("tcus.json contains no non-empty candidate set")
+    sys.exit(f"candidate set {set_idx} unavailable")
+union = cands[set_idx]
 
 # Keep only TCUs whose loc file exists in the source tree.
 kept = []
@@ -644,7 +713,7 @@ pathlib.Path(meta_path).write_text(f"{ins_num}\n{seq_num}\n")
 print(f"[+] instrumented {ins_num} TCU(s), ins_num={ins_num} seq_num={seq_num}")
 PYEOF
     PYTHONPATH="$trigfuzz/share/trigfuzz/python" "$python_bin" \
-        "$work_dir/instrument_v1.py" "$target_dir/tcus.json" "$source_v1" "$meta_file"
+        "$work_dir/instrument_v1.py" "$target_dir/tcus.json" "$source_v1" "$meta_file" "$set_idx"
 }
 
 # ---- Step: instrument + build the v1 target ----
@@ -665,24 +734,52 @@ build_target() {
     cp -a "$resolved_src_dir" "$source_v1"
     chmod -R u+w "$source_v1"
     chmod -R u+w "$source_v1"
-    instrument_v1
-    mkdir -p "$v1_dir"
     local log_file="$work_dir/build.log"
-    (
-        cd "$v1_dir"
-        export LD_LIBRARY_PATH="$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-        export CPPFLAGS="-isystem $linux_headers/include $build_inputs_cflags${CPPFLAGS:+ $CPPFLAGS}"
-        export LDFLAGS="$build_inputs_ldflags${LDFLAGS:+ $LDFLAGS}"
-        CC="$trigfuzz/bin/afl-clang-fast" CXX="$trigfuzz/bin/afl-clang-fast++" \
-            CFLAGS="-g -O1 -isystem $linux_headers/include $build_inputs_cflags -I$trigfuzz/share/trigfuzz/python $extra_cflags" \
-            CXXFLAGS="-g -O1 -isystem $linux_headers/include $build_inputs_cflags -I$trigfuzz/share/trigfuzz/python $extra_cflags" \
-            run_configure "$source_v1" &&
-        make -j"$jobs" "$make_build_target" &&
-        run_make_binary
-    ) >"$log_file" 2>&1 || {
-        tail -n 80 "$log_file" >&2
-        exit 1
-    }
+    local set_idx=0
+    while :; do
+        if ! instrument_v1 "$set_idx"; then
+            # Empty/invalid candidate set (e.g. all TCUs skipped).
+            set_idx=$((set_idx + 1))
+            if [[ "$set_idx" -ge "${TRIGFUZZ_MAX_CANDIDATE_SETS:-3}" ]]; then
+                echo "instrument_v1 failed; no usable candidate set" >&2
+                exit 1
+            fi
+            echo "[!] candidate set $((set_idx - 1)) unusable; trying set $set_idx" >&2
+            rm -rf "$source_v1"
+            cp -a "$resolved_src_dir" "$source_v1"
+            chmod -R u+w "$source_v1"
+            continue
+        fi
+        rm -rf "$v1_dir"
+        mkdir -p "$v1_dir"
+        if (
+            cd "$v1_dir"
+            export LD_LIBRARY_PATH="$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            export CPPFLAGS="-isystem $linux_headers/include $build_inputs_cflags${CPPFLAGS:+ $CPPFLAGS}"
+            export LDFLAGS="$build_inputs_ldflags${LDFLAGS:+ $LDFLAGS}"
+            CC="$trigfuzz/bin/afl-clang-fast" CXX="$trigfuzz/bin/afl-clang-fast++" \
+                CFLAGS="-g -O1 -isystem $linux_headers/include $build_inputs_cflags -I$trigfuzz/share/trigfuzz/python $extra_cflags" \
+                CXXFLAGS="-g -O1 -isystem $linux_headers/include $build_inputs_cflags -I$trigfuzz/share/trigfuzz/python $extra_cflags" \
+                run_configure "$source_v1" &&
+            make -j"$jobs" "$make_build_target" &&
+            run_make_binary
+        ) >"$log_file" 2>&1; then
+            break
+        fi
+        # The candidate set likely contains hallucinated expressions
+        # (out-of-scope identifiers, bad casts) that broke the build.
+        # Re-instrument from the pristine copy with the next set.
+        set_idx=$((set_idx + 1))
+        if [[ "$set_idx" -ge "${TRIGFUZZ_MAX_CANDIDATE_SETS:-3}" ]]; then
+            tail -n 80 "$log_file" >&2
+            echo "All candidate sets failed to build; see $log_file" >&2
+            exit 1
+        fi
+        echo "[!] candidate set $((set_idx - 1)) failed to build; trying set $set_idx" >&2
+        rm -rf "$source_v1"
+        cp -a "$resolved_src_dir" "$source_v1"
+        chmod -R u+w "$source_v1"
+    done
 
     local built_binary
     built_binary="$(find_binary "$v1_dir")"
@@ -699,14 +796,20 @@ build_target() {
 run_fuzzer() {
     require_tools
     local -a test_args
-    if [[ -x "$work_dir/$BINARY" ]]; then
+    # Final-phase behavior: never run the build.  Fuzzing requires prior
+    # build results (the instrumented binary + meta.txt with ins_num /
+    # seq_num); if they are missing, report and stop.
+    if [[ -x "$work_dir/$BINARY" && -s "$meta_file" ]]; then
+        printf '[+] Using existing build results in %s\n' "$work_dir" >&2
         resolve_missing_libs "$work_dir/$BINARY"
     else
-        build_target
+        echo "No build results in $work_dir (missing $BINARY or $meta_file);" >&2
+        echo "run 'bash trigfuzz.sh build' first." >&2
+        exit 1
     fi
     mkdir -p "$work_dir/in" "$work_dir/out"
     cp "$poc_path" "$work_dir/in/seed"
-    read -r -a test_args <<< "$TEST_CMD"
+    split_test_cmd "$TEST_CMD"
 
     local ins_num seq_num
     ins_num="$(sed -n '1p' "$meta_file" 2>/dev/null || true)"
@@ -724,6 +827,10 @@ run_fuzzer() {
     (
         cd "$work_dir"
         export LD_LIBRARY_PATH="${glibc_lib:+$glibc_lib:}$runtime_library_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        # config.env may set ASAN_OPTIONS (e.g. libming's
+        # detect_odr_violation=0); afl-fuzz rejects a custom ASAN_OPTIONS
+        # without abort_on_error=1 and symbolize=0.
+        export ASAN_OPTIONS="${ASAN_OPTIONS:+$ASAN_OPTIONS:}abort_on_error=1:symbolize=0"
         "$trigfuzz/bin/afl-fuzz" "${afl_args[@]}" -- "./$BINARY" "${test_args[@]}"
     )
 }
