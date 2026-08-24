@@ -16,6 +16,7 @@
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages valgrind)
   #:use-module (gnu packages zig)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system pyproject)
@@ -132,7 +133,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.14")
+    (version "0.0.15")
     (source
      (origin
        (method fossil-fetch)
@@ -140,7 +141,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "00izfp1ahwxjmrm8yvqci58yirbjp7prszrp612i5sd9fs8a58w3"))))
+        (base32 "1b07i5vajf4xa0jzcsdkbsbqpcyg3h6fd0bxj5k8hgawannvzxli"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -159,14 +160,16 @@ and congruence relations.")
                              "/bin/xargs")
               (string-append "FUZZOLIC=" #$(this-package-input "fuzzolic")
                              "/bin/fuzzolic")
-              (string-append "QEMU=" #$(this-package-input "aflplusplus")
+              (string-append "QEMUAFL=" #$(this-package-input "aflplusplus")
                              "/bin/afl-qemu-trace")
+              (string-append "VALGRIND=" #$(this-package-input "valgrind")
+                             "/bin/valgrind")
               (string-append "PREFIX=" #$output))
       #:phases
       #~(modify-phases %standard-phases
           (replace 'configure zig-configure))))
     (native-inputs (list m4 zig-0.16))
-    (inputs (list aflplusplus dyninst aflplusplus e9patch findutils fuzzolic))
+    (inputs (list aflplusplus dyninst e9patch findutils fuzzolic valgrind))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
     (home-page "https://chim.loan/taosc")
