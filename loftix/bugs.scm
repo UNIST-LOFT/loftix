@@ -53,7 +53,10 @@
        (sha256
         (base32 "12wma99lx63xh589kir9vqnwz0q9wkvn289r2kx309lw2d77i7dp"))))
     (build-system copy-build-system)
-    (arguments (list #:install-plan #~'(("bugs/cve" "share/bux/cve"))))
+    (arguments
+     (list #:install-plan
+           #~'(("bugs/cve" "share/bux/cve")
+               ("bugs/maptools" "share/bux/maptools"))))
     (home-page "https://github.com/UNIST-LOFT/loftix")
     (synopsis "Common bug reproducers")
     (description synopsis)

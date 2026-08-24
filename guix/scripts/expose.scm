@@ -14,10 +14,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-37)
-  #:export (%buggy-packages
-            buggy-package
-            guix-expose
-            search-bug))
+  #:export (%buggy-packages buggy-package guix-expose search-bug))
 
 (define %buggy-packages
   `(("audiofile-unpatched"
@@ -184,7 +181,9 @@
      (("CVE-2017-7600" "4.0.7" "ubsan-float-cast-overflow")
       ("tiffcp" "-i ~a /dev/null" "cve/2017/7600/outside-unsigned-char.tiff"))
      (("CVE-2017-7601" "4.0.7" "ubsan")
-      ("tiffcp" "-i ~a /dev/null" "cve/2017/7601/shift-long.tiff")))
+      ("tiffcp" "-i ~a /dev/null" "cve/2017/7601/shift-long.tiff"))
+     (("Maptools-2633" "4.0.7" "asan")
+      ("tiff2ps" "~a" "maptools/2633/heapoverflow.tiff")))
     ("libxml2"
      (("CVE-2012-5134" "2.9.0" "asan")
       ("xmllint" "~a" "cve/2012/5134/bad.xml"))

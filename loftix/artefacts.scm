@@ -10,16 +10,15 @@
   #:use-module (guix packages)
   #:use-module (guix scripts expose)
   #:use-module (loftix bugs)
-  #:use-module (loftix synthesis))
+  #:use-module (loftix synthesis)
+  #:export (taosctha))
 
-(define (taosctha bug-id)
-  (let* ((bug (search-bug %buggy-packages bug-id))
-         (orig (buggy-package bug #:static? #t))
-         (poc (cadr bug))
+(define (taosctha buggy-package bug-id)
+  (let* ((poc (cadr (search-bug %buggy-packages bug-id)))
          (bin (string-append "bin/" (car poc)))
          (args (cadr poc))
          (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
-         (taosc-timeout "10"))
+         (timeout "10"))
     (package
       (name "taoscadh")
       (version bug-id)
@@ -34,18 +33,49 @@
                  (set-path-environment-variable "PATH" '("bin")
                                                 (map cdr %build-inputs))
                  (mkdir #$output)
-                 (invoke "taosc-fix" #$taosc-timeout #$output
+                 (invoke "taosc-fix" #$timeout #$output
                          (search-input-directory %build-inputs #$poc-dir)
                          (search-input-file %build-inputs #$bin)
                          (simple-format #f #$args "@@")))))
-      (inputs (list orig))
+      (inputs (list buggy-package))
       (native-inputs (list bux coreutils grep sed taosc))
       (synopsis (simple-format #f "~a@@~a with ~a patched by taosc"
-                  (package-name orig)
-                  (package-version orig)
+                  (package-name buggy-package)
+                  (package-version buggy-package)
                   bug-id))
-      (description (package-description orig))
-      (home-page (package-home-page orig))
-      (license (package-license orig)))))
+      (description (package-description buggy-package))
+      (home-page (package-home-page buggy-package))
+      (license (package-license buggy-package)))))
 
-(define-public taoscadh-cve-2016-9273 (taosctha "CVE-2016-9273"))
+(define-public taoscadh-cve-2016-5314
+  (taosctha libtiff-static-4.0.6 "CVE-2016-5314"))
+
+(define-public taoscadh-cve-2016-5321
+  (taosctha libtiff-static-4.0.6 "CVE-2016-5321"))
+
+(define-public taoscadh-cve-2016-9273
+  (taosctha libtiff-static-4.0.6 "CVE-2016-9273"))
+
+(define-public taoscadh-cve-2016-9532
+  (taosctha libtiff-static-4.0.6 "CVE-2016-9532"))
+
+(define-public taoscadh-cve-2016-10092
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10092"))
+
+(define-public taoscadh-cve-2016-10094
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10092"))
+
+(define-public taoscadh-cve-2016-10267
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10267"))
+
+(define-public taoscadh-cve-2016-10272
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10272"))
+
+(define-public taoscadh-cve-2017-5225
+  (taosctha libtiff-static-4.0.7 "CVE-2017-5225"))
+
+(define-public taoscadh-cve-2017-7595
+  (taosctha libtiff-static-4.0.7 "CVE-2017-7595"))
+
+(define-public taoscadh-maptools-2633
+  (taosctha libtiff-static-4.0.7 "Maptools-2633"))
