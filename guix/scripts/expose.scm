@@ -14,9 +14,12 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-37)
-  #:export (guix-expose))
+  #:export (%buggy-packages
+            buggy-package
+            guix-expose
+            search-bug))
 
-(define %packages
+(define %buggy-packages
   `(("audiofile-unpatched"
      (("CVE-2017-6827" "0.3.6")
       ("sfinfo" "~a"
@@ -241,7 +244,7 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
                                             (car package)
                                             (cadar bug)))
                                         (cdr package)))
-                            %packages)
+                            %buggy-packages)
                   (exit 0)))
         (option '(#\p "procedure") #t #f
                 (lambda (opt name arg result)
@@ -277,6 +280,19 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
         (else (search-bug (cdr packages)
                           identifier))))
 
+(define* (buggy-package bug #:key (static? #f) (san? #f))
+  (let ((name (caar bug))
+        (sanitizers (cddar bug))
+        (version (cadar bug)))
+    (specification->package
+     (simple-format #f "~a@~a"
+       (cond ((and static? sanitizers)
+              (string-append name "-static"))
+             (san? (string-join (cons name sanitizers)
+                                "-with-"))
+             (else name))
+       version))))
+
 (define %default-procedure
   (cons 'procedure
         (lambda (prog args poc)
@@ -290,20 +306,13 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
          (san? (not (assq-ref opts 'sans-sans?)))
          (proc (assq-ref opts 'procedure))
          (id (assq-ref opts 'argument))
-         (bug (search-bug %packages id)))
+         (bug (search-bug %buggy-packages id)))
     (unless id (leave (G_ "missing argument: no bug identifier given~%")))
     (unless bug (leave (G_ "'~a' is not a supported bug~%")
                        id))
     (with-store store
       (let* ((bux (specification->package "bux"))
-             (name (cond (static? (string-append (caar bug) "-static"))
-                         (san? (string-join (cons (caar bug)
-                                                  (cddar bug))
-                                            "-with-"))
-                         (else (caar bug))))
-             (version (cadar bug))
-             (spec (simple-format #f "~a@~a" name version))
-             (out (specification->package spec)))
+             (out (buggy-package bug #:static? static #:san? san?)))
         (build-things store
           (map (lambda (pkg)
                  (derivation-file-name (package-derivation store pkg)))
@@ -321,4 +330,4 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
                                          "/share/bux/"
                                          poc)))
                                 (cddr cmd))))
-                (cdr bug))))))
+                  (cdr bug))))))
