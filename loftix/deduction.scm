@@ -44,7 +44,7 @@
                (uri (string-append upstream "/compare/" base-tag
                                    ".." commit ".diff"))
                (sha256
-                (base32 "07fga2jn5830fz9snwbzz2mpm2qqfjchsb969rqs7pf5py0h93fp"))
+                (base32 "1np9jxcy4l4hczw4f4z4773hz8w42k2bhrwdj01y7a5k5zlw2vxh"))
                (file-name (string-append name ".patch")))))))
        (home-page "https://github.com/season-lab/z3")
        (synopsis "Z3 for FUZZOLIC")))))
