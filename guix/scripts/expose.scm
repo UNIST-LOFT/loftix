@@ -311,7 +311,7 @@ Report bugs to: <https://github.com/UNIST-LOFT/loftix>
                        id))
     (with-store store
       (let* ((bux (specification->package "bux"))
-             (out (buggy-package bug #:static? static #:san? san?)))
+             (out (buggy-package bug #:static? static? #:san? san?)))
         (build-things store
           (map (lambda (pkg)
                  (derivation-file-name (package-derivation store pkg)))
