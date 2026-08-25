@@ -78,13 +78,13 @@
   (taosctha libjpeg-turbo-static-2.0.1 "CVE-2018-19664"))
 
 (define-public taoscadh-cve-2016-9265
-  (taosctha libming-0.4.7 "CVE-2016-9265"))
+  (taosctha libming-static-0.4.7 "CVE-2016-9265"))
 
 (define-public taoscadh-cve-2018-8806
-  (taosctha libming-0.4.8 "CVE-2018-8806"))
+  (taosctha libming-static-0.4.8 "CVE-2018-8806"))
 
 (define-public taoscadh-cve-2018-8964
-  (taosctha libming-0.4.8 "CVE-2018-8964"))
+  (taosctha libming-static-0.4.8 "CVE-2018-8964"))
 
 (define-public taoscadh-cve-2016-5314
   (taosctha libtiff-static-4.0.6 "CVE-2016-5314"))
@@ -120,19 +120,19 @@
   (taosctha libtiff-static-4.0.7 "Maptools-2633"))
 
 (define-public taoscadh-cve-2012-5134
-  (taosctha libxml2-2.9.0 "CVE-2012-5134"))
+  (taosctha libxml2-static-2.9.0 "CVE-2012-5134"))
 
 (define-public taoscadh-cve-2016-1839
-  (taosctha libxml2-2.9.3 "CVE-2016-1839"))
+  (taosctha libxml2-static-2.9.3 "CVE-2016-1839"))
 
 (define-public taoscadh-cve-2017-5969
-  (taosctha libxml2-2.9.4 "CVE-2017-5969"))
+  (taosctha libxml2-static-2.9.4 "CVE-2017-5969"))
 
 (define-public taoscadh-cve-2013-7437
   (taosctha potrace-1.11 "CVE-2013-7437"))
 
 (define-public taoscadh-cve-2017-5974
-  (taosctha zziplib-0.13.62 "CVE-2017-5974"))
+  (taosctha zziplib-static-0.13.62 "CVE-2017-5974"))
 
 (define-public taoscadh-cve-2017-5975
-  (taosctha zziplib-0.13.62 "CVE-2017-5975"))
+  (taosctha zziplib-static-0.13.62 "CVE-2017-5975"))
