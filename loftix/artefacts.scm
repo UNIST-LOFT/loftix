@@ -38,7 +38,7 @@
                          (search-input-file %build-inputs #$bin)
                          (simple-format #f #$args "@@")))))
       (inputs (list buggy-package))
-      (native-inputs (list bux coreutils grep sed taosc))
+      (native-inputs (list bux coreutils diffutils grep sed taosc))
       (synopsis (simple-format #f "~a@@~a with ~a patched by taosc"
                   (package-name buggy-package)
                   (package-version buggy-package)
