@@ -8,7 +8,6 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages debug)
   #:use-module (gnu packages instrumentation)
-  #:use-module (gnu packages m4)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages java)
   #:use-module (gnu packages patchutils)
@@ -133,7 +132,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.0.16")
+    (version "0.0.17")
     (source
      (origin
        (method fossil-fetch)
@@ -141,7 +140,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "0pbycb8zk30x4k5a6bx67c9hsgavbajn6a1czbj4k370amxm67sf"))))
+        (base32 "0jnwdk4pc9x15y7fijlc9zg7lpgqgg2rdhysv21i2jqir9alfa1b"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -168,7 +167,7 @@ and congruence relations.")
       #:phases
       #~(modify-phases %standard-phases
           (replace 'configure zig-configure))))
-    (native-inputs (list m4 zig-0.16))
+    (native-inputs (list zig-0.16))
     (inputs (list aflplusplus dyninst e9patch findutils fuzzolic valgrind))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
