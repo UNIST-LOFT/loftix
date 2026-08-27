@@ -218,6 +218,19 @@ of the proof-of-concept input files.
       swftophp cve/2018/8964/heap-use-after-free.swf
 
 
+## libmobi
+
+- [CVE-2021-3751](https://github.com/bfabiszewski/libmobi/pull/33)
+- [CVE-2021-3881](https://huntr.com/bounties/540fd115-7de4-4e19-a918-5ee61f5157c1)
+- [CVE-2021-3888](https://huntr.com/bounties/722b3acb-792b-4429-a98d-bb80efb8938d)
+- [CVE-2022-1533](https://huntr.com/bounties/cb574ce1-fbf7-42ea-9e6a-91e17adecdc3)
+- [CVE-2022-1534](https://huntr.com/bounties/9a90ffa1-38f5-4685-9c00-68ba9068ce3d)
+- [CVE-2022-1907](https://huntr.com/bounties/4eb0fa3e-4480-4fb5-8ec0-fbcd71de6012)
+- [CVE-2022-1908](https://huntr.com/bounties/a7436e88-0488-4bd4-816f-2e2c803e93e8)
+- [CVE-2022-1987](https://huntr.com/bounties/e8197737-7557-443e-a59f-2a86e8dda75f)
+- [CVE-2022-2279](https://huntr.com/bounties/68c249e2-779d-4871-b7e3-851f03aca2de)
+
+
 ## libtiff
 
 - BZ#2633: [heap buffer overflow][maptools-2633]:

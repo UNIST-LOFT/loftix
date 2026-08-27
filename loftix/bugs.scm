@@ -20,6 +20,7 @@
   #:use-module (gnu packages bison)
   #:use-module (gnu packages compiler-tools)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages ebook)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
   #:use-module (gnu packages mp3)
@@ -514,6 +515,44 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
 
 (define-public libming-static-0.4.8 (static libming-0.4.8))
 (define-public libming-static-0.4.7 (static libming-0.4.7))
+
+(define (libmobi-at-version version checksum)
+  (package
+    (inherit libmobi)
+    (name "libmobi")
+    (version version)
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/bfabiszewski/libmobi")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256 (base32 checksum))
+       (modules '((guix build utils)))
+       (snippet #~(substitute* "src/opf.c" ;for libmobi<0.12 & libxml2>=2.12
+                    (("#include <libxml/encoding\\.h>" prev)
+                     (string-append prev "\n#include <libxml/parser.h>"))))))))
+
+(define-public libmobi-0.10
+  (libmobi-at-version
+   "0.10" "0arkr43z07kh2jll919h03clcsfpvhppvc3xn19lakrfgpmi6faw"))
+
+(define-public libmobi-0.7
+  (libmobi-at-version
+   "0.7" "0mwh435r8p1n0r3q1l0c0agaj3r3fq3bb3sx7sfvpycri88rdx4g"))
+
+(define-public libmobi-0.6
+  (libmobi-at-version
+   "0.6" "0yps72cm609xn2k7alflkdhp9kgr1w7zzyxjygz0n1kqrdcplihh"))
+
+(define-public libmobi-static-0.10 (static libmobi-0.10))
+(define-public libmobi-static-0.7 (static libmobi-0.7))
+(define-public libmobi-static-0.6 (static libmobi-0.6))
+
+(define-public libmobi-with-asan-0.10 (with-asan libmobi-0.10))
+(define-public libmobi-with-asan-0.7 (with-asan libmobi-0.7))
+(define-public libmobi-with-asan-0.6 (with-asan libmobi-0.6))
 
 (define-public libtiff-4.0.7
   (package

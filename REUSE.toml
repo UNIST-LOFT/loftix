@@ -180,6 +180,31 @@ SPDX-FileCopyrightText = '陈鹏'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
+path = [ 'bugs/cve/2021/3751/ncx.mobi',
+         'bugs/cve/2021/3881/ncx.mobi',
+         'bugs/cve/2021/3888/vishnu.mobi' ]
+SPDX-FileCopyrightText = '张岑'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = [ 'bugs/cve/2022/1533/poc_s.mobi',
+         'bugs/cve/2022/1534/poc.mobi',
+         'bugs/cve/2022/2279/poc_n.mobi' ]
+SPDX-FileCopyrightText = 'Jieyong Ma'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = [ 'bugs/cve/2022/1907/poc4.mobi',
+         'bugs/cve/2022/1908/poc5.mobi' ]
+SPDX-FileCopyrightText = 'Ruitong'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
+path = 'bugs/cve/2022/1987/poc.mobi'
+SPDX-FileCopyrightText = 'beidasoft'
+SPDX-License-Identifier = 'CC0-1.0'
+
+[[annotations]]
 path = [ 'bugs/cve/2023/50268/119.json',
          'bugs/cve/2025/48060/3373.jq' ]
 SPDX-FileCopyrightText = 'itchyny'
