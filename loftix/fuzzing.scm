@@ -6,6 +6,7 @@
 (define-module (loftix fuzzing)
   #:use-module (srfi srfi-1)
   #:use-module (gnu packages)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages c)
   #:use-module (gnu packages check)
   #:use-module (gnu packages cmake)
