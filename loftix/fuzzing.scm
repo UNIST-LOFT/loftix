@@ -168,6 +168,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
        (patches (search-patches
                  "patches/fuzzolic-python-package.patch"
                  "patches/fuzzolic-relax-perf-test.patch"
+                 "patches/fuzzolic-showmap-available.patch"
                  "patches/fuzzolic-test-fix-runner.patch"
                  "patches/fuzzolic-test-skip-nondeterministic.patch"))))
     (build-system pyproject-build-system)
