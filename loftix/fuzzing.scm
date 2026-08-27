@@ -197,9 +197,9 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                 (("^( +self\\.showmap = ).*" _ assign)
                  (simple-format #f "~a~s\n"
                    assign (search-input-file inputs "bin/afl-showmap")))
-                (("^( +self\\.showmap_fork = ).*" _ assign)
-                 (simple-format #f "~a~s\n"
-                   assign (search-input-file inputs "bin/fuzzolic-showmap")))
+                (("\\<os\\.path\\.join\\(SCRIPT_DIR, \".+-showmap\"\\)")
+                 (simple-format #f "~s"
+                   (search-input-file inputs "bin/fuzzolic-showmap")))
                 (("\\<SCRIPT_DIR \\+ '.+/merge_bitmap'")
                  (simple-format #f "~s" (search-input-file inputs
                                          "bin/fuzzolic-merge-bitmap"))))
