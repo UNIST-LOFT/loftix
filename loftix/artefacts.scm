@@ -16,7 +16,7 @@
 
 (define (taosctha buggy-package bug-id)
   (let* ((poc (cadr (search-bug %buggy-packages bug-id)))
-         (bin (string-append "bin/" (car poc)))
+         (bin (string-append "/bin/" (car poc)))
          (args (cadr poc))
          (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
          (timeout "10"))
@@ -36,7 +36,7 @@
                  (mkdir #$output)
                  (invoke "taosc-fix" #$timeout #$output
                          (search-input-directory %build-inputs #$poc-dir)
-                         (search-input-file %build-inputs #$bin)
+                         (string-append #$buggy-package #$bin)
                          (simple-format #f #$args "@@")))))
       (inputs (list buggy-package))
       (native-inputs
