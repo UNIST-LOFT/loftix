@@ -5,6 +5,7 @@
 
 (define-module (loftix artefacts)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages gcc)
   #:use-module (guix build-system trivial)
   #:use-module (guix gexp)
   #:use-module (guix packages)
@@ -38,7 +39,8 @@
                          (search-input-file %build-inputs #$bin)
                          (simple-format #f #$args "@@")))))
       (inputs (list buggy-package))
-      (native-inputs (list bux coreutils diffutils grep sed taosc))
+      (native-inputs
+       (list bux coreutils diffutils findutils gcc grep sed taosc))
       (synopsis (simple-format #f "~a@@~a with ~a patched by taosc"
                   (package-name buggy-package)
                   (package-version buggy-package)
