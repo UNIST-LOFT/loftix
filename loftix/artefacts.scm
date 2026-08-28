@@ -104,7 +104,7 @@
   (taosctha libtiff-static-4.0.7 "CVE-2016-10092"))
 
 (define-public taoscadh-cve-2016-10094
-  (taosctha libtiff-static-4.0.7 "CVE-2016-10092"))
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10094"))
 
 (define-public taoscadh-cve-2016-10267
   (taosctha libtiff-static-4.0.7 "CVE-2016-10267"))
