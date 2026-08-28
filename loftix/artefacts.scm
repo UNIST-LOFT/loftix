@@ -40,7 +40,7 @@
                          (simple-format #f #$args "@@")))))
       (inputs (list buggy-package))
       (native-inputs
-       (list bux coreutils diffutils findutils gcc grep sed taosc))
+       (list binutils bux coreutils diffutils findutils gcc grep sed taosc))
       (synopsis (simple-format #f "~a@@~a with ~a patched by taosc"
                   (package-name buggy-package)
                   (package-version buggy-package)
