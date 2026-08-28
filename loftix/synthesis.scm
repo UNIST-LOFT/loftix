@@ -132,7 +132,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.1.0")
+    (version "0.1.1")
     (source
      (origin
        (method fossil-fetch)
@@ -140,7 +140,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "05fccw8zh7kzfipg5gppf4wirw5xspw2jf2ln3k9d0z23g4x0a2p"))))
+        (base32 "0xbvla2ajkh2pibcgwxzwiai0ilz74d4yf03sizwm9mpxnyf5rri"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -151,7 +151,9 @@ and congruence relations.")
       (cons '(guix build zig-utils)
             %default-gnu-modules)
       #:make-flags
-      #~(list (string-append "E9TOOL=" #$(this-package-input "e9patch")
+      #~(list (string-append "E9COMPILE=" #$(this-package-input "e9patch")
+                             "/bin/e9compile")
+              (string-append "E9TOOL=" #$(this-package-input "e9patch")
                              "/bin/e9tool")
               (string-append "FIND=" #$(this-package-input "findutils")
                              "/bin/find")
