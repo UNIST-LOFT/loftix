@@ -1,0 +1,69 @@
+# Recipe to build all projects and bugs in the loftix benchmark
+# Run in benchmarks/loftix: cd benchmarks/loftix && just build-all
+
+# sequential
+run-all cmd:
+    #!/usr/bin/env bash
+    for project in *; do \
+        if [ -d "$project" ]; then \
+            for bug in "$project"/*; do \
+                # If directory, run just build
+                if [ -d "$bug" ]; then \
+                    if [ -f "$bug/config.env" ]; then \
+                        echo "Building $bug"; \
+                        (cd "$bug" && {{cmd}}); \
+                    else \
+                        echo "Skipping $bug, no config.env found"; \
+                    fi; \
+                fi; \
+            done; \
+        fi; \
+    done;
+
+# parallel
+@_run-all name command jobs:
+    #!/usr/bin/env bash
+    mkdir -p logs
+    # Exclude the root sdfuzz.sh so the repository root is not run as a
+    # subject (it has no build-sdfuzz recipe and would fail instantly).
+    find . -maxdepth 3 -name sdfuzz.sh -not -path './sdfuzz.sh' -exec dirname {} \; \
+    | parallel --tag --joblog logs/{{name}}.tsv --results logs/{{name}}-results -j {{jobs}} '
+      cd "{}" && {{command}}
+    '
+
+@_run-from-file command argfile jobs prefix:
+    #!/usr/bin/env bash
+    mkdir -p logs/{{command}}-results
+    parallel --tag --joblog "logs/{{command}}.joblog" --results logs/{{command}}-results -j {{jobs}} \
+      'cd "{}" && just {{command}}' \
+      :::: "{{argfile}}"
+
+@_resume-from-file command argfile jobs prefix:
+    #!/usr/bin/env bash
+    mkdir -p logs/{{command}}-results
+    parallel --resume --tag --joblog "logs/{{command}}.joblog" --results logs/{{command}}-results -j {{jobs}} \
+      'cd "{}" && just {{command}}' \
+      :::: "{{argfile}}"
+
+list out="exp.list":
+    mkdir -p "$(dirname {{out}})"
+    find . -maxdepth 3 -name config.env -exec dirname {} \; | sort -u > {{out}}
+    echo "Experiment list ({{out}}): $(wc -l < {{out}})"
+
+failed command out="failed.list":
+    #!/usr/bin/env bash
+    awk 'NR>1 && $7!=0' logs/{{command}}.joblog \
+      | sed -E 's/^.*cd "([^"]+)".*$/\1/' \
+      > {{out}}
+    echo "Failures ({{out}}): $(wc -l < {{out}})"
+
+success command out="success.list":
+    #!/usr/bin/env bash
+    awk 'NR>1 && $7==0' logs/{{command}}.joblog \
+      | sed -E 's/^.*cd "([^"]+)".*$/\1/' \
+      > {{out}}
+    echo "Successes ({{out}}): $(wc -l < {{out}})"
+
+
+run command jobs:
+    just _run-from-file {{command}} "exp.list" {{jobs}} {{command}}
