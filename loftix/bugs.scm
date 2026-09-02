@@ -380,6 +380,8 @@
        (sha256
         (base32 "0qnv8k9x8i6i24n9vx3cxgw0yjj1411silc4wksfcinrfmlhsaj0"))))))
 
+(define-public jq-static-1.7.1 (static jq-1.7.1))
+(define-public jq-static-1.7.0 (static jq-1.7.0))
 (define-public jq-with-asan-1.7.1 (with-asan jq-1.7.1))
 (define-public jq-with-asan-1.7.0 (with-asan jq-1.7.0))
 (define-public jq-with-ubsan-1.7.1 (with-ubsan jq-1.7.1))

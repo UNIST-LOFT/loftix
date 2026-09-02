@@ -86,6 +86,18 @@
 (define-public taoscadh-cve-2016-9560
   (taosctha "CVE-2016-9560" jasper-static-1.900.19))
 
+(define-public taoscadh-cve-2023-50246
+  (taosctha "CVE-2023-50246" jq-static-1.7.0))
+
+(define-public taoscadh-cve-2024-23337
+  (taosctha "CVE-2024-23337" jq-static-1.7.1))
+
+(define-public taoscadh-cve-2024-53427
+  (taosctha "CVE-2024-53427" jq-static-1.7.1))
+
+(define-public taoscadh-cve-2025-48060
+  (taosctha "CVE-2025-48060" jq-static-1.7.1))
+
 (define-public taoscadh-cve-2012-2806
   (taosctha "CVE-2012-2806" libjpeg-turbo-static-1.2.0))
 
