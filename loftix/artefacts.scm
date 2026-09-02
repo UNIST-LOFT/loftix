@@ -178,3 +178,18 @@
 
 (define-public taoscadh-cve-2017-5975
   (taosctha "CVE-2017-5975" zziplib-static-0.13.62))
+
+(define-public taoscadh-cve-2017-5977
+  (taosctha "CVE-2017-5977" zziplib-static-0.13.62))
+
+(define-public taoscadh-cve-2017-5978
+  (taosctha "CVE-2017-5978" zziplib-static-0.13.62))
+
+(define-public taoscadh-cve-2017-5979
+  (taosctha "CVE-2017-5979" zziplib-static-0.13.62))
+
+(define-public taoscadh-cve-2017-5980
+  (taosctha "CVE-2017-5980" zziplib-static-0.13.62))
+
+(define-public taoscadh-cve-2017-5981
+  (taosctha "CVE-2017-5981" zziplib-static-0.13.62))
