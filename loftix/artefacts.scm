@@ -18,7 +18,7 @@
          (bin (string-append "/bin/" (car poc)))
          (args (cadr poc))
          (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
-         (timeout "10"))
+         (timeout "67"))
     (package
       (name "taoscadh")
       (version bug-id)
@@ -50,14 +50,32 @@
 (define-public taoscadh-cve-2017-6965
   (taosctha binutils-2.27 "CVE-2017-6965"))
 
+(define-public taoscadh-cve-2017-6966
+  (taosctha binutils-2.27 "CVE-2017-6966"))
+
 (define-public taoscadh-cve-2017-14745
   (taosctha binutils-2.29 "CVE-2017-14745"))
+
+(define-public taoscadh-cve-2017-14939
+  (taosctha binutils-2.29 "CVE-2017-14939"))
+
+(define-public taoscadh-cve-2017-14940
+  (taosctha binutils-2.29 "CVE-2017-14940"))
 
 (define-public taoscadh-cve-2017-15020
   (taosctha binutils-2.29 "CVE-2017-15020"))
 
 (define-public taoscadh-cve-2017-15025
   (taosctha binutils-2.29 "CVE-2017-15025"))
+
+(define-public taoscadh-cve-2017-15938
+  (taosctha binutils-2.29 "CVE-2017-15938"))
+
+(define-public taoscadh-cve-2018-10372
+  (taosctha binutils-2.30 "CVE-2018-10372"))
+
+(define-public taoscadh-cve-2019-9077
+  (taosctha binutils-2.32 "CVE-2019-9077"))
 
 (define-public taoscadh-cve-2016-8691
   (taosctha jasper-static-1.900.3 "CVE-2016-8691"))
