@@ -83,6 +83,9 @@
 (define-public taoscadh-cve-2016-9557
   (taosctha jasper-static-1.900.19 "CVE-2016-9557"))
 
+(define-public taoscadh-cve-2016-9560
+  (taosctha jasper-static-1.900.19 "CVE-2016-9560"))
+
 (define-public taoscadh-cve-2012-2806
   (taosctha libjpeg-turbo-static-1.2.0 "CVE-2012-2806"))
 
@@ -104,6 +107,15 @@
 (define-public taoscadh-cve-2018-8964
   (taosctha libming-static-0.4.8 "CVE-2018-8964"))
 
+(define-public taoscadh-cve-2014-8128
+  (taosctha libtiff-static-4.0.3 "CVE-2014-8128"))
+
+(define-public taoscadh-cve-2016-3186
+  (taosctha libtiff-static-4.0.6 "CVE-2016-3186"))
+
+(define-public taoscadh-cve-2016-3623
+  (taosctha libtiff-static-4.0.6 "CVE-2016-3623"))
+
 (define-public taoscadh-cve-2016-5314
   (taosctha libtiff-static-4.0.6 "CVE-2016-5314"))
 
@@ -119,11 +131,23 @@
 (define-public taoscadh-cve-2016-10092
   (taosctha libtiff-static-4.0.7 "CVE-2016-10092"))
 
+(define-public taoscadh-cve-2016-10093
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10093"))
+
 (define-public taoscadh-cve-2016-10094
   (taosctha libtiff-static-4.0.7 "CVE-2016-10094"))
 
+(define-public taoscadh-cve-2016-10266
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10266"))
+
 (define-public taoscadh-cve-2016-10267
   (taosctha libtiff-static-4.0.7 "CVE-2016-10267"))
+
+(define-public taoscadh-cve-2016-10268
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10268"))
+
+(define-public taoscadh-cve-2016-10271
+  (taosctha libtiff-static-4.0.7 "CVE-2016-10271"))
 
 (define-public taoscadh-cve-2016-10272
   (taosctha libtiff-static-4.0.7 "CVE-2016-10272"))

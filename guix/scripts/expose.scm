@@ -119,8 +119,7 @@
      (("CVE-2017-15232" "1.5.2")
       ("djpeg" ,(string-join '("-crop 1x1+16+16" "-onepass" "-dither ordered"
                                "-dct float" "-colors 8" "-targa" "-grayscale"
-                               "-outfile /dev/null" "~a")
-                             " ")
+                               "-outfile /dev/null" "~a"))
        "cve/2017/15232/1.jpg"
        "cve/2017/15232/2.jpg"))
      (("CVE-2018-14498" "1.5.3" "asan")
