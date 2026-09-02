@@ -32,7 +32,6 @@
                  (use-modules (guix build utils))
                  (set-path-environment-variable "PATH" '("bin")
                                                 (map cdr %build-inputs))
-                 (mkdir #$output)
                  (invoke "taosc-fix" #$timeout #$output
                          (search-input-directory %build-inputs #$poc-dir)
                          (string-append #$buggy-package #$bin)

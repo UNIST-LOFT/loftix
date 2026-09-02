@@ -132,7 +132,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.1.11")
+    (version "0.1.12")
     (source
      (origin
        (method fossil-fetch)
@@ -140,7 +140,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "0nlwhf70yndmmak8gyndf0fbik5a8wy3rab8ccm1vfihcazzil0z"))))
+        (base32 "0cwqd7jhvn398zljnlznvklbpjlr67fqa9ivbr5lxa3ipjmwh6qv"))))
     (build-system gnu-build-system)
     (arguments
      (list
