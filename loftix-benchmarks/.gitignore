@@ -1,0 +1,7 @@
+workdir
+test
+out
+logs
+
+*.list
+work-sdfuzz

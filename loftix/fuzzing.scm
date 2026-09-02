@@ -11,6 +11,7 @@
   #:use-module (gnu packages debug)
   #:use-module (gnu packages digest)
   #:use-module (gnu packages glib)
+  #:use-module (gnu packages graphviz)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages man)
   #:use-module (gnu packages m4)
@@ -27,6 +28,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix utils)
+  #:use-module (gnu packages llvm)
   #:use-module (loftix deduction)
   #:use-module (loftix emulation))
 
@@ -102,7 +104,7 @@
       (build-system cmake-build-system)
       (arguments '(#:configure-flags '("-S" "../source/solver")
                    #:tests? #f))
-      (native-inputs (list pkg-config))
+      (native-inputs (list pkg-config which))
       (inputs (list fuzzy-sat
                     glib
                     qemu-for-fuzzolic
@@ -319,6 +321,146 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                       "qemu-for-fuzzolic")))
     (home-page "https://github.com/UNIST-LOFT/binradar")
     (synopsis "Binary patch verification tool")
-    (description
-     "Binradar is a binary patch verification tool
+     (description
+      "Binradar is a binary patch verification tool
 using PoC-bounded under-constrained concolic execution.")))
+
+(define-public sdfuzz
+  (let ((commit "e8f5b1750b4ae0a2babcc27ad1b40cc1b3494886")
+        (revision "0"))
+    (package
+      (name "sdfuzz")
+      (version (git-version "2.52b" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/cuhk-seclab/sdfuzz")
+               (commit commit)))
+          (patches (search-patches "patches/sdfuzz-llvm-13.patch"
+                                  "patches/sdfuzz-scripts.patch"
+                                  "patches/sdfuzz-crash-seeds.patch"
+                                  "patches/sdfuzz-stackparser.patch"))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "0mhfwm1h8wpszpd969rm9rhn73ylprc44gdcrnbfqh278cyib0cq"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list #:make-flags
+             #~(list (string-append "CC=" #$(cc-for-target))
+                     (string-append "PREFIX=" #$output)
+                     "AFL_NO_X86=1")
+             #:phases
+             #~(modify-phases %standard-phases
+                 (delete 'configure)
+                 (delete 'check)
+                 (add-after 'build 'build-llvm-components
+                    (lambda* (#:key inputs #:allow-other-keys)
+                       (let ((llvm-dir (string-append
+                                        (assoc-ref inputs "llvm") "/bin"))
+                             (clang-dir (string-append
+                                         (assoc-ref inputs "clang") "/bin")))
+                         (setenv "PATH" (string-append llvm-dir ":" clang-dir ":"
+                                                       (getenv "PATH"))))
+                      (let ((llvm-config (string-append
+                                          (assoc-ref inputs "llvm")
+                                          "/bin/llvm-config"))
+                            (cc (string-append
+                                 (assoc-ref inputs "clang")
+                                 "/bin/clang"))
+                            (cxx (string-append
+                                  (assoc-ref inputs "clang")
+                                  "/bin/clang++")))
+                        (substitute* "llvm_mode/Makefile"
+                          (("which \\$\\(LLVM_CONFIG\\)")
+                           "test -x $(LLVM_CONFIG)")
+                          (("which \\$\\(CC\\)")
+                           "test -x $(CC)")
+                          (("which \\$\\(CXX\\)")
+                           "test -x $(CXX)"))
+                         (invoke "make" "-C" "llvm_mode"
+                                 (string-append "LLVM_CONFIG=" llvm-config)
+                                 (string-append "CC=" cc)
+                                 (string-append "CXX=" cxx)
+                           (string-append "PREFIX=" #$output)
+                                 "clean" "all")
+                        (invoke "make" "-C" "instr"
+                          (string-append "LLVM_CONFIG=" llvm-config)
+                          (string-append "CXX=" cxx)
+                          "clean" "all")
+                        (invoke "make" "-C" "libdislocator"
+                          "CC=gcc" "all")
+                        (invoke "make" "-C" "libtokencap"
+                          "CC=gcc" "all"))))
+                 (add-after 'install 'install-extra
+                   (lambda* (#:key inputs outputs #:allow-other-keys)
+                     (let* ((out (assoc-ref outputs "out"))
+                            (bin (string-append out "/bin"))
+                            (lib (string-append out "/lib/afl"))
+                            (doc (string-append out "/share/doc/afl"))
+                            (scripts (string-append out "/share/sdfuzz/scripts"))
+                            (python-bin (search-input-file inputs "bin/python3"))
+                            (shell (search-input-file inputs "bin/sh"))
+                            (pythonpath
+                             (string-append
+                              #$(file-append
+                                  python-networkx
+                                  (string-append
+                                   "/lib/python"
+                                   (version-major+minor
+                                    (package-version python))
+                                   "/site-packages"))
+                              ":"
+                              #$(file-append
+                                  python-pydot
+                                  (string-append
+                                   "/lib/python"
+                                   (version-major+minor
+                                    (package-version python))
+                                   "/site-packages")))))
+                       (install-file "fuzzopt.so" lib)
+                       (install-file
+                        "libdislocator/libdislocator.so" lib)
+                       (install-file
+                        "libtokencap/libtokencap.so" lib)
+                       (install-file
+                        "libdislocator/README.dislocator" doc)
+                       (install-file
+                        "libtokencap/README.tokencap" doc)
+                       (copy-recursively "scripts" scripts)
+                       (for-each
+                        (lambda (spec)
+                          (let ((name (car spec))
+                                (interpreter (cdr spec)))
+                            (let ((wrapper (string-append bin "/" name)))
+                            (with-output-to-file wrapper
+                              (lambda _
+                                (format #t
+                                        "#!~a~%export PYTHON=~s~%export PYTHONPATH=~a${PYTHONPATH:+:$PYTHONPATH}~%export LLVM_OPT=~s~%export SDFUZZ_PREFIX=~s~%exec ~s ~s \"$@\"~%"
+                                        shell
+                                        python-bin
+                                        pythonpath
+                                        (search-input-file inputs "bin/opt")
+                                        out
+                                        interpreter
+                                        (string-append scripts "/" name))))
+                              (chmod wrapper #o555))))
+                        `(("Stackparser.py" . ,python-bin)
+                          ("BBmapping.py" . ,python-bin)
+                          ("genDistance.sh" . ,shell)))
+                       (let ((lld-wrapper (string-append bin "/sdfuzz-ld.lld")))
+                         (with-output-to-file lld-wrapper
+                           (lambda _
+                             (format #t "#!~a~%exec ~s \"$@\"~%"
+                                     shell
+                                     (search-input-file inputs "bin/ld.lld"))))
+                         (chmod lld-wrapper #o555))))))))
+      (inputs (list clang-13 llvm-13 lld-13 python python-networkx python-pydot))
+      (home-page "https://github.com/cuhk-seclab/sdfuzz")
+      (synopsis "Target states driven directed fuzzer")
+      (description
+       "SDFuzz is a directed fuzzing tool driven by target states.
+It leverages selective instrumentation and early termination,
+combined with distance metrics to optimize fuzzing efficiency.")
+      (license license:asl2.0))))
