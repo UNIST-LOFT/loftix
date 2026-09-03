@@ -77,7 +77,7 @@
   (taosctha "CVE-2016-8691" jasper-static-1.900.3))
 
 (define-public taoscadh-cve-2016-9387
-  (taosctha "CVE-2016-9387" jasper-static-1.900.19))
+  (taosctha "CVE-2016-9387" jasper-static-1.900.5))
 
 (define-public taoscadh-cve-2016-9557
   (taosctha "CVE-2016-9557" jasper-static-1.900.19))
