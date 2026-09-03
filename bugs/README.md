@@ -24,7 +24,6 @@ of the proof-of-concept input files.
       guix shell binutils-with-asan@2.27
       readelf -w cve/2017/6965/bug_3
       readelf -w cve/2017/6965/bug_6
-      readelf -w cve/2017/6965/bug_8
       readelf -w cve/2017/6965/bug_12
 
 - CVE-2017-6966: [use after free][sourceware-21139]
