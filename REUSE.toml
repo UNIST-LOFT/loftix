@@ -48,11 +48,6 @@ SPDX-FileCopyrightText = 'Mateusz Jurczyk'
 SPDX-License-Identifier = 'CC0-1.0'
 
 [[annotations]]
-path = 'bugs/cve/2016/3186/crash.gif'
-SPDX-FileCopyrightText = 'Aladdin Mubaied'
-SPDX-License-Identifier = 'CC0-1.0'
-
-[[annotations]]
 path = 'bugs/cve/2016/3623/logluv-3c-16b.tiff'
 SPDX-FileCopyrightText = 'Frank Warmerdam'
 SPDX-License-Identifier = 'libtiff'

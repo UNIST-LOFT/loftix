@@ -243,11 +243,6 @@ of the proof-of-concept input files.
       guix shell libtiff@4.0.3
       thumbnail cve/2014/8128/03_thumbnail.tiff /dev/null
 
-- CVE-2016-3186: [buffer overflow][redhat-1319503]
-
-      guix shell libtiff@4.0.6
-      gif2tiff cve/2016/3186/crash.gif -
-
 - CVE-2016-3623: [division by zero][maptools-2569]
 
       guix shell libtiff@4.0.6

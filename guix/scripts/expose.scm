@@ -161,8 +161,6 @@
     ("libtiff"
      (("CVE-2014-8128" "4.0.3")
       ("thumbnail" "~a /dev/null" "cve/2014/8128/03_thumbnail.tiff"))
-     (("CVE-2016-3186" "4.0.6")
-      ("gif2tiff" "~a -" "cve/2016/3186/crash.gif"))
      (("CVE-2016-3623" "4.0.6")
       ("rgb2ycbcr" "-v 0 ~a /dev/null" "cve/2016/3623/logluv-3c-16b.tiff"))
      (("CVE-2016-5314" "4.0.6" "asan")

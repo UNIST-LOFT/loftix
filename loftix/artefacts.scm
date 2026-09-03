@@ -121,9 +121,6 @@
 (define-public taoscadh-cve-2014-8128
   (taosctha "CVE-2014-8128" libtiff-static-4.0.3))
 
-(define-public taoscadh-cve-2016-3186
-  (taosctha "CVE-2016-3186" libtiff-static-4.0.6))
-
 (define-public taoscadh-cve-2016-3623
   (taosctha "CVE-2016-3623" libtiff-static-4.0.6))
 
