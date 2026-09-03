@@ -67,9 +67,6 @@
 (define-public taoscadh-cve-2017-15025
   (taosctha "CVE-2017-15025" binutils-2.29))
 
-(define-public taoscadh-cve-2017-15938
-  (taosctha "CVE-2017-15938" binutils-2.29))
-
 (define-public taoscadh-cve-2018-10372
   (taosctha "CVE-2018-10372" binutils-2.30))
 
@@ -90,12 +87,6 @@
 
 (define-public taoscadh-cve-2024-23337
   (taosctha "CVE-2024-23337" jq-static-1.7.1))
-
-(define-public taoscadh-cve-2024-53427
-  (taosctha "CVE-2024-53427" jq-static-1.7.1))
-
-(define-public taoscadh-cve-2025-48060
-  (taosctha "CVE-2025-48060" jq-static-1.7.1))
 
 (define-public taoscadh-cve-2012-2806
   (taosctha "CVE-2012-2806" libjpeg-turbo-static-1.2.0))
@@ -186,9 +177,6 @@
 
 (define-public taoscadh-cve-2017-5975
   (taosctha "CVE-2017-5975" zziplib-static-0.13.62))
-
-(define-public taoscadh-cve-2017-5977
-  (taosctha "CVE-2017-5977" zziplib-static-0.13.62))
 
 (define-public taoscadh-cve-2017-5978
   (taosctha "CVE-2017-5978" zziplib-static-0.13.62))
