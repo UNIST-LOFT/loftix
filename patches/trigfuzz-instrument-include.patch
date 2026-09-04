@@ -1,0 +1,105 @@
+diff --git a/trigfuzz/instrument.py b/trigfuzz/instrument.py
+index 7b1e00f..59c93d7 100644
+--- a/trigfuzz/instrument.py
++++ b/trigfuzz/instrument.py
+@@ -69,15 +69,96 @@ def instrument_v1(tcus: list[TCU], source_root: pathlib.Path) -> None:
+             # Preserve indentation of the target line for readability.
+             indent = _indent(lines[lineno - 1])
+             stitched = "".join(indent + c + "\n" for c in calls)
+-            lines.insert(lineno - 1, stitched)
+-
+-        # Inject the #include once at the top if missing.
++            insert_at = _v1_insert_point(lines, lineno)
++            lines.insert(insert_at, stitched)
++
++        # Inject the #include after the first contiguous include block at
++        # the top of the file.  Some projects (e.g. binutils) require their
++        # config.h before any system header, and distance.h pulls in system
++        # headers, so line 0 insertion would break them.  Inserting after
++        # the *last* include anywhere is wrong for files that include
++        # headers mid-file (e.g. elf64-x86-64.c includes elf64-target.h
++        # near the end).
+         if '#include "distance.h"' not in "".join(lines[:20]):
+-            lines.insert(0, '#include "distance.h"\n')
++            idx = 0
++            for i, ln in enumerate(lines):
++                if ln.lstrip().startswith("#include"):
++                    idx = i + 1
++                elif idx > 0:
++                    break
++            lines.insert(idx, '#include "distance.h"\n')
+ 
+         path.write_text("".join(lines))
+ 
+ 
++_CONTINUATION_END = set("+-*/%<>=&|!?:,(")
++
++
++def _v1_insert_point(lines: list[str], lineno: int) -> int:
++    """Return the index at which to insert the v1 calls for `lineno`.
++
++    Inserting before the target line is only safe when that line starts a
++    statement.  If it is a continuation of a multi-line expression (the
++    previous line ends with an operator or open paren, or the line itself
++    starts with a continuation token), insert after the end of the
++    statement instead (the first line ending with ';' at paren depth 0),
++    skipping any else / else-if clauses so we never land between an if
++    body and its else.
++    """
++    target = lines[lineno - 1]
++    stripped = target.lstrip()
++    prev = lines[lineno - 2].rstrip() if lineno >= 2 else ""
++    continuation = (
++        not stripped
++        or stripped[0] in "*+-/),&|?:;"
++        or (prev and prev[-1] in _CONTINUATION_END)
++    )
++    if not continuation:
++        return lineno - 1
++    depth = 0
++    end = lineno - 1
++    for i in range(lineno - 1, len(lines)):
++        line = lines[i]
++        for ch in line:
++            if ch == "(":
++                depth += 1
++            elif ch == ")":
++                depth -= 1
++        if depth <= 0 and ";" in line:
++            end = i + 1
++            break
++    i = end
++    while i < len(lines):
++        nxt = lines[i].lstrip()
++        if not nxt.startswith("else"):
++            break
++        i += 1
++        if i < len(lines) and lines[i].lstrip().startswith("{"):
++            depth = 0
++            while i < len(lines):
++                for ch in lines[i]:
++                    if ch == "{":
++                        depth += 1
++                    elif ch == "}":
++                        depth -= 1
++                i += 1
++                if depth <= 0:
++                    break
++        else:
++            depth = 0
++            while i < len(lines):
++                for ch in lines[i]:
++                    if ch == "(":
++                        depth += 1
++                    elif ch == ")":
++                        depth -= 1
++                if depth <= 0 and ";" in lines[i]:
++                    i += 1
++                    break
++                i += 1
++    return i
++
++
+ def _v1_call(t: TCU) -> str:
+     """Emit the exact C call that writes this TCU's distance to shm."""
+     dexpr = tcu_distance_expression(t)
