@@ -1,4 +1,4 @@
 (channel
   (version 0)
-  (name loftix)
+  (name 'loftix)
   (url "https://github.com/UNIST-LOFT/loftix"))
