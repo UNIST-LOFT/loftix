@@ -234,8 +234,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                 (replace "qemu" qemu-for-aflplusplus-for-binradar))))))
 
 (define-public binradar-solver
-  (let ((commit "3e4a50cfa015d08852cb9eac460112a82606bc4c")
-        (revision "1"))
+  (let ((commit "23ef578d278570e6803a26121a18faae2e450c0a")
+        (revision "2"))
     (package
       (inherit fuzzolic-solver)
       (name "binradar-solver")
@@ -248,7 +248,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "0m1ckp780qwkspn8iycvwd3drngxc13n49a61855d4myvqqyrvdv"))
+          (base32 "026gcairplwv8k1v0ylj13gkijc4cd4i36nh0lswj6q6y3dxdmcm"))
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
                           "patches/fuzzolic-solver-install.patch"))))
@@ -283,15 +283,22 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
      (substitute-keyword-arguments arguments
        ((#:phases phases #~%standard-phases)
         #~(modify-phases #$phases
-            (add-after 'patch-paths 'patch-more-paths
+            (replace 'patch-paths
               (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* '("fuzzolic/binradar.py"
+                               "fuzzolic/binradar-test.py"
+                               "fuzzolic/testcase_checker.py"
+                               "utils/coverage_tracer.py")
+                  (("^(TRACER_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/qemu-x86_64"))))
                 (substitute* "fuzzolic/binradar.py"
                   (("^(SOLVER_SMT_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file inputs "bin/solver-smt")))
-                  (("^(TRACER_BIN = ).*" _ assign)
+                  (("^(SOLVER_FUZZY_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/qemu-x86_64")))
+                     assign (search-input-file inputs "bin/solver-fuzzy")))
                   (("^(FIND_MODELS_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file
@@ -300,11 +307,19 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                   (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
                    (simple-format #f "~s"
                      (search-input-file inputs "bin/afl-fuzz"))))
-                (substitute* "fuzzolic/binradar_verifier.py"
+                (substitute* '("fuzzolic/binradar-setup.py"
+                               "fuzzolic/binradar_verifier.py")
                   (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file
-                             inputs "bin/afl-qemu-trace"))))))))
+                             inputs "bin/afl-qemu-trace"))))
+                (substitute* "fuzzolic/run_afl_fuzzolic.py"
+                  (("^(AFL_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (search-input-file inputs "bin/afl-fuzz")))
+                  (("^(FUZZOLIC_BIN = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign (string-append #$output "/bin/afl-fuzz"))))))))
        ((#:tests? _ #t)
         #f)))
     (inputs (modify-inputs inputs
