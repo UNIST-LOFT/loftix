@@ -18,6 +18,7 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages rust-apps)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system pyproject)
@@ -307,7 +308,11 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                   (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
                    (simple-format #f "~s"
                      (search-input-file inputs "bin/afl-fuzz"))))
-                (substitute* '("fuzzolic/binradar-setup.py"
+                (substitute* "fuzzolic/binradar_setup.py"
+                  (("\"just\"")
+                   (simple-format #f "~s"
+                     (search-input-file inputs "bin/just"))))
+                (substitute* '("fuzzolic/binradar_setup.py"
                                "fuzzolic/binradar_verifier.py")
                   (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
                    (simple-format #f "~a~s\n"
@@ -319,13 +324,15 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                      assign (search-input-file inputs "bin/afl-fuzz")))
                   (("^(FUZZOLIC_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (string-append #$output "/bin/afl-fuzz"))))))))
+                     assign (string-append #$output "/bin/afl-fuzz"))))))
+            (delete 'validate-runpath)))
        ((#:tests? _ #t)
         #f)))
     (inputs (modify-inputs inputs
               (prepend aflplusplus-for-binradar
                        binradar-solver
                        binradar-utils
+                       just
                        python-sbsv
                        python-sortedcontainers
                        qemu-for-binradar)
