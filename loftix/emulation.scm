@@ -109,8 +109,8 @@
 
 (define-public qemu-for-aflplusplus-for-binradar
   (let ((base-version "5.2.50")
-        (commit "231135d2b4662549fcfa15eb6e891beb136c7640")
-        (revision "0"))
+        (commit "25f820e2c8e0bb8562a7769f959b1416114d23b6")
+        (revision "targeted"))
     (hidden-package
       (package
         (inherit qemu-for-aflplusplus)
@@ -125,6 +125,28 @@
                  (recursive? #t)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "12mj53v4c2v8d40c3c67rbrijjfnypwwggwn4db1d7s1ymghjski"))
+            (base32 "0lgndd29wlq52jnp3fa1ki8i1id3a1rgdir2hdk4ij2pd34acqsi"))
+           (patches
+            (search-patches "patches/qemu-io-uring-2.2.patch"))))))))
+
+(define-public qemu-for-binradar-stacktrace
+  (let ((base-version "5.2.50")
+        (commit "8bbf628a4074a12cde473b65ef0bf10d4094ba08")
+        (revision "binradar_stacktrace"))
+    (hidden-package
+      (package
+        (inherit qemu-for-aflplusplus)
+        (name "qemu-for-binradar-stacktrace")
+        (version (git-version base-version revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://github.com/UNIST-LOFT/qemu")
+                 (commit commit)
+                 (recursive? #t)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32 "1ly5blcwlkbg9qmi8mz83ygd0zq5ds4hzpfna4hz3k9l75v4war6"))
            (patches
             (search-patches "patches/qemu-io-uring-2.2.patch"))))))))

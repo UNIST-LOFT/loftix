@@ -226,17 +226,50 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (synopsis "Concolic fuzzer")))
 
 (define-public aflplusplus-for-binradar
-  (hidden-package
-    ;; FIXME: binradar needs a target address reach detection patch:
-    ;; https://github.com/hsh814/AFLplusplus/commit/4f7fc3727b39
-    (package/inherit aflplusplus
-      (name "aflplusplus-for-binradar")
-      (inputs (modify-inputs inputs
-                (replace "qemu" qemu-for-aflplusplus-for-binradar))))))
+  (let ((base-version "3.13a")
+        (commit "14cd46bb8d70d136426cbe3fb7ab734a1c15ce8e")
+        (revision "targeted"))
+    (hidden-package
+      (package
+        (inherit aflplusplus)
+        (name "aflplusplus-for-binradar")
+        (version (git-version base-version revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://github.com/hsh814/AFLplusplus")
+                 (commit commit)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32 "1n6yrfkcqg7zgjfsmnvykpyqcwil1ppq92097rmnc47gdbd1wfif"))))
+        (inputs (modify-inputs inputs
+                  (replace "qemu" qemu-for-aflplusplus-for-binradar)))))))
+
+(define-public aflplusplus-for-binradar-stacktrace
+  (let ((base-version "3.13a")
+        (commit "07d4bc1ed1578134ea105d3eac8b2f1b51cce0dc")
+        (revision "binradar"))
+    (hidden-package
+      (package
+        (inherit aflplusplus)
+        (name "aflplusplus-for-binradar-stacktrace")
+        (version (git-version base-version revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://github.com/hsh814/AFLplusplus")
+                 (commit commit)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32 "0mnh767w7c20k07ck6ncyl48kcp82xap4ysy1g0wphx9rkrsm14p"))))
+        (inputs (modify-inputs inputs
+                  (replace "qemu" qemu-for-binradar-stacktrace)))))))
 
 (define-public binradar-solver
-  (let ((commit "23ef578d278570e6803a26121a18faae2e450c0a")
-        (revision "2"))
+  (let ((commit "d3591fd620c8496f2581c4e4779b84793f5b38a3")
+        (revision "3"))
     (package
       (inherit fuzzolic-solver)
       (name "binradar-solver")
@@ -249,7 +282,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "026gcairplwv8k1v0ylj13gkijc4cd4i36nh0lswj6q6y3dxdmcm"))
+          (base32 "1884mk4p4kfwidqns1qa1m57nhmks4jxwxypbqdkhzwf0qvzx8jp"))
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
                           "patches/fuzzolic-solver-install.patch"))))
@@ -279,7 +312,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (source
      (origin
        (inherit (package-source binradar-solver))
-       (patches (search-patches "patches/binradar-python-package.patch"))))
+       (patches (search-patches "patches/binradar-python-package.patch"))
+       (snippet #~(rename-file "benchmarks" "fuzzolic/benchmarks"))))
     (arguments
      (substitute-keyword-arguments arguments
        ((#:phases phases #~%standard-phases)
@@ -316,20 +350,23 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                                "fuzzolic/binradar_verifier.py")
                   (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (search-input-file
-                             inputs "bin/afl-qemu-trace"))))
+                     assign (string-append
+                             #$(this-package-input
+                                "aflplusplus-for-binradar-stacktrace")
+                             "/bin/afl-qemu-trace"))))
                 (substitute* "fuzzolic/run_afl_fuzzolic.py"
                   (("^(AFL_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file inputs "bin/afl-fuzz")))
                   (("^(FUZZOLIC_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (string-append #$output "/bin/afl-fuzz"))))))
+                     assign (string-append #$output "bin/binradar"))))))
             (delete 'validate-runpath)))
        ((#:tests? _ #t)
         #f)))
     (inputs (modify-inputs inputs
               (prepend aflplusplus-for-binradar
+                       aflplusplus-for-binradar-stacktrace
                        binradar-solver
                        binradar-utils
                        just
