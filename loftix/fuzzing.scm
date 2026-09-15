@@ -12,6 +12,7 @@
   #:use-module (gnu packages digest)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages instrumentation)
+  #:use-module (gnu packages llvm)
   #:use-module (gnu packages man)
   #:use-module (gnu packages m4)
   #:use-module (gnu packages pkg-config)
@@ -227,7 +228,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
 
 (define-public aflplusplus-for-binradar
   (let ((base-version "3.13a")
-        (commit "14cd46bb8d70d136426cbe3fb7ab734a1c15ce8e")
+        (commit "07d4bc1ed1578134ea105d3eac8b2f1b51cce0dc")
         (revision "targeted"))
     (hidden-package
       (package
@@ -242,28 +243,53 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                  (commit commit)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "1n6yrfkcqg7zgjfsmnvykpyqcwil1ppq92097rmnc47gdbd1wfif"))))
+            (base32 "0mnh767w7c20k07ck6ncyl48kcp82xap4ysy1g0wphx9rkrsm14p"))
+           (modules '((guix build utils)))
+           (snippet #~(substitute* "GNUmakefile"
+                        (("^install: .*") "install: binary-only\n")
+                        (("^\tinstall .* afl-as.*") "")
+                        (("^\tln .* afl-as .*") "")
+                        (("@echo 'main") "@echo 'int main")))))
+        (arguments
+         (substitute-keyword-arguments arguments
+           ((#:phases phases '%standard-phases)
+            #~(modify-phases #$phases
+                (replace 'build
+                  (lambda* (#:key make-flags parallel-build?
+                            #:allow-other-keys)
+                    (apply invoke "make"
+                           (append make-flags
+                                   (if parallel-build?
+                                       (list "-j" (number->string
+                                                   (parallel-job-count)))
+                                       '())
+                                   '("binary-only")))))))
+           ((#:tests? _ #t)
+            #f)))
         (inputs (modify-inputs inputs
+                  (replace "clang" clang-13)
+                  (replace "lld" lld-13)
+                  (replace "llvm" llvm-13)
                   (replace "qemu" qemu-for-aflplusplus-for-binradar)))))))
 
 (define-public aflplusplus-for-binradar-stacktrace
   (let ((base-version "3.13a")
-        (commit "07d4bc1ed1578134ea105d3eac8b2f1b51cce0dc")
+        (commit "14cd46bb8d70d136426cbe3fb7ab734a1c15ce8e")
         (revision "binradar"))
     (hidden-package
       (package
-        (inherit aflplusplus)
+        (inherit aflplusplus-for-binradar)
         (name "aflplusplus-for-binradar-stacktrace")
         (version (git-version base-version revision commit))
         (source
          (origin
-           (method git-fetch)
+           (inherit (package-source aflplusplus-for-binradar))
            (uri (git-reference
                  (url "https://github.com/hsh814/AFLplusplus")
                  (commit commit)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "0mnh767w7c20k07ck6ncyl48kcp82xap4ysy1g0wphx9rkrsm14p"))))
+            (base32 "1n6yrfkcqg7zgjfsmnvykpyqcwil1ppq92097rmnc47gdbd1wfif"))))
         (inputs (modify-inputs inputs
                   (replace "qemu" qemu-for-binradar-stacktrace)))))))
 

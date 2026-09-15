@@ -81,8 +81,8 @@
 
 (define-public qemu-for-binradar
   (let ((base-version "4.1.1")
-        (commit "a63b8d60cb7fe3e592ebcc125bb2cbb3fdf4b330")
-        (revision "1"))
+        (commit "ec818042ce6819f390d6b6bccd35c89142d035e4")
+        (revision "type-infer"))
     (hidden-package
       (package
         (inherit qemu-for-fuzzolic)
@@ -104,12 +104,12 @@
                                    ".." commit ".diff"))
                (sha256
                 (base32
-                 "1w7g56jz5pll63fgg85avknbrva8wg9f7hixgd12jwflzgz1y3dm"))
+                 "0walhxyagvk64rzzdc8j97mms3mrwl0wh0b1vi2mkqcqplk3rvb9"))
                (file-name (string-append name ".patch")))))))))))
 
 (define-public qemu-for-aflplusplus-for-binradar
   (let ((base-version "5.2.50")
-        (commit "25f820e2c8e0bb8562a7769f959b1416114d23b6")
+        (commit "8bbf628a4074a12cde473b65ef0bf10d4094ba08")
         (revision "targeted"))
     (hidden-package
       (package
@@ -125,14 +125,14 @@
                  (recursive? #t)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "0lgndd29wlq52jnp3fa1ki8i1id3a1rgdir2hdk4ij2pd34acqsi"))
+            (base32 "1ly5blcwlkbg9qmi8mz83ygd0zq5ds4hzpfna4hz3k9l75v4war6"))
            (patches
             (search-patches "patches/qemu-io-uring-2.2.patch"
                             "patches/qemu-meson-0.57.patch"))))))))
 
 (define-public qemu-for-binradar-stacktrace
   (let ((base-version "5.2.50")
-        (commit "8bbf628a4074a12cde473b65ef0bf10d4094ba08")
+        (commit "25f820e2c8e0bb8562a7769f959b1416114d23b6")
         (revision "binradar_stacktrace"))
     (hidden-package
       (package
@@ -148,7 +148,9 @@
                  (recursive? #t)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "1ly5blcwlkbg9qmi8mz83ygd0zq5ds4hzpfna4hz3k9l75v4war6"))
+            (base32 "0lgndd29wlq52jnp3fa1ki8i1id3a1rgdir2hdk4ij2pd34acqsi"))
            (patches
-            (search-patches "patches/qemu-io-uring-2.2.patch"
-                            "patches/qemu-meson-0.57.patch"))))))))
+            (search-patches "patches/qemu-io-uring-2.2.patch"))
+           (modules '((guix build utils)))
+           (snippet #~(substitute* "meson.build"
+                        (("^  'hexagon'.*") "")))))))))
