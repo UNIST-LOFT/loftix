@@ -1,0 +1,13 @@
+diff --git a/fuzzolic/minimizer_qsym.py b/fuzzolic/minimizer_qsym.py
+index 6d01705..b5334cf 100644
+--- a/fuzzolic/minimizer_qsym.py
++++ b/fuzzolic/minimizer_qsym.py
+@@ -82,7 +82,7 @@ def fix_at_file(cmd, testcase):
+     return cmd, stdin
+ 
+ def is_afl_showmap_available():
+-    return os.path.exists(os.path.join(SCRIPT_DIR, "../utils/afl-showmap"))
++    return True
+ 
+ class TestcaseMinimizer(object):
+     def __init__(self, cmd, afl_path, out_dir, qemu_mode, fixed_name, map_size=MAP_SIZE):

@@ -1,0 +1,11 @@
+workdir
+test
+out
+logs
+
+/.env
+
+*.list
+work-sdfuzz
+work-trigfuzz
+.trigfuzz-locks
