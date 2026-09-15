@@ -43,8 +43,10 @@ index 931c06c539d9..49d16bc4189e 100644
  
  from typing import List, Dict, Set, Tuple, Any, Optional
  
+-import binradar_utils
 -import binradar_verifier
 +from . import binradar_verifier
++from . import binradar_utils
  
  ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
  QEMU_STACKTRACE_RELEASE = os.path.join(ROOT_DIR, "LibAFL", "fuzzers", "binary_only", "qemu_stacktrace", "target", "release", "qemu_stacktrace")
@@ -195,7 +197,7 @@ index fb546dcb453e..f04387bf7f53 100644
  dependencies = [
      "pyelftools>=0.31",
 -    "pytest>=8.3.5",
-     "sbsv>=0.2.3,<0.3.0",
+     "sbsv==0.3.1",
  ]
 +
 +[project.optional-dependencies]

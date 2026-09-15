@@ -294,8 +294,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                   (replace "qemu" qemu-for-binradar-stacktrace)))))))
 
 (define-public binradar-solver
-  (let ((commit "d3591fd620c8496f2581c4e4779b84793f5b38a3")
-        (revision "3"))
+  (let ((commit "508b8a4f0cb0879f5bb7bc526ce3f31e96d81b64")
+        (revision "4"))
     (package
       (inherit fuzzolic-solver)
       (name "binradar-solver")
@@ -306,12 +306,14 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
          (uri (git-reference
                (url "https://github.com/UNIST-LOFT/binradar")
                (commit commit)))
-         (file-name (git-file-name name version))
+         (file-name (git-file-name "binradar" version))
          (sha256
-          (base32 "1884mk4p4kfwidqns1qa1m57nhmks4jxwxypbqdkhzwf0qvzx8jp"))
+          (base32 "0ni9k351v9n1r51fhmy95s44wa5x93ig1r9p77hs8ik32r2s1yb5"))
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
-                          "patches/fuzzolic-solver-install.patch"))))
+                          "patches/fuzzolic-solver-install.patch"))
+         (modules '((guix build utils)))
+         (snippet #~(delete-file-recursively "solver/libsbsv"))))
       (inputs
        (modify-inputs inputs
          (prepend c-sbsv
