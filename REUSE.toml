@@ -293,6 +293,13 @@ SPDX-FileCopyrightText = ['Haiyue Wang', 'Paolo Bonzini']
 SPDX-License-Identifier = 'GPL-2.0-or-later'
 
 [[annotations]]
+# https://lists.nongnu.org/r/qemu-devel/2021-04/msg00120.html
+# https://lists.nongnu.org/r/qemu-devel/2021-04/msg00123.html
+path = 'patches/qemu-meson-0.57.patch'
+SPDX-FileCopyrightText = 'Paolo Bonzini'
+SPDX-License-Identifier = 'GPL-2.0-or-later'
+
+[[annotations]]
 path = [ '**/README.md',
          'bugs/cve/2023/50246/heap-buffer-overflow.json',
          'bugs/cve/2024/53427/3196.json' ]

@@ -127,7 +127,8 @@
            (sha256
             (base32 "0lgndd29wlq52jnp3fa1ki8i1id3a1rgdir2hdk4ij2pd34acqsi"))
            (patches
-            (search-patches "patches/qemu-io-uring-2.2.patch"))))))))
+            (search-patches "patches/qemu-io-uring-2.2.patch"
+                            "patches/qemu-meson-0.57.patch"))))))))
 
 (define-public qemu-for-binradar-stacktrace
   (let ((base-version "5.2.50")
@@ -149,4 +150,5 @@
            (sha256
             (base32 "1ly5blcwlkbg9qmi8mz83ygd0zq5ds4hzpfna4hz3k9l75v4war6"))
            (patches
-            (search-patches "patches/qemu-io-uring-2.2.patch"))))))))
+            (search-patches "patches/qemu-io-uring-2.2.patch"
+                            "patches/qemu-meson-0.57.patch"))))))))
