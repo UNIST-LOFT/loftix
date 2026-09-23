@@ -294,8 +294,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                   (replace "qemu" qemu-for-binradar-stacktrace)))))))
 
 (define-public binradar-solver
-  (let ((commit "508b8a4f0cb0879f5bb7bc526ce3f31e96d81b64")
-        (revision "4"))
+  (let ((commit "d8ccb69b2be1e54fd7bb3907b8bb7bae29e27684")
+        (revision "5"))
     (package
       (inherit fuzzolic-solver)
       (name "binradar-solver")
@@ -308,7 +308,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                (commit commit)))
          (file-name (git-file-name "binradar" version))
          (sha256
-          (base32 "0ni9k351v9n1r51fhmy95s44wa5x93ig1r9p77hs8ik32r2s1yb5"))
+          (base32 "0p2da086cp5i93p1v2paq1l3xlbk0s7ij9l6pz43w434f99ikndg"))
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
                           "patches/fuzzolic-solver-install.patch"))
