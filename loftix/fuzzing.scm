@@ -294,8 +294,8 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                   (replace "qemu" qemu-for-binradar-stacktrace)))))))
 
 (define-public binradar-solver
-  (let ((commit "d8ccb69b2be1e54fd7bb3907b8bb7bae29e27684")
-        (revision "5"))
+  (let ((commit "23fc2c334ed7ce66939ed6f15c6dcfee47fdc58f")
+        (revision "6"))
     (package
       (inherit fuzzolic-solver)
       (name "binradar-solver")
@@ -308,12 +308,22 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                (commit commit)))
          (file-name (git-file-name "binradar" version))
          (sha256
-          (base32 "0p2da086cp5i93p1v2paq1l3xlbk0s7ij9l6pz43w434f99ikndg"))
+          (base32 "08dfiasx4y1k32l7mpzss59nzlzdgpgpbncbl4bm3lq23va22sc8"))
          (patches
           (search-patches "patches/binradar-solver-unbundle.patch"
+                          "patches/binradar-python-package.patch"
+                          "patches/binradar-utils-make.patch"
                           "patches/fuzzolic-solver-install.patch"))
          (modules '((guix build utils)))
-         (snippet #~(delete-file-recursively "solver/libsbsv"))))
+         (snippet
+          #~(begin
+              (delete-file-recursively "solver/libsbsv")
+              (rename-file "benchmarks" "fuzzolic/benchmarks")
+              (substitute* (find-files "fuzzolic" "\\.py$")
+                (("^import (binradar.*|logger)" all)
+                 (string-append "from . " all))
+                (("^from (binradar.*|logger) import " _ module)
+                 (simple-format #f "from .~a import " module)))))))
       (inputs
        (modify-inputs inputs
          (prepend c-sbsv
@@ -326,10 +336,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (inherit fuzzolic-utils)
     (name "binradar-utils")
     (version (package-version binradar-solver))
-    (source
-     (origin
-       (inherit (package-source binradar-solver))
-       (patches (search-patches "patches/binradar-utils-make.patch"))))
+    (source (package-source binradar-solver))
     (synopsis "CLI utilities for BinRadar")))
 
 (define-public binradar
@@ -337,11 +344,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (inherit fuzzolic)
     (name "binradar")
     (version (package-version binradar-solver))
-    (source
-     (origin
-       (inherit (package-source binradar-solver))
-       (patches (search-patches "patches/binradar-python-package.patch"))
-       (snippet #~(rename-file "benchmarks" "fuzzolic/benchmarks"))))
+    (source (package-source binradar-solver))
     (arguments
      (substitute-keyword-arguments arguments
        ((#:phases phases #~%standard-phases)
@@ -349,7 +352,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
             (replace 'patch-paths
               (lambda* (#:key inputs #:allow-other-keys)
                 (substitute* '("fuzzolic/binradar.py"
-                               "fuzzolic/binradar-test.py"
+                               "fuzzolic/binradar_runtime.py"
                                "fuzzolic/testcase_checker.py"
                                "utils/coverage_tracer.py")
                   (("^(TRACER_BIN = ).*" _ assign)
