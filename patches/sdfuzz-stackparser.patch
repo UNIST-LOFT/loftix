@@ -1,0 +1,26 @@
+diff --git a/scripts/Stackparser.py b/scripts/Stackparser.py
+index adc91d5..3af14ae 100755
+--- a/scripts/Stackparser.py
++++ b/scripts/Stackparser.py
+@@ -27,6 +27,10 @@ def parse_vulnerability_dump(filename):
+         'heap-buffer-overflow',      # Heap buffer overflow
+         'segmentation fault',        # General segfault
+         'assertion failed',          # Assertion failure
++        'runtime error',             # UBSan undefined behavior
++        'ABRT on signal',            # ASan intercept of UBSan abort
++        'AddressSanitizer: SEGV',    # Explicit segfault via ASan
++        'AddressSanitizer: ABRT',    # ASan intercept of abort
+     ]
+     
+     current_priority = 999
+@@ -44,7 +48,9 @@ def parse_vulnerability_dump(filename):
+                 continue
+             
+             # Start parsing when we see (gdb) bt or stack trace indicators
+-            if '(gdb) bt' in line or line.startswith('#0 ') or 'READ of size' in line or 'WRITE of size' in line:
++            if '(gdb) bt' in line or line.startswith('#0 ') or \
++               'READ of size' in line or 'WRITE of size' in line or \
++               'AddressSanitizer' in line or 'runtime error' in line:
+                 in_backtrace = True
+                 skip_detailed_thread = False
+             
