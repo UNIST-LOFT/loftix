@@ -1,0 +1,46 @@
+Fix LLVM 13 API changes and default instrumentation in afl-llvm-pass.so.cc
+
+--- a/llvm_mode/afl-llvm-pass.so.cc
++++ b/llvm_mode/afl-llvm-pass.so.cc
+@@ -476,7 +476,7 @@
+       //debug << "module: " << M.getSourceFileName() << "\n";
+ 
+       bool has_BBs = false;
+-      std::string funcName = F.getName();
++      std::string funcName = F.getName().str();
+ 
+       /* Black list of function names */
+       if (isBlacklisted(&F)) {
+@@ -547,10 +547,10 @@
+             Twine t(newname);
+             SmallString<256> NameData;
+             StringRef NameRef = t.toStringRef(NameData);
+-            BB.setValueName(ValueName::Create(NameRef));
++            BB.setName(NameRef);
+           }
+ 
+-          bbnames << BB.getName().str() << "\n";
++          bbnames << bb_name << "\n";
+           has_BBs = true;
+ 
+ #ifdef AFLGO_TRACING
+@@ -573,7 +573,7 @@
+         /* Print CFG */
+         std::string cfgFileName = dotfiles + "/cfg." + funcName + ".dot";
+         std::error_code EC;
+-        raw_fd_ostream cfgFile(cfgFileName, EC, sys::fs::F_None);
++        raw_fd_ostream cfgFile(cfgFileName, EC, sys::fs::OF_None);
+         if (!EC) {
+           WriteGraph(cfgFile, &F, true);
+         }
+--- a/llvm_mode/afl-clang-fast.c
++++ b/llvm_mode/afl-clang-fast.c
+@@ -128,6 +128,7 @@
+   cc_params[cc_par_cnt++] = "-Xclang";
+   cc_params[cc_par_cnt++] = "-load";
+   cc_params[cc_par_cnt++] = "-Xclang";
+   cc_params[cc_par_cnt++] = alloc_printf("%s/afl-llvm-pass.so", obj_path);
++  cc_params[cc_par_cnt++] = "-flegacy-pass-manager";
+ #endif /* ^USE_TRACE_PC */
+ 
+   cc_params[cc_par_cnt++] = "-Qunused-arguments";

@@ -1,0 +1,23 @@
+set dotenv-filename := "config.env"
+set dotenv-load
+
+import "../../loftix.justfile"
+
+# TrigFuzz LLM-driven directed-analysis workflow (uses .env for the LLM).
+trigfuzz-all:
+    bash trigfuzz.sh all
+
+trigfuzz-prepare:
+    bash trigfuzz.sh prepare
+
+trigfuzz-tcgen:
+    bash trigfuzz.sh tcgen
+
+trigfuzz-build:
+    bash trigfuzz.sh build
+
+trigfuzz-fuzz:
+    bash trigfuzz.sh fuzz
+
+trigfuzz-clean:
+    bash trigfuzz.sh clean

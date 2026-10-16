@@ -1,0 +1,189 @@
+diff --git a/engines/aflgo-trigfuzz/afl-2.57b/afl-fuzz.c b/engines/aflgo-trigfuzz/afl-2.57b/afl-fuzz.c
+index 4ae0c69..7c902f6 100644
+--- a/engines/aflgo-trigfuzz/afl-2.57b/afl-fuzz.c
++++ b/engines/aflgo-trigfuzz/afl-2.57b/afl-fuzz.c
+@@ -2759,7 +2759,7 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
+     /* stop_soon is set by the handler for Ctrl+C. When it's pressed,
+        we want to bail out quickly. */
+ 
+-    if (stop_soon || fault != crash_mode) goto abort_calibration;
++    if (stop_soon || (fault != FAULT_NONE && fault != FAULT_CRASH)) goto abort_calibration;
+ 
+     if (!dumb_mode && !stage_cur && !count_bytes(trace_bits)) {
+       fault = FAULT_NOINST;
+@@ -2939,7 +2939,7 @@ static void perform_dry_run(char** argv) {
+ 
+     if (stop_soon) return;
+ 
+-    if (res == crash_mode || res == FAULT_NOBITS)
++    if ((res == FAULT_NONE || res == FAULT_CRASH) || res == FAULT_NOBITS)
+       SAYF(cGRA "    len = %u, map size = %u, exec speed = %llu us\n" cRST, 
+            q->len, q->bitmap_size, q->exec_us);
+ 
+@@ -2996,6 +2996,7 @@ static void perform_dry_run(char** argv) {
+ 
+         if (crash_mode) break;
+ 
++        /* In default mode, accept crashing seeds too (TrigFuzz) */
+         if (skip_crashes) {
+           WARNF("Test case results in a crash (skipping)");
+           q->cal_failed = CAL_CHANCES;
+@@ -3003,67 +3004,7 @@ static void perform_dry_run(char** argv) {
+           break;
+         }
+ 
+-        if (mem_limit) {
+-
+-          SAYF("\n" cLRD "[-] " cRST
+-               "Oops, the program crashed with one of the test cases provided. There are\n"
+-               "    several possible explanations:\n\n"
+-
+-               "    - The test case causes known crashes under normal working conditions. If\n"
+-               "      so, please remove it. The fuzzer should be seeded with interesting\n"
+-               "      inputs - but not ones that cause an outright crash.\n\n"
+-
+-               "    - The current memory limit (%s) is too low for this program, causing\n"
+-               "      it to die due to OOM when parsing valid files. To fix this, try\n"
+-               "      bumping it up with the -m setting in the command line. If in doubt,\n"
+-               "      try something along the lines of:\n\n"
+-
+-#ifdef RLIMIT_AS
+-               "      ( ulimit -Sv $[%llu << 10]; /path/to/binary [...] <testcase )\n\n"
+-#else
+-               "      ( ulimit -Sd $[%llu << 10]; /path/to/binary [...] <testcase )\n\n"
+-#endif /* ^RLIMIT_AS */
+-
+-               "      Tip: you can use http://jwilk.net/software/recidivm to quickly\n"
+-               "      estimate the required amount of virtual memory for the binary. Also,\n"
+-               "      if you are using ASAN, see %s/notes_for_asan.txt.\n\n"
+-
+-#ifdef __APPLE__
+-  
+-               "    - On MacOS X, the semantics of fork() syscalls are non-standard and may\n"
+-               "      break afl-fuzz performance optimizations when running platform-specific\n"
+-               "      binaries. To fix this, set AFL_NO_FORKSRV=1 in the environment.\n\n"
+-
+-#endif /* __APPLE__ */
+-
+-               "    - Least likely, there is a horrible bug in the fuzzer. If other options\n"
+-               "      fail, poke <lcamtuf@coredump.cx> for troubleshooting tips.\n",
+-               DMS(mem_limit << 20), mem_limit - 1, doc_path);
+-
+-        } else {
+-
+-          SAYF("\n" cLRD "[-] " cRST
+-               "Oops, the program crashed with one of the test cases provided. There are\n"
+-               "    several possible explanations:\n\n"
+-
+-               "    - The test case causes known crashes under normal working conditions. If\n"
+-               "      so, please remove it. The fuzzer should be seeded with interesting\n"
+-               "      inputs - but not ones that cause an outright crash.\n\n"
+-
+-#ifdef __APPLE__
+-  
+-               "    - On MacOS X, the semantics of fork() syscalls are non-standard and may\n"
+-               "      break afl-fuzz performance optimizations when running platform-specific\n"
+-               "      binaries. To fix this, set AFL_NO_FORKSRV=1 in the environment.\n\n"
+-
+-#endif /* __APPLE__ */
+-
+-               "    - Least likely, there is a horrible bug in the fuzzer. If other options\n"
+-               "      fail, poke <lcamtuf@coredump.cx> for troubleshooting tips.\n");
+-
+-        }
+-
+-        FATAL("Test case '%s' results in a crash", fn);
++        break;
+ 
+       case FAULT_ERROR:
+ 
+@@ -3336,57 +3277,60 @@ static u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
+   s32 fd;
+   u8  keeping = 0, res;
+ 
+-  if (fault == crash_mode) {
++  if (fault == FAULT_NONE || fault == FAULT_CRASH) {
+ 
+     /* Keep only if there are new bits in the map, add to queue for
+        future fuzzing, etc. */
+ 
+     if (!(hnb = has_new_bits(virgin_bits))) {
+-      if (crash_mode) total_crashes++;
+-      return 0;
+-    }    
++      if (fault != FAULT_CRASH) return 0;
++      /* For crashes w/out new coverage, fall through to switch for
++         unique crash signature tracking. */
++    } else {
+ 
+ #ifndef SIMPLE_FILES
+ 
+-    fn = alloc_printf("%s/queue/id:%06u,%llu,%s", out_dir, queued_paths,
+-                      get_cur_time() - start_time,
+-                      describe_op(hnb));
+-    /* TrigFuzz: ratchet the +trig threshold only when THIS save earned
+-     * +trig (hnb>2).  The upstream unconditional "= min_triggering_distance"
+-     * contaminated the threshold with dry-run minima and made
+-     * post-dry-run +trig impossible for integer-gradient TCs. */
+-    if (hnb > 2 && triggering_distance < plus_trig_triggering_distance)
+-      plus_trig_triggering_distance = triggering_distance;
++      fn = alloc_printf("%s/queue/id:%06u,%llu,%s", out_dir, queued_paths,
++                        get_cur_time() - start_time,
++                        describe_op(hnb));
++      /* TrigFuzz: ratchet the +trig threshold only when THIS save earned
++       * +trig (hnb>2).  The upstream unconditional "= min_triggering_distance"
++       * contaminated the threshold with dry-run minima and made
++       * post-dry-run +trig impossible for integer-gradient TCs. */
++      if (hnb > 2 && triggering_distance < plus_trig_triggering_distance)
++        plus_trig_triggering_distance = triggering_distance;
+ 
+ #else
+ 
+-    fn = alloc_printf("%s/queue/id_%06u", out_dir, queued_paths);
++      fn = alloc_printf("%s/queue/id_%06u", out_dir, queued_paths);
+ 
+ #endif /* ^!SIMPLE_FILES */
+ 
+-    add_to_queue(fn, len, 0);
++      add_to_queue(fn, len, 0);
+ 
+-    if (hnb % 3 == 2) {
+-      queue_top->has_new_cov = 1;
+-      queued_with_cov++;
+-    }
++      if (hnb % 3 == 2) {
++        queue_top->has_new_cov = 1;
++        queued_with_cov++;
++      }
+ 
+-    queue_top->exec_cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
++      queue_top->exec_cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
+ 
+-    /* Try to calibrate inline; this also calls update_bitmap_score() when
+-       successful. */
++      /* Try to calibrate inline; this also calls update_bitmap_score() when
++         successful. */
+ 
+-    res = calibrate_case(argv, queue_top, mem, queue_cycle - 1, 0);
++      res = calibrate_case(argv, queue_top, mem, queue_cycle - 1, 0);
+ 
+-    if (res == FAULT_ERROR)
+-      FATAL("Unable to execute target application");
++      if (res == FAULT_ERROR)
++        FATAL("Unable to execute target application");
+ 
+-    fd = open(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+-    if (fd < 0) PFATAL("Unable to create '%s'", fn);
+-    ck_write(fd, mem, len, fn);
+-    close(fd);
++      fd = open(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
++      if (fd < 0) PFATAL("Unable to create '%s'", fn);
++      ck_write(fd, mem, len, fn);
++      close(fd);
+ 
+-    keeping = 1;
++      keeping = 1;
++
++    }
+ 
+   }

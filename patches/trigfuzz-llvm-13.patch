@@ -1,0 +1,40 @@
+Fix LLVM 13 API changes and enable the legacy pass manager in the
+TrigFuzz AFLGo engine.
+
+diff --git a/engines/aflgo-trigfuzz/afl-2.57b/llvm_mode/afl-clang-fast.c b/engines/aflgo-trigfuzz/afl-2.57b/llvm_mode/afl-clang-fast.c
+index 2104a12..fd4f2a2 100644
+--- a/engines/aflgo-trigfuzz/afl-2.57b/llvm_mode/afl-clang-fast.c
++++ b/engines/aflgo-trigfuzz/afl-2.57b/llvm_mode/afl-clang-fast.c
+@@ -137,6 +137,7 @@ static void edit_params(u32 argc, char** argv) {
+   cc_params[cc_par_cnt++] = "-load";
+   cc_params[cc_par_cnt++] = "-Xclang";
+   cc_params[cc_par_cnt++] = alloc_printf("%s/afl-llvm-pass.so", obj_path);
++  cc_params[cc_par_cnt++] = "-flegacy-pass-manager";
+ #endif /* ^USE_TRACE_PC */
+ 
+   cc_params[cc_par_cnt++] = "-Qunused-arguments";
+diff --git a/engines/aflgo-trigfuzz/instrument/aflgo-clang.c b/engines/aflgo-trigfuzz/instrument/aflgo-clang.c
+index a7ebc11..be3c62e 100644
+--- a/engines/aflgo-trigfuzz/instrument/aflgo-clang.c
++++ b/engines/aflgo-trigfuzz/instrument/aflgo-clang.c
+@@ -115,6 +115,7 @@ static void edit_params(u32 argc, char** argv) {
+   cc_params[cc_par_cnt++] = "-load";
+   cc_params[cc_par_cnt++] = "-Xclang";
+   cc_params[cc_par_cnt++] = alloc_printf("%s/aflgo-pass.so", obj_path);
++  cc_params[cc_par_cnt++] = "-flegacy-pass-manager";
+ #endif /* ^USE_TRACE_PC */
+ 
+   cc_params[cc_par_cnt++] = "-Qunused-arguments";
+diff --git a/engines/aflgo-trigfuzz/instrument/aflgo-pass.so.cc b/engines/aflgo-trigfuzz/instrument/aflgo-pass.so.cc
+index 1304a6e..2361d28 100644
+--- a/engines/aflgo-trigfuzz/instrument/aflgo-pass.so.cc
++++ b/engines/aflgo-trigfuzz/instrument/aflgo-pass.so.cc
+@@ -383,7 +383,7 @@ bool AFLCoverage::runOnModule(Module &M) {
+         /* Print CFG */
+         std::string cfgFileName = dotfiles + "/cfg." + funcName + ".dot";
+         std::error_code EC;
+-        raw_fd_ostream cfgFile(cfgFileName, EC, sys::fs::F_None);
++        raw_fd_ostream cfgFile(cfgFileName, EC, sys::fs::OF_None);
+         if (!EC) {
+           WriteGraph(cfgFile, &F, true);
+         }
