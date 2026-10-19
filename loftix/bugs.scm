@@ -23,6 +23,7 @@
   #:use-module (gnu packages ebook)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages image)
+  #:use-module (gnu packages javascript)
   #:use-module (gnu packages mp3)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
@@ -663,6 +664,21 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
 (define-public libxml2-static-2.9.4 (static libxml2-2.9.4))
 (define-public libxml2-static-2.9.3 (static libxml2-2.9.3))
 (define-public libxml2-static-2.9.0 (static libxml2-2.9.0))
+
+(define-public mujs-1.0.5
+  (package
+    (inherit mujs)
+    (name "mujs")
+    (version "1.0.5")
+    (source
+     (origin
+      (method git-fetch)
+      (uri (git-reference
+            (url "https://codeberg.org/ccxvii/mujs")
+            (commit version)))
+      (file-name (git-file-name name version))
+      (sha256
+       (base32 "0pkv26jxwgv5ax0ylfmi4h96h79hj4gvr95218ns8wngnmgr1ny6"))))))
 
 (define-public potrace-1.11
   (package

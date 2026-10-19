@@ -357,6 +357,11 @@ of the proof-of-concept input files.
       xmllint --recover cve/2017/5969/crash-libxml2-recover.xml
 
 
+## MuJS
+
+- [CVE-2019-11411](https://bugs.ghostscript.com/show_bug.cgi?id=700938)
+
+
 ## potrace
 
 - CVE-2013-7437: [possible heap overflow][redhat-955808]

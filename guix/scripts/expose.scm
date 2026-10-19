@@ -205,6 +205,9 @@
        ("xmllint" "--html ~a" "cve/2016/1839/asan_heap-oob"))
       (("CVE-2017-5969" "2.9.4")
        ("xmllint" "--recover ~a" "cve/2017/5969/crash-libxml2-recover.xml")))
+    ("mujs"
+     (("CVE-2019-11411" "1.0.5")
+      ("mujs" "~a")))
     ("potrace"
      (("CVE-2013-7437" "1.11")
       ("potrace" "-o /dev/null ~a"
