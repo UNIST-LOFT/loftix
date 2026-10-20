@@ -3,7 +3,7 @@
 ;;; SPDX-FileCopyrightText: 2026 Nguyễn Gia Phong
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (loftix transform)
+(define-module (loftix build-tools)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages multiprecision)
   #:use-module (guix build-system cmake)
