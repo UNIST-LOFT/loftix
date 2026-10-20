@@ -45,15 +45,15 @@
 (define-public bux
   (package
     (name "bux")
-    (version "2026.09.14")
+    (version "2026.10.19")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/UNIST-LOFT/loftix")
-             (commit "a99f54959cba96053b7c4072a32ee7378a441c4d")))
+             (commit "2931271372cb812800bcbbb166dd4b4c0f80e448")))
        (sha256
-        (base32 "12wdf7zf9sarhds07q6d4mjlrnivazlzyl6ws1cy8cnp3vy4gbj4"))))
+        (base32 "0hkihydp4shp3800fz0w1bzfm51splpws9hsy8gb38mczyyynfrs"))))
     (build-system copy-build-system)
     (arguments
      (list #:install-plan
@@ -679,6 +679,8 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
       (file-name (git-file-name name version))
       (sha256
        (base32 "0pkv26jxwgv5ax0ylfmi4h96h79hj4gvr95218ns8wngnmgr1ny6"))))))
+
+(define-public mujs-static-1.0.5 (static mujs-1.0.5))
 
 (define-public potrace-1.11
   (package

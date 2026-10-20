@@ -172,6 +172,9 @@
 (define-public taoscadh-cve-2017-5969
   (taosctha "CVE-2017-5969" libxml2-static-2.9.4))
 
+(define-public taoscadh-cve-2019-11411
+  (taosctha "CVE-2019-11411" mujs-static-1.0.5))
+
 (define-public taoscadh-cve-2013-7437
   (taosctha "CVE-2013-7437" potrace-1.11))
 
