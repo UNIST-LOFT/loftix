@@ -680,8 +680,6 @@ It can be used from PHP, Perl, Ruby, Python, C, C++ and Java.")
       (sha256
        (base32 "0pkv26jxwgv5ax0ylfmi4h96h79hj4gvr95218ns8wngnmgr1ny6"))))))
 
-(define-public mujs-static-1.0.5 (static mujs-1.0.5))
-
 (define-public potrace-1.11
   (package
     (inherit potrace)
