@@ -14,14 +14,14 @@ index 395f7a387bd9..feaef92f3266 100644
 +
 +PREFIX ?= /usr/local
 +BINDIR ::= $(DESTDIR)$(PREFIX)/bin
-+BIN ::= fuzzolic-merge-bitmap fuzzolic-find-models-addrs
++BIN ::= binradar-merge-bitmap binradar-find-models-addrs
 +
 +all: $(BIN)
 +
-+fuzzolic-find-models-addrs: fuzzolic/find_models_addrs.py
++binradar-find-models-addrs: binradar/find_models_addrs.py
 +	cp $< $@
 +
-+fuzzolic-merge-bitmap: utils/merge_bitmap.o
++binradar-merge-bitmap: utils/merge_bitmap.o
 +	$(CC) $(LDFLAGS) $< $(LOADLIBES) $(LDLIBS) -o $@
 +
 +install: $(BIN:%=$(BINDIR)/%)

@@ -15,12 +15,14 @@
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages man)
   #:use-module (gnu packages m4)
+  #:use-module (gnu packages patchutils)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages rust-apps)
   #:use-module (guix build-system cmake)
+  #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system pyproject)
   #:use-module (guix download)
@@ -294,42 +296,31 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
                   (replace "qemu" qemu-for-binradar-stacktrace)))))))
 
 (define-public binradar-solver
-  (let ((commit "bfbc8e8a633d87496fde3d49ddda1b1d497236fd")
-        (revision "7"))
-    (package
-      (inherit fuzzolic-solver)
-      (name "binradar-solver")
-      (version (git-version "0.1.0" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/UNIST-LOFT/binradar")
-               (commit commit)))
-         (file-name (git-file-name "binradar" version))
-         (sha256
-          (base32 "13k96cpvr61rzggv8c9kd3qyv8bz8wybnd9cv7v965wlvad0kvwq"))
-         (patches
-          (search-patches "patches/binradar-solver-unbundle.patch"
-                          "patches/binradar-python-package.patch"
-                          "patches/binradar-utils-make.patch"
-                          "patches/fuzzolic-solver-install.patch"))
-         (modules '((guix build utils)))
-         (snippet
-          #~(begin
-              (delete-file-recursively "solver/libsbsv")
-              (rename-file "benchmarks" "fuzzolic/benchmarks")
-              (substitute* (find-files "fuzzolic" "\\.py$")
-                (("^import (binradar.*|logger)" all)
-                 (string-append "from . " all))
-                (("^from (binradar.*|logger) import " _ module)
-                 (simple-format #f "from .~a import " module)))))))
-      (inputs
-       (modify-inputs inputs
-         (prepend c-sbsv
-                  qemu-for-binradar)
-         (delete "qemu-for-fuzzolic")))
-      (synopsis "Fuzzy constraint solver for BinRadar"))))
+  (package
+    (inherit fuzzolic-solver)
+    (name "binradar-solver")
+    (version "0.2.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/UNIST-LOFT/binradar")
+             (commit version)))
+       (file-name (git-file-name "binradar" version))
+       (sha256
+        (base32 "1v8h1z1lxixxkjgp5744276nxc2w32a085w2k8rvwyk3riwidvc9"))
+       (patches
+        (search-patches "patches/binradar-solver-unbundle.patch"
+                        "patches/binradar-utils-make.patch"
+                        "patches/fuzzolic-solver-install.patch"))
+       (modules '((guix build utils)))
+       (snippet #~(delete-file-recursively "solver/libsbsv"))))
+    (inputs
+     (modify-inputs inputs
+       (prepend c-sbsv
+                qemu-for-binradar)
+       (delete "qemu-for-fuzzolic")))
+    (synopsis "Fuzzy constraint solver for BinRadar")))
 
 (define-public binradar-utils
   (package
@@ -339,6 +330,21 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (source (package-source binradar-solver))
     (synopsis "CLI utilities for BinRadar")))
 
+(define-public binradar-benchmarks
+  (package
+    (name "binradar-benchmarks")
+    (version (package-version binradar-solver))
+    (source (package-source binradar-solver))
+    (build-system copy-build-system)
+    (arguments
+     (list #:install-plan #~'(("benchmarks" "share/binradar/benchmarks"))))
+    (home-page (package-home-page binradar-solver))
+    (synopsis "Benchmark metadata for BinRadar")
+    (description
+     "This package contains the metadata for running BinRadar
+with the benchmark used to evaluate taosc.")
+    (license (package-license binradar-solver))))
+
 (define-public binradar
   (package
     (inherit fuzzolic)
@@ -347,60 +353,74 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (source (package-source binradar-solver))
     (arguments
      (substitute-keyword-arguments arguments
-       ((#:phases phases #~%standard-phases)
+       ((#:phases phases)
         #~(modify-phases #$phases
             (replace 'patch-paths
               (lambda* (#:key inputs #:allow-other-keys)
-                (substitute* '("fuzzolic/binradar.py"
-                               "fuzzolic/binradar_runtime.py"
-                               "fuzzolic/testcase_checker.py"
+                (substitute* '("binradar/paths.py"
                                "utils/coverage_tracer.py")
                   (("^(TRACER_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file inputs "bin/qemu-x86_64"))))
-                (substitute* "fuzzolic/binradar.py"
+                (substitute* "binradar/paths.py"
                   (("^(SOLVER_SMT_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file inputs "bin/solver-smt")))
                   (("^(SOLVER_FUZZY_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (search-input-file inputs "bin/solver-fuzzy")))
-                  (("^(FIND_MODELS_BIN = ).*" _ assign)
+                  (("^(AFL_FUZZ_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (search-input-file
-                             inputs "bin/fuzzolic-find-models-addrs"))))
-                (substitute* "fuzzolic/binradar_fuzzer.py"
-                  (("os\\.path\\.join\\(AFL_PATH, \"afl-fuzz\"\\)")
-                   (simple-format #f "~s"
-                     (search-input-file inputs "bin/afl-fuzz"))))
-                (substitute* "fuzzolic/binradar_setup.py"
-                  (("\"just\"")
-                   (simple-format #f "~s"
-                     (search-input-file inputs "bin/just"))))
-                (substitute* '("fuzzolic/binradar_setup.py"
-                               "fuzzolic/binradar_verifier.py")
-                  (("^(QEMU_STACKTRACE_RELEASE = ).*" _ assign)
+                     assign (search-input-file inputs "bin/afl-fuzz")))
+                  (("^(QASAN_QEMU_BIN = ).*" _ assign)
                    (simple-format #f "~a~s\n"
                      assign (string-append
                              #$(this-package-input
                                 "aflplusplus-for-binradar-stacktrace")
-                             "/bin/afl-qemu-trace"))))
-                (substitute* "fuzzolic/run_afl_fuzzolic.py"
-                  (("^(AFL_BIN = ).*" _ assign)
+                             "/bin/afl-qemu-trace")))
+                  (("^(FIND_MODELS_SCRIPT = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (search-input-file inputs "bin/afl-fuzz")))
-                  (("^(FUZZOLIC_BIN = ).*" _ assign)
+                     assign (search-input-file
+                             inputs "bin/binradar-find-models-addrs")))
+                  (("^(LOFTIX_DIR = ).*" _ assign)
                    (simple-format #f "~a~s\n"
-                     assign (string-append #$output "bin/binradar"))))))
+                     assign (search-input-directory
+                             inputs "share/binradar/benchmarks/loftix")))
+                  (("^(BENCHMARK_SCRIPTS =) .*" _ assign)
+                   (simple-format #f "~a Path(~s)\n"
+                     assign (search-input-directory
+                             inputs "share/binradar/benchmarks/scripts")))
+                  (("^(BRPATCH_SOURCE = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign
+                     (search-input-file
+                      inputs "share/binradar/benchmarks/loftix/brpatch.c")))
+                  (("^(BRPATCH_CACHED_SOURCE = ).*" _ assign)
+                   (simple-format #f "~a~s\n"
+                     assign
+                     (search-input-file
+                      inputs
+                      "share/binradar/benchmarks/loftix/brpatch-cached.c")))
+                  ((" _e9_executable\\(\"(e9patch|e9tool)\"\\)" _ prog)
+                   (simple-format #f " ~s"
+                     (search-input-file inputs (string-append "bin/" prog)))))
+                (substitute* "binradar/binradar_setup.py"
+                  (("\"just\"")
+                   (simple-format #f "~s"
+                     (search-input-file inputs "bin/just"))))))
             (delete 'validate-runpath)))
        ((#:tests? _ #t)
         #f)))
+    (native-inputs (list python-pytest python-setuptools))
     (inputs (modify-inputs inputs
               (prepend aflplusplus-for-binradar
                        aflplusplus-for-binradar-stacktrace
+                       binradar-benchmarks
                        binradar-solver
                        binradar-utils
+                       e9patch
                        just
+                       python-pyelftools
                        python-sbsv
                        python-sortedcontainers
                        qemu-for-binradar)
