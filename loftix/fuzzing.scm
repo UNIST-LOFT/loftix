@@ -5,6 +5,7 @@
 
 (define-module (loftix fuzzing)
   #:use-module (gnu packages)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages c)
   #:use-module (gnu packages check)
   #:use-module (gnu packages gcc)
@@ -142,8 +143,13 @@ and negatively affect the analyzed application.")
                                 (string-append "PREFIX=" #$output))
            #:phases #~(modify-phases %standard-phases
                         (delete 'configure)
+                        (add-after 'unpack 'patch-paths
+                          (lambda* (#:key inputs #:allow-other-keys)
+                            (substitute* "binradar/find_models_addrs.py"
+                              (("objdump")
+                               (search-input-file inputs "bin/objdump")))))
                         (delete 'check))))
-    (inputs (list python))
+    (inputs (list binutils python))
     (synopsis "CLI utilities for FUZZOLIC")))
 
 (define-public fuzzolic
@@ -410,7 +416,10 @@ with the benchmark used to evaluate taosc.")
                      cp indent dest))
                   (("\"just\"")
                    (simple-format #f "~s"
-                     (search-input-file inputs "bin/just"))))))
+                     (search-input-file inputs "bin/just")))
+                  (("\"objdump\"")
+                   (simple-format #f "~s"
+                     (search-input-file inputs "bin/objdump"))))))
             (delete 'validate-runpath)))
        ((#:tests? _ #t)
         #f)))
@@ -421,6 +430,7 @@ with the benchmark used to evaluate taosc.")
                        binradar-benchmarks
                        binradar-solver
                        binradar-utils
+                       binutils
                        e9patch
                        just
                        python-pyelftools
