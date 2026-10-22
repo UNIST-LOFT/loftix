@@ -132,7 +132,7 @@
 
 (define-public qemu-for-binradar-stacktrace
   (let ((base-version "5.2.50")
-        (commit "25f820e2c8e0bb8562a7769f959b1416114d23b6")
+        (commit "b55644623c2755c1fcef203a0e427fbc292582a7")
         (revision "binradar_stacktrace"))
     (hidden-package
       (package
@@ -148,7 +148,7 @@
                  (recursive? #t)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "0lgndd29wlq52jnp3fa1ki8i1id3a1rgdir2hdk4ij2pd34acqsi"))
+            (base32 "0g6r0nlx7awvjsbiwn094agqlj6zvrc973c6rm85iwzi11gpa693"))
            (patches
             (search-patches "patches/qemu-io-uring-2.2.patch"))
            (modules '((guix build utils)))
