@@ -405,6 +405,9 @@ with the benchmark used to evaluate taosc.")
                    (simple-format #f " ~s"
                      (search-input-file inputs (string-append "bin/" prog)))))
                 (substitute* "binradar/binradar_setup.py"
+                  (("^( *) shutil.copy\\(.*, (.*)\\)" cp indent dest)
+                   (simple-format #f "~a\n~a os.chmod(~a, 0o644)"
+                     cp indent dest))
                   (("\"just\"")
                    (simple-format #f "~s"
                      (search-input-file inputs "bin/just"))))))
