@@ -22,10 +22,6 @@ Then run `guix pull`.
 
 ## Packages
 
-### Build tools
-
-- [hellscape]: GCC plugin for GIMPLE obfuscation
-
 ### Fuzzing
 
 - [afl-dyninst]: [Dyninst] integration for [AFL++]
@@ -51,7 +47,6 @@ Then run `guix pull`.
 - [fuzzy-sat]: Approximate solver for concolic execution
 
 [Guix channel]: https://guix.gnu.org/manual/devel/en/html_node/Channels.html
-[hellscape]: https://chim.loan/hellscape
 [afl-dyninst]: https://trong.loang.net/~cnx/afl-dyninst/about
 [Dyninst]: https://github.com/dyninst/dyninst
 [AFL++]: https://aflplus.plus
