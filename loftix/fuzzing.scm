@@ -395,9 +395,8 @@ with the benchmark used to evaluate taosc.")
                      assign (search-input-file
                              inputs "bin/binradar-find-models-addrs")))
                   (("^(LOFTIX_DIR = ).*" _ assign)
-                   (simple-format #f "~a~s\n"
-                     assign (search-input-directory
-                             inputs "share/binradar/benchmarks/loftix")))
+                   (simple-format #f "~a~a\n"
+                     assign "os.environ.get('BINRADAR_LOG_DIR')"))
                   (("^(BENCHMARK_SCRIPTS =) .*" _ assign)
                    (simple-format #f "~a Path(~s)\n"
                      assign (search-input-directory
