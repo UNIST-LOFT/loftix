@@ -143,13 +143,8 @@ and negatively affect the analyzed application.")
                                 (string-append "PREFIX=" #$output))
            #:phases #~(modify-phases %standard-phases
                         (delete 'configure)
-                        (add-after 'unpack 'patch-paths
-                          (lambda* (#:key inputs #:allow-other-keys)
-                            (substitute* "binradar/find_models_addrs.py"
-                              (("objdump")
-                               (search-input-file inputs "bin/objdump")))))
                         (delete 'check))))
-    (inputs (list binutils python))
+    (inputs (list python))
     (synopsis "CLI utilities for FUZZOLIC")))
 
 (define-public fuzzolic
@@ -334,6 +329,17 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
     (name "binradar-utils")
     (version (package-version binradar-solver))
     (source (package-source binradar-solver))
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (add-after 'unpack 'patch-paths
+              (lambda* (#:key inputs #:allow-other-keys)
+                (substitute* "binradar/find_models_addrs.py"
+                  (("objdump")
+                   (search-input-file inputs "bin/objdump")))))))))
+    (inputs (modify-inputs inputs
+              (prepend binutils)))
     (synopsis "CLI utilities for BinRadar")))
 
 (define-public binradar-benchmarks
