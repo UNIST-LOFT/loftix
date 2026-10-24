@@ -170,7 +170,14 @@ and congruence relations.")
       #~(modify-phases %standard-phases
           (replace 'configure zig-configure))))
     (native-inputs (list zig-0.16))
-    (inputs (list aflplusplus dyninst e9patch findutils fuzzolic valgrind))
+    (inputs
+     (list aflplusplus
+           binradar
+           dyninst
+           e9patch
+           findutils
+           fuzzolic
+           valgrind))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
     (home-page "https://chim.loan/taosc")
