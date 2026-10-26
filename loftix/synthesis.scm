@@ -8,8 +8,9 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages debug)
   #:use-module (gnu packages instrumentation)
-  #:use-module (gnu packages maths)
   #:use-module (gnu packages java)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages maths)
   #:use-module (gnu packages patchutils)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
@@ -132,7 +133,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.1.25")
+    (version "0.1.26")
     (source
      (origin
        (method fossil-fetch)
@@ -140,7 +141,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "16d3ixrf3vr148ky58hz3r4rlbkzsllh1fwzplqyi02b75qg5ipi"))))
+        (base32 "0xhqwas42sbpmxd4p7gwx92n7x8a6p92xmm7zgg1q7qh1vp7sq4w"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -161,6 +162,10 @@ and congruence relations.")
                              "/bin/xargs")
               (string-append "FUZZOLIC=" #$(this-package-input "fuzzolic")
                              "/bin/fuzzolic")
+              (string-append "PGREP=" #$(this-package-input "procps")
+                             "/bin/pgrep")
+              (string-append "PKILL=" #$(this-package-input "procps")
+                             "/bin/pkill")
               (string-append "QEMUAFL=" #$(this-package-input "aflplusplus")
                              "/bin/afl-qemu-trace")
               (string-append "VALGRIND=" #$(this-package-input "valgrind")
@@ -177,6 +182,7 @@ and congruence relations.")
            e9patch
            findutils
            fuzzolic
+           procps
            valgrind))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")
