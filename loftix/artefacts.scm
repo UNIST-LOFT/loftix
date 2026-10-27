@@ -30,6 +30,7 @@
              #:builder
              #~(begin
                  (use-modules (guix build utils))
+                 (setenv "HOME" "/tmp")
                  (set-path-environment-variable "PATH" '("bin")
                                                 (map cdr %build-inputs))
                  (invoke "taosc-fix" #$timeout #$output

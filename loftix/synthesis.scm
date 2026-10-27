@@ -11,6 +11,7 @@
   #:use-module (gnu packages java)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages maths)
+  #:use-module (gnu packages parallel)
   #:use-module (gnu packages patchutils)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
@@ -133,7 +134,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.1.28")
+    (version "0.1.29")
     (source
      (origin
        (method fossil-fetch)
@@ -141,7 +142,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "1n9qs1c6hn2m1fglyqhjmgh4ibwa7f7y9k0rk0ymnmyil7g116h7"))))
+        (base32 "0n9k62cfx0xqq8iaq8r2l7hl3rydh4flbgx9am9b1wy9gzxy4p7a"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -152,25 +153,21 @@ and congruence relations.")
       (cons '(guix build zig-utils)
             %default-gnu-modules)
       #:make-flags
-      #~(list (string-append "E9COMPILE=" #$(this-package-input "e9patch")
-                             "/bin/e9compile")
-              (string-append "E9TOOL=" #$(this-package-input "e9patch")
-                             "/bin/e9tool")
-              (string-append "FIND=" #$(this-package-input "findutils")
-                             "/bin/find")
-              (string-append "XARGS=" #$(this-package-input "findutils")
-                             "/bin/xargs")
-              (string-append "FUZZOLIC=" #$(this-package-input "fuzzolic")
-                             "/bin/fuzzolic")
-              (string-append "PGREP=" #$(this-package-input "procps")
-                             "/bin/pgrep")
-              (string-append "PKILL=" #$(this-package-input "procps")
-                             "/bin/pkill")
-              (string-append "QEMUAFL=" #$(this-package-input "aflplusplus")
-                             "/bin/afl-qemu-trace")
-              (string-append "VALGRIND=" #$(this-package-input "valgrind")
-                             "/bin/valgrind")
-              (string-append "PREFIX=" #$output))
+      #~(cons (string-append "PREFIX=" #$output)
+              (map (lambda (pair)
+                     (simple-format #f "~a=~a"
+                       (car pair)
+                       (search-input-file
+                        %build-inputs (in-vicinity "bin" (cdr pair)))))
+                   '(("E9COMPILE" . "e9compile")
+                     ("E9TOOL" . "e9tool")
+                     ("FIND" . "find")
+                     ("FUZZOLIC" . "fuzzolic")
+                     ("PARALLEL" . "parallel")
+                     ("PGREP" . "pgrep")
+                     ("PKILL" . "pkill")
+                     ("QEMUAFL" . "afl-qemu-trace")
+                     ("VALGRIND" . "valgrind"))))
       #:phases
       #~(modify-phases %standard-phases
           (replace 'configure zig-configure))))
@@ -182,6 +179,7 @@ and congruence relations.")
            e9patch
            findutils
            fuzzolic
+           parallel
            procps
            valgrind))
     (synopsis "Emergency binary patcher")
