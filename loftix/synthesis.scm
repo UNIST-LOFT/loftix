@@ -134,7 +134,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.1.29")
+    (version "0.2.0-alpha.0")
     (source
      (origin
        (method fossil-fetch)
@@ -142,7 +142,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "0n9k62cfx0xqq8iaq8r2l7hl3rydh4flbgx9am9b1wy9gzxy4p7a"))))
+        (base32 "1ni9bmpik18i4x26whpzq9imx7znqhiank5vvvs0537wxh1m7gxl"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -159,11 +159,9 @@ and congruence relations.")
                        (car pair)
                        (search-input-file
                         %build-inputs (in-vicinity "bin" (cdr pair)))))
-                   '(("E9COMPILE" . "e9compile")
-                     ("E9TOOL" . "e9tool")
-                     ("FIND" . "find")
+                   '(("E9COMPILE" . "e9compile") ("E9TOOL" . "e9tool")
+                     ("FIND" . "find") ("XARGS" . "xargs")
                      ("FUZZOLIC" . "fuzzolic")
-                     ("PARALLEL" . "parallel")
                      ("PGREP" . "pgrep")
                      ("PKILL" . "pkill")
                      ("QEMUAFL" . "afl-qemu-trace")
@@ -179,7 +177,6 @@ and congruence relations.")
            e9patch
            findutils
            fuzzolic
-           parallel
            procps
            valgrind))
     (synopsis "Emergency binary patcher")
