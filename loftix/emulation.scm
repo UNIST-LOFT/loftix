@@ -81,7 +81,7 @@
 
 (define-public qemu-for-binradar
   (let ((base-version "4.1.1")
-        (commit "d4625cae9c77d5a334f5ae1e912d728db1b1b748")
+        (commit "089a26cf9a90fc7e5efa0082efa74cea8358beee")
         (revision "type-infer"))
     (hidden-package
       (package
@@ -104,7 +104,7 @@
                                    ".." commit ".diff"))
                (sha256
                 (base32
-                 "18gv1dkfka5j7y7ngbgdx9schwl72c619v8sbgw0w712v15q82pi"))
+                 "1wnma4133d2ja8gcz0c00pbk1w6n3pi0bmfq2fkmx0yr33b727mv"))
                (file-name (string-append name ".patch")))))))))))
 
 (define-public qemu-for-aflplusplus-for-binradar
@@ -132,7 +132,7 @@
 
 (define-public qemu-for-binradar-stacktrace
   (let ((base-version "5.2.50")
-        (commit "b55644623c2755c1fcef203a0e427fbc292582a7")
+        (commit "f5d323c9ebc4bbb9c39189105cfde53e734eca9b")
         (revision "binradar_stacktrace"))
     (hidden-package
       (package
@@ -148,7 +148,7 @@
                  (recursive? #t)))
            (file-name (git-file-name name version))
            (sha256
-            (base32 "0g6r0nlx7awvjsbiwn094agqlj6zvrc973c6rm85iwzi11gpa693"))
+            (base32 "16pdrgk4f9h9yjg3qggk78jyxmjcgllbzl023k6072w0672wzyrr"))
            (patches
             (search-patches "patches/qemu-io-uring-2.2.patch"))
            (modules '((guix build utils)))

@@ -172,7 +172,6 @@ and congruence relations.")
     (native-inputs (list zig-0.16))
     (inputs
      (list aflplusplus
-           binradar
            dyninst
            e9patch
            findutils
