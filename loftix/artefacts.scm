@@ -18,7 +18,8 @@
          (bin (string-append "/bin/" (car poc)))
          (args (cadr poc))
          (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
-         (timeout "67"))
+         (timeout "16")
+         (processes "16"))
     (package
       (name (string-append "taoscadh-" (string-downcase bug-id)))
       (version (package-version taosc))
@@ -33,7 +34,7 @@
                  (setenv "HOME" "/tmp")
                  (set-path-environment-variable "PATH" '("bin")
                                                 (map cdr %build-inputs))
-                 (invoke "taosc-fix" #$timeout #$output
+                 (invoke "taosc-fix" #$timeout #$processes #$output
                          (search-input-directory %build-inputs #$poc-dir)
                          (string-append #$buggy-package #$bin)
                          (simple-format #f #$args "@@")))))
