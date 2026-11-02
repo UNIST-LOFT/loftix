@@ -18,8 +18,8 @@
          (bin (string-append "/bin/" (car poc)))
          (args (cadr poc))
          (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
-         (timeout "16")
-         (processes "16"))
+         (timeout "67")
+         (processes "8"))
     (package
       (name (string-append "taoscadh-" (string-downcase bug-id)))
       (version (package-version taosc))
