@@ -412,7 +412,7 @@ with the benchmark used to evaluate taosc.")
                      (search-input-file
                       inputs
                       "share/binradar/benchmarks/loftix/brpatch-cached.c")))
-                  ((" _e9_executable\\(\"(e9patch|e9tool)\"\\)" _ prog)
+                  ((" _e9_executable\\(\"(e9[a-z]+)\"\\)" _ prog)
                    (simple-format #f " ~s"
                      (search-input-file inputs (string-append "bin/" prog)))))
                 (substitute* "binradar/binradar_setup.py"
