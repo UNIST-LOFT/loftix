@@ -9,7 +9,6 @@
   #:use-module (gnu packages debug)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages java)
-  #:use-module (gnu packages linux)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages parallel)
   #:use-module (gnu packages patchutils)
@@ -134,7 +133,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.2.0-alpha.2")
+    (version "0.2.0-alpha.3")
     (source
      (origin
        (method fossil-fetch)
@@ -142,7 +141,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "1ar5zb8bjrzsi44yhcasvq1id20xm3z4v3vszyncg89a8nzhz659"))))
+        (base32 "0l29gbnzmvckdkcr07kna84annadvnl8mdcd64kpp1maadyrl7dm"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -160,10 +159,9 @@ and congruence relations.")
                        (search-input-file
                         %build-inputs (in-vicinity "bin" (cdr pair)))))
                    '(("E9COMPILE" . "e9compile") ("E9TOOL" . "e9tool")
-                     ("FIND" . "find") ("XARGS" . "xargs")
+                     ("FIND" . "find")
                      ("FUZZOLIC" . "fuzzolic")
-                     ("PGREP" . "pgrep")
-                     ("PKILL" . "pkill")
+                     ("PARALLEL" . "parallel")
                      ("QEMUAFL" . "afl-qemu-trace")
                      ("VALGRIND" . "valgrind"))))
       #:phases
@@ -176,7 +174,7 @@ and congruence relations.")
            e9patch
            findutils
            fuzzolic
-           procps
+           parallel
            valgrind))
     (synopsis "Emergency binary patcher")
     (description "Taosc generates emergent fixes for binaries.")

@@ -18,8 +18,8 @@
          (bin (string-append "/bin/" (car poc)))
          (args (cadr poc))
          (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
-         (timeout "67")
-         (processes "8"))
+         (omp-threads "8")
+         (timeout "67"))
     (package
       (name (string-append "taoscadh-" (string-downcase bug-id)))
       (version (package-version taosc))
@@ -32,9 +32,10 @@
              #~(begin
                  (use-modules (guix build utils))
                  (setenv "HOME" "/tmp")
+                 (setenv "OMP_NUM_THREADS" #$omp-threads)
                  (set-path-environment-variable "PATH" '("bin")
                                                 (map cdr %build-inputs))
-                 (invoke "taosc-fix" #$timeout #$processes #$output
+                 (invoke "taosc-fix" #$timeout #$output
                          (search-input-directory %build-inputs #$poc-dir)
                          (string-append #$buggy-package #$bin)
                          (simple-format #f #$args "@@")))))
