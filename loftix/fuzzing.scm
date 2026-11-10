@@ -142,6 +142,12 @@ and negatively affect the analyzed application.")
      (list #:make-flags #~(list (string-append "CC=" #$(cc-for-target))
                                 (string-append "PREFIX=" #$output))
            #:phases #~(modify-phases %standard-phases
+                        (add-after 'unpack 'patch-paths
+                          (lambda* (#:key inputs #:allow-other-keys)
+                            (substitute* "fuzzolic/find_models_addrs.py"
+                              (("\"ldd\"")
+                               (simple-format #f "~s"
+                                 (search-input-file inputs "bin/ldd"))))))
                         (delete 'configure)
                         (delete 'check))))
     (inputs (list python))
@@ -333,11 +339,13 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
      (substitute-keyword-arguments arguments
        ((#:phases phases)
         #~(modify-phases #$phases
-            (add-after 'unpack 'patch-paths
+            (replace 'patch-paths
               (lambda* (#:key inputs #:allow-other-keys)
                 (substitute* "binradar/find_models_addrs.py"
-                  (("objdump")
-                   (search-input-file inputs "bin/objdump")))))))))
+                  (("\"(ldd|objdump)\\>" _ prog)
+                   (string-append
+                    "r\"" (search-input-file inputs
+                                             (in-vicinity "bin" prog)))))))))))
     (inputs (modify-inputs inputs
               (prepend binutils)))
     (synopsis "CLI utilities for BinRadar")))
