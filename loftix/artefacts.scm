@@ -10,16 +10,15 @@
   #:use-module (guix packages)
   #:use-module (guix scripts expose)
   #:use-module (loftix bugs)
+  #:use-module (loftix fuzzing)
   #:use-module (loftix synthesis)
   #:export (taosctha))
 
 (define (taosctha bug-id buggy-package)
   (let* ((poc (cadr (search-bug %buggy-packages bug-id)))
-         (bin (string-append "/bin/" (car poc)))
+         (bin (in-vicinity "bin" (car poc)))
          (args (cadr poc))
-         (poc-dir (string-append "share/bux/" (dirname (caddr poc))))
-         (omp-threads "8")
-         (timeout "67"))
+         (poc-dir (in-vicinity "share/bux" (dirname (caddr poc)))))
     (package
       (name (string-append "taoscadh-" (string-downcase bug-id)))
       (version (package-version taosc))
@@ -29,20 +28,20 @@
        (list #:modules
              '((guix build utils))
              #:builder
-             #~(begin
+             #~(let ((omp-threads "8")
+                     (timeout "10"))
                  (use-modules (guix build utils))
-                 (define (reaped?)
-                   (not (= 0 (car (waitpid WAIT_ANY WNOHANG)))))
                  (sigaction SIGCHLD
                    (lambda _
-                     (while (catch 'system-error reaped? (const #f)))))
+                     (while (false-if-exception
+                             (not (= 0 (car (waitpid WAIT_ANY WNOHANG))))))))
                  (setenv "HOME" "/tmp")
-                 (setenv "OMP_NUM_THREADS" #$omp-threads)
+                 (setenv "OMP_NUM_THREADS" omp-threads)
                  (set-path-environment-variable "PATH" '("bin")
                                                 (map cdr %build-inputs))
-                 (invoke "taosc-fix" #$timeout #$output
+                 (invoke "taosc-fix" timeout #$output
                          (search-input-directory %build-inputs #$poc-dir)
-                         (string-append #$buggy-package #$bin)
+                         (in-vicinity #$buggy-package #$bin)
                          (simple-format #f #$args "@@")))))
       (inputs (list buggy-package))
       (native-inputs (list bux coreutils diffutils grep sed taosc))
@@ -54,16 +53,63 @@
       (home-page (package-home-page buggy-package))
       (license (package-license buggy-package)))))
 
-(define-macro (define-taoscadh id pkg . rest)
-  (let ((name (string->symbol
-               (string-append "taoscadh-" (string-downcase id)))))
-    (if (null? rest)
-        `(define-public ,name (taosctha ,id ,pkg))
-        `(begin
-           (define-public ,name (taosctha ,id ,pkg))
-           (define-taoscadh . ,rest)))))
+(define (binradared bug-id buggy-package)
+  (package
+    (name (string-append "binradared-taoscadh-" (string-downcase bug-id)))
+    (version (package-version binradar))
+    (build-system trivial-build-system)
+    (source (taosctha bug-id buggy-package))
+    (arguments
+     (list #:modules
+           '((guix build utils))
+           #:builder
+           #~(let ((timeout "600"))
+               (use-modules (guix build utils))
+               (set-path-environment-variable "PATH" '("bin")
+                                              (map cdr %build-inputs))
+               (let* ((source (assoc-ref %build-inputs "source"))
+                      (bench
+                       (search-input-directory
+                        %build-inputs "share/binradar/benchmarks/loftix"))
+                      (configs
+                       (find-files
+                        bench (lambda (path stat)
+                                (string-suffix?
+                                 (string-append #$bug-id "/config.env")
+                                 path)))))
+                 (copy-recursively source "workdir")
+                 (for-each make-file-writable (find-files "workdir"))
+                 (copy-file (car configs) "config.env"))
+               (for-each
+                (lambda (subcmd)
+                  (invoke "binradar-setup" subcmd)
+                  (invoke "binradar" "-w" "workdir" "-t" timeout subcmd))
+                '("--generate-concrete" "--generate-binradar"))
+               (copy-recursively "workdir/out" #$output))))
+    (inputs (list (taosctha bug-id buggy-package)))
+    (native-inputs (list binradar binradar-benchmarks coreutils))
+    (synopsis (simple-format #f "BinRadar output of ~a in ~a@@~a"
+                bug-id
+                (package-name buggy-package)
+                (package-version buggy-package)))
+    (description (package-description buggy-package))
+    (home-page (package-home-page buggy-package))
+    (license (package-license buggy-package))))
 
-(define-taoscadh
+(define (join-name . strings)
+  (string->symbol (string-downcase (string-join strings "-"))))
+
+(define-macro (define-binradared-taoscadh id pkg . rest)
+  (let ((taoscadh (join-name "taoscadh" id))
+        (binradared-taoscadh (join-name "binradared" "taoscadh" id)))
+    `(begin
+       (define-public ,taoscadh (taosctha ,id ,pkg))
+       (define-public ,binradared-taoscadh (binradared ,id ,pkg))
+       ,@(if (null? rest)
+             '()
+             `((define-binradared-taoscadh . ,rest))))))
+
+(define-binradared-taoscadh
   "CVE-2017-6965" binutils-2.27
   "CVE-2017-6966" binutils-2.27
   "CVE-2017-14745" binutils-2.29
