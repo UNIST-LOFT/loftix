@@ -31,6 +31,11 @@
              #:builder
              #~(begin
                  (use-modules (guix build utils))
+                 (define (reaped?)
+                   (not (= 0 (car (waitpid WAIT_ANY WNOHANG)))))
+                 (sigaction SIGCHLD
+                   (lambda _
+                     (while (catch 'system-error reaped? (const #f)))))
                  (setenv "HOME" "/tmp")
                  (setenv "OMP_NUM_THREADS" #$omp-threads)
                  (set-path-environment-variable "PATH" '("bin")
