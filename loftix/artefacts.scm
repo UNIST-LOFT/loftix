@@ -63,7 +63,7 @@
      (list #:modules
            '((guix build utils))
            #:builder
-           #~(let ((timeout "600"))
+           #~(let ((timeout "7200"))
                (use-modules (guix build utils))
                (set-path-environment-variable "PATH" '("bin")
                                               (map cdr %build-inputs))
