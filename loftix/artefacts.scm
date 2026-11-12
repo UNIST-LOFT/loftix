@@ -57,13 +57,15 @@
   (package
     (name (string-append "binradared-taoscadh-" (string-downcase bug-id)))
     (version (package-version binradar))
-    (build-system trivial-build-system)
     (source (taosctha bug-id buggy-package))
+    (properties '((max-silent-time . 7200)))
+    (build-system trivial-build-system)
     (arguments
      (list #:modules
            '((guix build utils))
            #:builder
-           #~(let ((timeout "7200"))
+           #~(let ((timeout (number->string (assq-ref #$properties
+                                                      'max-silent-time))))
                (use-modules (guix build utils))
                (set-path-environment-variable "PATH" '("bin")
                                               (map cdr %build-inputs))
