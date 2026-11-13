@@ -64,8 +64,8 @@
      (list #:modules
            '((guix build utils))
            #:builder
-           #~(let ((timeout (number->string (assq-ref #$properties
-                                                      'max-silent-time))))
+           #~(let ((timeout (number->string
+                             #$(assq-ref properties 'max-silent-time))))
                (use-modules (guix build utils))
                (set-path-environment-variable "PATH" '("bin")
                                               (map cdr %build-inputs))
