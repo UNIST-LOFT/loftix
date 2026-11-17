@@ -6,6 +6,7 @@
 (define-module (loftix artefacts)
   #:use-module (gnu packages base)
   #:use-module (guix build-system trivial)
+  #:use-module (guix fossil-download)
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix scripts expose)
@@ -45,12 +46,12 @@
                          (simple-format #f #$args "@@")))))
       (inputs (list buggy-package))
       (native-inputs (list bux coreutils diffutils grep sed taosc))
+      (home-page (package-home-page buggy-package))
       (synopsis (simple-format #f "~a@@~a with ~a patched by taosc"
                   (package-name buggy-package)
                   (package-version buggy-package)
                   bug-id))
       (description (package-description buggy-package))
-      (home-page (package-home-page buggy-package))
       (license (package-license buggy-package)))))
 
 (define (binradared bug-id buggy-package)
@@ -90,23 +91,75 @@
                (copy-recursively "workdir/out" #$output))))
     (inputs (list (taosctha bug-id buggy-package)))
     (native-inputs (list binradar binradar-benchmarks coreutils))
+    (home-page (package-home-page buggy-package))
     (synopsis (simple-format #f "BinRadar output of ~a in ~a@@~a"
                 bug-id
                 (package-name buggy-package)
                 (package-version buggy-package)))
     (description (package-description buggy-package))
-    (home-page (package-home-page buggy-package))
     (license (package-license buggy-package))))
+
+(define-public taosc-next
+  (package
+    (inherit taosc)
+    (name "taosc-next")
+    (version "0.2.0")
+    (source
+     (origin
+       (method fossil-fetch)
+       (uri (fossil-reference
+             (uri "https://chim.loan/taosc")
+             (check-in version)))
+       (sha256
+        (base32 "1zjrja132wj79spqgsx0v5n9di87k8pbbhrn50isf7d74jkx74hz"))))))
+
+(define (taosc-refined bug-id buggy-package)
+  (let ((taoscadh (taosctha bug-id buggy-package))
+        (taosc taosc-next)              ;guix build --with-source=taosc-next=...
+        (binradared-taoscadh (binradared bug-id buggy-package)))
+    (package
+      (inherit taoscadh)
+      (name (string-append "refined-taoscadh-" (string-downcase bug-id)))
+      (version (package-version taosc))
+      (source taoscadh)
+      (build-system trivial-build-system)
+      (arguments
+       (list #:modules
+             '((guix build utils))
+             #:builder
+             #~(let ((source (assoc-ref %build-inputs "source"))
+                     (omp-threads "8")
+                     (timeout "10"))
+                 (use-modules (guix build utils))
+                 (sigaction SIGCHLD
+                   (lambda _
+                     (while (false-if-exception
+                             (not (= 0 (car (waitpid WAIT_ANY WNOHANG))))))))
+                 (setenv "HOME" "/tmp")
+                 (setenv "OMP_NUM_THREADS" omp-threads)
+                 (set-path-environment-variable "PATH" '("bin")
+                                                (map cdr %build-inputs))
+                 (copy-recursively source #$output)
+                 (for-each make-file-writable (find-files #$output))
+                 (invoke "taosc-refine" timeout #$output
+                         (dirname
+                          (search-input-file %build-inputs "progress.sbsv"))))))
+      (native-inputs (modify-inputs native-inputs
+                       (delete "taosc")
+                       (prepend taosc)))
+      (inputs (list binradared-taoscadh)))))
 
 (define (join-name . strings)
   (string->symbol (string-downcase (string-join strings "-"))))
 
 (define-macro (define-binradared-taoscadh id pkg . rest)
   (let ((taoscadh (join-name "taoscadh" id))
-        (binradared-taoscadh (join-name "binradared" "taoscadh" id)))
+        (binradared-taoscadh (join-name "binradared" "taoscadh" id))
+        (refined-taoscadh (join-name "refined" "taoscadh" id)))
     `(begin
        (define-public ,taoscadh (taosctha ,id ,pkg))
        (define-public ,binradared-taoscadh (binradared ,id ,pkg))
+       (define-public ,refined-taoscadh (taosc-refined ,id ,pkg))
        ,@(if (null? rest)
              '()
              `((define-binradared-taoscadh . ,rest))))))
