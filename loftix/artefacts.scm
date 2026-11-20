@@ -99,23 +99,8 @@
     (description (package-description buggy-package))
     (license (package-license buggy-package))))
 
-(define-public taosc-next
-  (package
-    (inherit taosc)
-    (name "taosc-next")
-    (version "0.2.0")
-    (source
-     (origin
-       (method fossil-fetch)
-       (uri (fossil-reference
-             (uri "https://chim.loan/taosc")
-             (check-in version)))
-       (sha256
-        (base32 "1zjrja132wj79spqgsx0v5n9di87k8pbbhrn50isf7d74jkx74hz"))))))
-
 (define (taosc-refined bug-id buggy-package)
   (let ((taoscadh (taosctha bug-id buggy-package))
-        (taosc taosc-next)              ;guix build --with-source=taosc-next=...
         (binradared-taoscadh (binradared bug-id buggy-package)))
     (package
       (inherit taoscadh)
