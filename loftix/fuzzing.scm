@@ -306,7 +306,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
   (package
     (inherit fuzzolic-solver)
     (name "binradar-solver")
-    (version "0.3.0")
+    (version "0.3.3")
     (source
      (origin
        (method git-fetch)
@@ -315,7 +315,7 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
              (commit version)))
        (file-name (git-file-name "binradar" version))
        (sha256
-        (base32 "190v3f2sshwxa6awlp125w3pdqaxy8w6vrhwiz2kzmhb9a1ni065"))
+        (base32 "0asj2nyvci2xx9rpgxc6cyg6hlr1qkrwfdf54avw98m947bp69dh"))
        (patches
         (search-patches "patches/binradar-solver-unbundle.patch"
                         "patches/binradar-utils-make.patch"

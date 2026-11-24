@@ -81,7 +81,7 @@
 
 (define-public qemu-for-binradar
   (let ((base-version "4.1.1")
-        (commit "089a26cf9a90fc7e5efa0082efa74cea8358beee")
+        (commit "cbccc55c87c31d338a56a9848a2b262dc88129ac")
         (revision "type-infer"))
     (hidden-package
       (package
@@ -104,7 +104,7 @@
                                    ".." commit ".diff"))
                (sha256
                 (base32
-                 "1wnma4133d2ja8gcz0c00pbk1w6n3pi0bmfq2fkmx0yr33b727mv"))
+                 "0656jxgkafhrmf4kd4c9jnp28a3djxq4sjvdn0jahc92vz3xhh9s"))
                (file-name (string-append name ".patch")))))))))))
 
 (define-public qemu-for-aflplusplus-for-binradar
