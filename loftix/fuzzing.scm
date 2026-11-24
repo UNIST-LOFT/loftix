@@ -342,12 +342,15 @@ fuzzolic-with-afl = 'fuzzolic.run_afl_fuzzolic:main'
             (replace 'patch-paths
               (lambda* (#:key inputs #:allow-other-keys)
                 (substitute* "binradar/find_models_addrs.py"
-                  (("\"(ldd|objdump)\\>" _ prog)
+                  (("\\| (grep|head) " _ prog)
+                   (simple-format #f "| ~a "
+                     (search-input-file inputs (in-vicinity "bin" prog))))
+                  (("\"(ldd|nm|objdump)\\>" _ prog)
                    (string-append
                     "r\"" (search-input-file inputs
                                              (in-vicinity "bin" prog)))))))))))
     (inputs (modify-inputs inputs
-              (prepend binutils)))
+              (prepend binutils coreutils grep)))
     (synopsis "CLI utilities for BinRadar")))
 
 (define-public binradar-benchmarks
@@ -404,7 +407,7 @@ with the benchmark used to evaluate taosc.")
                              inputs "bin/binradar-find-models-addrs")))
                   (("^(LOFTIX_DIR = ).*" _ assign)
                    (simple-format #f "~a~a\n"
-                     assign "os.environ.get('BINRADAR_LOG_DIR')"))
+                     assign "os.environ.get('BINRADAR_LOG_DIR', '.')"))
                   (("^(BENCHMARK_SCRIPTS =) .*" _ assign)
                    (simple-format #f "~a Path(~s)\n"
                      assign (search-input-directory
