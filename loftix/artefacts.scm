@@ -83,7 +83,6 @@
                  (copy-recursively source "workdir")
                  (for-each make-file-writable (find-files "workdir"))
                  (copy-file (car configs) "config.env"))
-               (invoke "sed" "-i" "s#\"poc#\"input/poc#" "config.env")
                (for-each
                 (lambda (subcmd)
                   (invoke "binradar-setup" subcmd)
@@ -91,7 +90,7 @@
                 '("--generate-concrete" "--generate-binradar"))
                (copy-recursively "workdir/out" #$output))))
     (inputs (list (taosctha bug-id buggy-package)))
-    (native-inputs (list binradar binradar-benchmarks coreutils sed))
+    (native-inputs (list binradar binradar-benchmarks coreutils))
     (home-page (package-home-page buggy-package))
     (synopsis (simple-format #f "BinRadar output of ~a in ~a@@~a"
                 bug-id
