@@ -9,6 +9,7 @@
   #:use-module (gnu packages debug)
   #:use-module (gnu packages instrumentation)
   #:use-module (gnu packages java)
+  #:use-module (gnu packages machine-learning)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages parallel)
   #:use-module (gnu packages patchutils)
@@ -133,7 +134,7 @@ and congruence relations.")
 (define-public taosc
   (package
     (name "taosc")
-    (version "0.2.2")
+    (version "0.3.0-alpha.0")
     (source
      (origin
        (method fossil-fetch)
@@ -141,7 +142,7 @@ and congruence relations.")
              (uri "https://chim.loan/taosc")
              (check-in version)))
        (sha256
-        (base32 "1nvcvrqdfv08ym12qv6gpxggfvd1d31akd0xchkcpchmv5xygwi6"))))
+        (base32 "1hqgw8qjwdf3kdnq92jbz3qfwah403h1ysd7vyl9rzwvjxq2qr8p"))))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -172,6 +173,7 @@ and congruence relations.")
      (list aflplusplus
            dyninst
            e9patch
+           fann
            findutils
            fuzzolic
            parallel
